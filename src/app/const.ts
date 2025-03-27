@@ -1,0 +1,78 @@
+/** Math.PI * 2 */
+export const PI2 = Math.PI * 2;
+/** Math.PI / 2 */
+export const PI_2 = Math.PI / 2;
+/** 180 / Math.PI */
+export const RAD_TO_DEG = 180 / Math.PI;
+/** Math.PI / 180 */
+export const DEG_TO_RAD = Math.PI / 180;
+
+export enum DirtyType {
+  /** pos,scale,rotation发生了变化 */
+  transform = 1,
+  /** width，height发生了变化 */
+  size = 2,
+  /** texture发生了变化 */
+  texture = 4,
+  /** alpha，tint发生了变化 */
+  color = 8,
+  /** 滤镜发生了变化 */
+  filter = 16,
+  /** 添加删除节点节点 */
+  child = 32,
+  /** 子节点变化导致了父节点变化 */
+  parent = 64,
+}
+
+/** 事件类型枚举 */
+export enum EventType {
+  /** 节点被添加到节点树后，由 node 派发 */
+  added = "added",
+  /** 节点被添加到舞台时，这时可以获取 stage，由 node 派发  */
+  addToStage = "addToStage",
+  /** 节点从节点树移除后，由 node 派发 */
+  removed = "removed",
+
+  /** 节点更改大小时，由 node 派发 */
+  resize = "resize",
+  /** 节点旋转、缩放、位移时，由 node 派发，由于 transform 派发比较频繁（任何pos,scale,rotation改变都会触发），使用的时候，注意性能 */
+  transform = "transform",
+
+  /** 鼠标按下时，由 node 派发 */
+  mousedown = "mousedown",
+  /** 鼠标抬起时，由 node 派发 */
+  mouseup = "mouseup",
+  /** 鼠标移动时，由 node 派发 */
+  mousemove = "mousemove",
+  /** 鼠标经过时，由 node 派发 */
+  mouseover = "mouseover",
+  /** 鼠标移出时，由 node 派发 */
+  mouseout = "mouseout",
+  /** 鼠标在 canvas 外面被抬起时，由 node 派发 */
+  mouseupoutside = "mouseupoutside",
+  /** 鼠标点击时，由 node 派发 */
+  click = "click",
+
+  /** 键盘被按下时，由 stage 派发 */
+  keydown = "keydown",
+  /** 键盘被抬起时，由 stage 派发 */
+  keyup = "keyup",
+  /** 发生滚轮事件时，由 stage 派发 */
+  wheel = "wheel",
+
+  /** 动画开始播放时，由 animation、spriteAnimation 等动画类派发 */
+  played = "played",
+  /** 动画停止播放时，由 animation、spriteAnimation 等动画类派发 */
+  stopped = "stopped",
+  /** 动画播放结束时，由 animation、spriteAnimation 等动画类派发  */
+  ended = "ended",
+
+  /** 单个资源加载完毕时，由 sprite、animation 等需要加载的节点，及 loaderManager 派发 */
+  loaded = "loaded",
+  /** 资源加载进度，由 loaderManager 派发 */
+  progress = "progress",
+  /** 资源全部加载完成，由 loaderManager 派发 */
+  complete = "complete",
+  /** 资源加载失败时，由 loaderManager 派发 */
+  error = "error",
+}

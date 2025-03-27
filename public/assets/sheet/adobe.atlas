@@ -1,0 +1,26 @@
+﻿{
+  "frames": {
+    "Symbol 10000": {
+      "frame": { "x": 1, "y": 1, "w": 410, "h": 151 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 90, "y": 349, "w": 500, "h": 500 },
+      "sourceSize": { "w": 500, "h": 500 }
+    },
+    "Symbol 10001": {
+      "frame": { "x": 1, "y": 155, "w": 410, "h": 151 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 500, "h": 500 },
+      "sourceSize": { "w": 500, "h": 500 }
+    }
+  },
+  "meta": {
+    "app": "Adobe Animate",
+    "version": "24.0.0.305",
+    "image": "adobe.png",
+    "format": "RGBA8888",
+    "size": { "w": 512, "h": 512 },
+    "scale": "1"
+  }
+}

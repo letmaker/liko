@@ -1,0 +1,36 @@
+{
+    "cSpell.words": [
+      "antd",
+      "ARGB",
+      "arrowdown",
+      "arrowleft",
+      "arrowright",
+      "arrowup",
+      "inited",
+      "mouseupoutside",
+      "Renderable",
+      "rigidbody",
+      "rrggbb",
+      "Sider",
+      "webgl",
+      "wgsl",
+      "xrrggbb",
+      "yoyo"
+    ],
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.codeActionsOnSave": {
+      "quickfix.biome": "explicit"
+    },
+    "files.associations": {
+      "*.scene": "json",
+      "*.atlas": "json"
+    },
+    "[html]": {
+      "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[glsl]": {
+      "editor.defaultFormatter": "raczzalan.webgl-glsl-editor"
+    }
+  }
+  
