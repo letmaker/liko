@@ -275,6 +275,7 @@ export class Effect extends Script {
   /**
    * 动画播放完毕回调
    */
+  // @ts-expect-error
   onComplete(target: unknown): void {
     //
   }

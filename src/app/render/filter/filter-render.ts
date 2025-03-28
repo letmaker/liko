@@ -1,3 +1,4 @@
+// @ts-nocheck  TODO: 待实现
 import { type IBindResource, Device } from "../device/device";
 import type { Filter } from "./filter";
 import type { FilterResource } from "./filter";

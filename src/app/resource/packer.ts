@@ -110,24 +110,24 @@ document.addEventListener("click", () => {
   // debugRects();
 });
 
-function debugRects() {
-  for (let index = 0; index < spaces.length; index++) {
-    const { freeRects, usedRects, canvas, content } = spaces[index];
-    content.clearRect(0, 0, canvas.width, canvas.height);
+// function debugRects() {
+//   for (let index = 0; index < spaces.length; index++) {
+//     const { freeRects, usedRects, canvas, content } = spaces[index];
+//     content.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (const rect of freeRects) {
-      content.rect(rect.x, rect.y, rect.width, rect.height);
-    }
-    content.strokeStyle = "green";
-    content.lineWidth = 1;
-    content.stroke();
+//     for (const rect of freeRects) {
+//       content.rect(rect.x, rect.y, rect.width, rect.height);
+//     }
+//     content.strokeStyle = "green";
+//     content.lineWidth = 1;
+//     content.stroke();
 
-    content.beginPath();
-    for (const rect of usedRects) {
-      content.rect(rect.x + padding, rect.y + padding, rect.width - padding * 2, rect.height - padding * 2);
-    }
-    content.strokeStyle = "red";
-    content.lineWidth = 1;
-    content.stroke();
-  }
-}
+//     content.beginPath();
+//     for (const rect of usedRects) {
+//       content.rect(rect.x + padding, rect.y + padding, rect.width - padding * 2, rect.height - padding * 2);
+//     }
+//     content.strokeStyle = "red";
+//     content.lineWidth = 1;
+//     content.stroke();
+//   }
+// }

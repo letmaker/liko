@@ -68,7 +68,7 @@ export class Controller extends Script {
       if (!this.started || !this._playing) {
         const { target } = this;
         if (target.controller !== this) {
-          target.controller && (target.controller.available = false);
+          if (target.controller) target.controller.available = false;
           this.available = true;
           target.controller = this;
         }

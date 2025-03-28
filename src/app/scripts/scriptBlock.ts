@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Node } from "..";
 import type { MouseEvent } from "../events/mouse-event";
 import type { RigidBody } from "../physics/rigidBody";

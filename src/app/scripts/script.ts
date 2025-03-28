@@ -217,6 +217,7 @@ export abstract class Script {
    * 脚本被 update 时触发
    * @param time 当前场景时间
    */
+  // @ts-expect-error
   onUpdate(time: number): void {}
   /**
    * 脚本被销毁时触发

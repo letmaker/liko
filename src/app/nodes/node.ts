@@ -490,7 +490,7 @@ export abstract class Node {
    * @param deep 是否深度遍历，深度遍历子节点
    * @returns 返回查找到的子节点
    */
-  getChild(selector: string | number): Node | undefined;
+  getChild(selector: string | number, deep: boolean): Node | undefined;
   getChild<T extends new (...args: any[]) => Node>(NodeClass: T): InstanceType<T> | undefined;
   getChild<T extends new (...args: any[]) => Node>(selector: string | number | T, deep = false): Node | undefined {
     if (typeof selector === "number") return this.children[selector] as Node;

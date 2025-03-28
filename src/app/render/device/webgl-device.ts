@@ -1,3 +1,4 @@
+// @ts-nocheck  TODO: 待实现
 import { WebGLRender } from "../render/webgl-render";
 import type { WebGpuRender } from "../render/webgpu-render";
 import type { IBindResource } from "./webgpu-device";

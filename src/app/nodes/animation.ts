@@ -14,6 +14,7 @@ export interface IAnimation extends Node {
   goto: (time: number) => void;
   /** 动画持续时长 */
   duration: number;
+  controller?: Controller;
 }
 
 interface IAnimationPrivateProps extends INodePrivateProps {
