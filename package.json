@@ -1,12 +1,22 @@
 {
   "name": "liko",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.1",
+  "author": "handler",
+  "description": "liko is a 2D physics engine written in TypeScript",
+  "keywords": ["2d", "physics", "engine", "webgpu"],
+  "main": "dist/liko.cjs.js",
+  "module": "dist/liko.es.js",
+  "types": "dist/liko.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/letmaker/liko.git"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "vite build",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outFile ./dist/liko.d.ts",
+    "prepublishOnly": "npm run build & npm run build:types"
   },
   "dependencies": {
     "@webgpu/types": "^0.1.59",
