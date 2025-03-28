@@ -6,7 +6,7 @@ import type { ILoader } from "./loader-manager";
  * 图片加载器
  */
 export class ImageLoader implements ILoader {
-  map: Record<string, boolean> = { png: true, jpg: true, jpeg: true, image: true };
+  map: Record<string, boolean> = { png: true, jpg: true, jpeg: true, webp: true, image: true };
 
   test(type: string): boolean {
     return this.map[type];

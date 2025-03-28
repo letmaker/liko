@@ -195,7 +195,8 @@ export class BatchGroup {
     let indexCount = 0;
     for (let i = 0; i < count; i++) {
       const node = this.nodes[i] as IRenderable;
-      if (!("renderObject" in node)) continue;
+      // 这个地方判断，是否会消耗性能，还能优化吗
+      if (!node.texture) continue;
       const renderObject = node.renderObject;
 
       let textureId = batch.add(node.texture);
