@@ -1,23 +1,25 @@
-# liko [中文文档](README-CN.md)
-Liko is a simple, fast, and lightweight H5 render framework by typescript.
+# liko
+Liko 是使用 typescript 开发的一个轻量级、高性能的 H5 渲染框架。
 
-Liko is a high-performance rendering engine based on WebGPU, designed for AI.
+Liko 是一个基于 WebGPU 的高性能渲染引擎，专为 AI 设计。
 
-Liko can be used for games, H5 applications, and interactive interactions.
+Liko 可用于游戏开发、H5应用程序和互动交互场景等。
 
-## Features
-- designed based on webGPU
-- designed for AI and editors
-- simple and fast
-- high-performance
-- integrated Planck physics engine
+## 功能
+- 基于 webGPU 设计
+- 专为人工智能和编辑器而设计
+- 轻量
+- 高性能
+- 集成 Planck 物理引擎
 
-## How to use
+## 如何使用
 
+安装
 ```bash
 npm install liko
 ```
 
+使用
 ```typescript
 import { App, Text } from 'liko';
 
@@ -37,12 +39,12 @@ test();
 ```
 
 
-## Demo
+## 更多 demo
 https://github.com/letmaker/liko-demo
 
 ## License
 MIT
 
-## Thanks
+## 感谢
 - [planck-js](https://github.com/piqnt/planck.js)
 - [pixi.js](https://github.com/pixijs/pixijs)
