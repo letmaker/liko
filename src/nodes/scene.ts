@@ -1,7 +1,5 @@
 import { RegNode } from "../utils/decorators";
-import { Animation, type IAnimation } from "./animation";
-
-export type IScene = IAnimation;
+import { Animation, type IScene } from "./animation";
 
 /**
  * 所有动画、脚本、动效均由所在的场景统一驱动

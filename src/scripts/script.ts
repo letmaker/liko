@@ -1,6 +1,5 @@
-import type { IAnimation } from "../nodes/animation";
+import type { IAnimation, IScene } from "../nodes/animation";
 import type { Node } from "../nodes/node";
-import type { IScene } from "../nodes/scene";
 import type { Stage } from "../nodes/stage";
 
 /**

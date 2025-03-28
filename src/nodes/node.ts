@@ -12,8 +12,7 @@ import { Color, type ColorData } from "../utils/color";
 import { Dispatcher } from "../utils/dispatcher";
 import { Register } from "../utils/register";
 import { createScript, getUID } from "../utils/utils";
-import type { IAnimation } from "./animation";
-import type { IScene } from "./scene";
+import type { IAnimation, IScene } from "./animation";
 import type { Stage } from "./stage";
 
 /** 节点数据接口 */
@@ -490,7 +489,7 @@ export abstract class Node {
    * @param deep 是否深度遍历，深度遍历子节点
    * @returns 返回查找到的子节点
    */
-  getChild(selector: string | number, deep: boolean): Node | undefined;
+  getChild(selector: string | number, deep?: boolean): Node | undefined;
   getChild<T extends new (...args: any[]) => Node>(NodeClass: T): InstanceType<T> | undefined;
   getChild<T extends new (...args: any[]) => Node>(selector: string | number | T, deep = false): Node | undefined {
     if (typeof selector === "number") return this.children[selector] as Node;

@@ -9,12 +9,16 @@ import { type INodePrivateProps, Node } from "./node";
 
 /** 动画接口，所有实现此接口的动画，都可以在编辑器内对动画进行控制 */
 export interface IAnimation extends Node {
-  play: () => void;
-  stop: () => void;
-  goto: (time: number) => void;
   /** 动画持续时长 */
   duration: number;
   controller?: Controller;
+  play: () => void;
+  stop: () => void;
+  goto: (time: number) => void;
+}
+
+export interface IScene extends IAnimation {
+  clone: (id: string) => Node | undefined;
 }
 
 interface IAnimationPrivateProps extends INodePrivateProps {
@@ -33,7 +37,7 @@ interface IAnimationOptions extends INodeOptions {
  * 在编辑器内，动画一般由所在场景内的 controller 驱动播放，也可以调用 play 独立播放，但不再受此场景统一控制
  */
 @RegNode("Animation")
-export class Animation extends Node implements IAnimation {
+export class Animation extends Node implements IScene {
   declare pp: IAnimationPrivateProps;
   /** 动画数据，记录方便实现 clone */
   json?: INodeData;

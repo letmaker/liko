@@ -1,6 +1,6 @@
 {
   "name": "liko",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "author": "handler",
   "description": "liko is a 2D physics engine written in TypeScript",
   "keywords": ["2d", "physics", "engine", "webgpu"],

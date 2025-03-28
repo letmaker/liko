@@ -21,7 +21,7 @@ export { Blueprint } from "./scripts/blueprint";
 export { Tween } from "./scripts/effect/tween";
 export { Ease } from "./scripts/effect/ease";
 export { Script } from "./scripts/script";
-export { ScriptBlock } from "./scripts/scriptBlock";
+export { ScriptBlock, type ICollision } from "./scripts/scriptBlock";
 export { Dispatcher } from "./utils/dispatcher";
 export { physics } from "./physics/physics";
 export { loader } from "./loader";
