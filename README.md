@@ -6,7 +6,7 @@ Liko is a high-performance rendering engine based on WebGPU, designed for AI.
 Liko can be used for games, H5 applications, and interactive interactions.
 
 ## Features
-- newly designed based on the web GPU architecture
+- designed based on webGPU
 - designed for AI and editors
 - simple and fast
 - high-performance
@@ -39,3 +39,10 @@ test();
 
 ## Demo
 https://github.com/letmaker/liko-demo
+
+## License
+MIT
+
+## Thanks
+- [planck-js](https://github.com/piqnt/planck.js)
+- [pixi.js](https://github.com/pixijs/pixijs)
