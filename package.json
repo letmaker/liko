@@ -13,7 +13,8 @@
     "url": "git+https://github.com/letmaker/liko.git"
   },
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "test": "vitest"
   },
   "dependencies": {
     "@webgpu/types": "^0.1.59",
@@ -23,6 +24,7 @@
     "@biomejs/biome": "^1.9.4",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
-    "vite-plugin-dts": "^4.5.3"
+    "vite-plugin-dts": "^4.5.3",
+    "vitest": "^3.0.9"
   }
 }
