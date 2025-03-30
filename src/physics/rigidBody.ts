@@ -1,6 +1,6 @@
 import type { Fixture } from "planck";
 import { Point, type IPoint } from "../math/point";
-import { Script } from "../scripts/script";
+import { ScriptBase } from "../scripts/script-base";
 import { RegScript } from "../utils/decorators";
 import { getCategoryBit, getCategoryMask, pl, to2DPos, toPhy, toPhyPos, world } from "./physics";
 
@@ -69,7 +69,7 @@ export interface IRigidBodyData {
  * 两个物体相撞条件：1 任意一方为 dynamic，2. maskBit & categoryBit !==0
  */
 @RegScript("RigidBody")
-export class RigidBody extends Script {
+export class RigidBody extends ScriptBase {
   private _body = world.createBody({ active: false, type: "kinematic", fixedRotation: true });
 
   /** 物理类型，static：静止不动类型，kinematic：运动类型（没有重力），dynamic：动态类型，支持重力，如果两个物品要想相互碰撞，则其中一个物体的类型必须是 dynamic */

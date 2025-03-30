@@ -1,6 +1,6 @@
 import { RegScript } from "../../utils/decorators";
 import { Register } from "../../utils/register";
-import { Script } from "../script";
+import { ScriptBase } from "../script-base";
 import { Ease } from "./ease";
 
 export type PropValue = number | string | Record<string, number | string>;
@@ -11,11 +11,16 @@ export type Props = Record<string, PropValue>;
  * 动画生命周期：onEnable > onAwake > onStart > onEnd > onStart > onEnd > onComplete > onDestroy
  */
 @RegScript("Effect")
-export class Effect extends Script {
+export class Effect extends ScriptBase {
   private _from: Record<string, number | Record<string, number>> = {};
   private _diff: Record<string, number | Record<string, number>> = {};
   private _inited = false;
   private _repeatTimes = 0;
+
+  /** 是否已经开始 */
+  started = false;
+  /** 是否已经结束 */
+  ended = false;
 
   /** 指定动画的初始值，在动画每次开始时进行设置(可选) */
   initial?: Props = undefined;
@@ -51,11 +56,12 @@ export class Effect extends Script {
   }
 
   private _startTime = 0;
-  override get delay(): number {
-    return super.delay;
+  private _delay = 0;
+  get delay(): number {
+    return this._delay;
   }
-  override set delay(value: number) {
-    super.delay = value;
+  set delay(value: number) {
+    this._delay = value;
     this._startTime = value;
   }
 
@@ -72,15 +78,21 @@ export class Effect extends Script {
     }
   }
 
-  override start(): void {
+  start(): void {
     if (!this.started) {
       // 设置初始化属性
       this._initProp();
-      super.start();
+      this.started = true;
+      this.onStart();
       if (this.to) this._toKey(this.to);
       else if (this.from) this._fromKey(this.from);
     }
   }
+
+  /**
+   * 每次脚本开始执行时触发
+   */
+  onStart(): void {}
 
   private _initProp(): void {
     const { initial } = this;
@@ -233,13 +245,14 @@ export class Effect extends Script {
   /**
    * 结束当前动画循环
    */
-  override end(): void {
+  end(): void {
     this._repeatTimes++;
     if (this._repeatTimes < this.repeat) {
       this._startTime = this.delay + (this.repeatDelay + this.duration) * this._repeatTimes;
       this.started = false;
       this.ended = false;
       this.onValueChanged(this._easeValue(this.yoyo ? 0 : 1));
+      this.ended = true;
       this.onEnd();
     } else {
       this.complete();
@@ -273,6 +286,11 @@ export class Effect extends Script {
   }
 
   /**
+   * 每次脚本结束执行时触发
+   */
+  onEnd(): void {}
+
+  /**
    * 动画播放完毕回调
    */
   // @ts-expect-error
@@ -280,7 +298,7 @@ export class Effect extends Script {
     //
   }
 
-  override goto(time: number): void {
+  goto(time: number): void {
     if (!this.enabled || this.destroyed) return;
 
     if (this.repeat > 1) {
@@ -297,7 +315,7 @@ export class Effect extends Script {
     }
   }
 
-  override reset(time: number): void {
+  reset(time: number): void {
     if (time < this.delay) {
       this.started = false;
       this.ended = false;

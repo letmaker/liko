@@ -7,12 +7,12 @@ import type { RotatingRect } from "../math/rotating-rect";
 import { Transform } from "../math/transform";
 import type { Filter } from "../render/filter/filter";
 import { NodeCache } from "../render/utils/node-cache";
-import type { Script } from "../scripts/script";
+import type { ScriptBase } from "../scripts/script-base";
 import { Color, type ColorData } from "../utils/color";
 import { Dispatcher } from "../utils/dispatcher";
 import { Register } from "../utils/register";
 import { createScript, getUID } from "../utils/utils";
-import type { IAnimation, IScene } from "./scene";
+import type { IScene } from "./scene";
 import type { Stage } from "./stage";
 
 /** 节点数据接口 */
@@ -66,7 +66,7 @@ const defaultTF = new Transform();
 const defaultData: Record<string, any> = {};
 const defaultChildren: Node[] = [];
 const defaultFilters: Filter[] = [];
-const defaultScripts: Script[] = [];
+const defaultScripts: ScriptBase[] = [];
 const defaultEvent = new Dispatcher();
 
 export interface INodePrivateProps {
@@ -75,7 +75,7 @@ export interface INodePrivateProps {
   event: Dispatcher;
   children: Node[];
   filters: Filter[];
-  scripts: Script[];
+  scripts: ScriptBase[];
   transform: Transform;
   color: Color;
   alpha: number;
@@ -211,7 +211,7 @@ export abstract class Node {
   }
 
   /** 脚本列表，请勿直接修改此数组，但可以直接读取 */
-  get scripts(): Script[] {
+  get scripts(): ScriptBase[] {
     return this.pp.scripts;
   }
 
@@ -650,11 +650,10 @@ export abstract class Node {
    * @param script 脚本实例
    * @returns 返回被提交的脚本实例
    */
-  addScript<T extends Script>(script: T): T {
+  addScript<T extends ScriptBase>(script: T): T {
     const pp = this.pp;
     if (pp.scripts === defaultScripts) pp.scripts = [];
     pp.scripts.push(script);
-    pp.scripts.sort((a, b) => a.delay - b.delay);
     script.target = this;
     return script;
   }
@@ -664,9 +663,9 @@ export abstract class Node {
    * @param selector 脚本筛选器，支持 'label'、'#id'、RigidBody(类名)
    * @returns 返回匹配的脚本实例
    */
-  getScript(selector: string): Script | undefined;
-  getScript<T extends new (...args: any[]) => Script>(ScriptClass: T): InstanceType<T> | undefined;
-  getScript<T extends new (...args: any[]) => Script>(selector: string | T): Script | undefined {
+  getScript(selector: string): ScriptBase | undefined;
+  getScript<T extends new (...args: any[]) => ScriptBase>(ScriptClass: T): InstanceType<T> | undefined;
+  getScript<T extends new (...args: any[]) => ScriptBase>(selector: string | T): ScriptBase | undefined {
     if (!selector) return undefined;
     const isString = typeof selector === "string";
     const ClassObj = !isString ? selector : undefined;

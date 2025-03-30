@@ -2,14 +2,14 @@ import type { ILoader } from "../loader/loader-manager";
 import type { Node } from "../nodes/node";
 import type { Filter } from "../render/filter/filter";
 import { Ease } from "../scripts/effect/ease";
-import type { Script } from "../scripts/script";
+import type { ScriptBase } from "../scripts/script-base";
 
 /**
  * 注册器
  */
 export class Register {
   /** 脚本映射 */
-  static scriptMap: Record<string, typeof Script> = {};
+  static scriptMap: Record<string, typeof ScriptBase> = {};
   /** 节点映射 */
   static nodeMap: Record<string, typeof Node> = {};
   /** 滤镜映射 */
@@ -24,7 +24,7 @@ export class Register {
    * @param name 脚本名称
    * @param script 脚本类
    */
-  static regScript(name: string, script: typeof Script): void {
+  static regScript(name: string, script: typeof ScriptBase): void {
     Register.scriptMap[name] = script;
   }
   /**
@@ -32,13 +32,13 @@ export class Register {
    * @param name 脚本名称
    * @returns 脚本类
    */
-  static getScript(name: string): Script | undefined {
+  static getScript(name: string): ScriptBase | undefined {
     const Class: any = Register.scriptMap[name];
     if (Class === undefined) {
       console.error(`can not create script: ${name}`);
       return undefined;
     }
-    return new Class() as Script;
+    return new Class() as ScriptBase;
   }
 
   /**
