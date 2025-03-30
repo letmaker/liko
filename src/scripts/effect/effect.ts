@@ -1,7 +1,6 @@
 import { RegScript } from "../../utils/decorators";
-import { Register } from "../../utils/register";
 import { ScriptBase } from "../script-base";
-import { Ease } from "./ease";
+import { Ease, getEase } from "./ease";
 
 export type PropValue = number | string | Record<string, number | string>;
 export type Props = Record<string, PropValue>;
@@ -72,7 +71,7 @@ export class Effect extends ScriptBase {
   }
   set ease(value: ((amount: number) => number) | string) {
     if (typeof value === "string") {
-      this._ease = Register.getEase(value);
+      this._ease = getEase(value);
     } else {
       this._ease = value;
     }

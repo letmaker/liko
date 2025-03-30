@@ -2,7 +2,6 @@
 import { EventType, type Node } from "..";
 import type { MouseEvent } from "../events/mouse-event";
 import type { RigidBody } from "../physics/rigidBody";
-import { Register } from "../utils/register";
 import type { Store } from "../utils/store";
 import type { Blueprint } from "./blueprint";
 import { Effect } from "./effect/effect";

@@ -1,7 +1,7 @@
 import { EventType } from "../const";
 import { loader } from "../loader";
 import { RegNode } from "../utils/decorators";
-import { Register } from "../utils/register";
+import { getRegNode } from "../utils/register";
 import { getUID } from "../utils/utils";
 import type { INodeData, INodeOptions } from "./node";
 import { type INodePrivateProps, Node } from "./node";
@@ -190,7 +190,7 @@ export class Scene extends Node implements IScene {
   clone(id: string): Node | undefined {
     const data = this.__findNodeData(id, this.json);
     if (data) {
-      const node = Register.getNode(data.type);
+      const node = getRegNode(data.type);
       if (node) {
         node.fromJson(data);
         node.id = getUID();

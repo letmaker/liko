@@ -1,4 +1,4 @@
-export { Register } from "./utils/register";
+export * from "./utils/register";
 export { App, type IAppOptions } from "./app";
 export { MouseEvent } from "./events/mouse-event";
 export { Bounds } from "./math/bounds";

@@ -331,3 +331,7 @@ export const Ease = {
     return Ease.Breathe((time - 0.75) * 4);
   },
 };
+
+export function getEase(name: string): (amount: number) => number {
+  return Ease[name] || Ease.Linear;
+}
