@@ -74,6 +74,12 @@ export class Timer {
   /** 当前累计帧数 */
   currentFrame = 0;
 
+  private _paused = false;
+  /** 计时器是否暂停 */
+  get paused(): boolean {
+    return this._paused;
+  }
+
   /** 当前计时器中的有效监听数量 */
   get count(): number {
     let count = 0;
@@ -219,9 +225,25 @@ export class Timer {
   }
 
   /**
-   * 更新计时器
+   * 暂停计时器
    */
+  pause(): void {
+    this._paused = true;
+  }
+
+  /**
+   * 恢复计时器
+   */
+  resume(): void {
+    this._paused = false;
+  }
+
   update(currTime: number = Timer.system.currentTime): void {
+    if (this._paused || this._destroyed) {
+      this.delta = 0;
+      return;
+    }
+
     if (currTime > this._lastTime) {
       const delta = currTime - this._lastTime;
       this._lastTime = currTime;
