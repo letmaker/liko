@@ -1,61 +1,33 @@
-import { RegScript } from "../../utils/decorators";
-import { ScriptBase } from "../script-base";
 import { Ease, getEase } from "./ease";
 
-export type PropValue = number | string | Record<string, number | string>;
-export type Props = Record<string, PropValue>;
+/** 属性值类型，可以是数字、字符串或包含数字/字符串的对象 */
+type PropValue = number | string | Record<string, number | string>;
+/** 效果目标对象类型 */
+export type EffectTarget = Record<string, any>;
+/** 效果属性类型 */
+export type EffectProps = Record<string, PropValue>;
 
 /**
- * 动画类，实现了动画效果脚本
- * 动画生命周期：onEnable > onAwake > onStart > onEnd > onStart > onEnd > onComplete > onDestroy
+ * 效果缓动类，用于实现属性动画
+ *
+ * 支持对目标对象的属性进行平滑过渡动画，可以设置动画的起始值、目标值、
+ * 持续时间、缓动函数等参数，并提供动画控制功能。
  */
-@RegScript("Effect")
-export class Effect extends ScriptBase {
+export class Effect {
   private _from: Record<string, number | Record<string, number>> = {};
   private _diff: Record<string, number | Record<string, number>> = {};
-  private _inited = false;
   private _repeatTimes = 0;
 
-  /** 是否已经开始 */
-  started = false;
-  /** 是否已经结束 */
-  ended = false;
-
-  /** 指定动画的初始值，在动画每次开始时进行设置(可选) */
-  initial?: Props = undefined;
-  /** 此属性决定什么时候初始化 to 和 from 的值，awake 是第一次执行的时候初始化，start 为每次动画执行开始时都会初始化 */
-  initType: "awake" | "start" = "awake";
+  /** 缓动目标对象 */
+  target: EffectTarget = {};
   /** 动画目标状态，设置后则从当前状态缓动到 to 状态 */
-  to?: Props = undefined;
+  to?: EffectProps = undefined;
   /** 动画开始状态，设置后则从 from 状态缓动到当前状态，同时设置的情况下，to 的优先级高于 from */
-  from?: Props = undefined;
-  /** 动画持续时长，单位为秒，默认为1秒 */
-  duration = 1;
-  /** 动画重复间隔，单位为秒，默认为0 */
-  repeatDelay = 0;
-  /** 是否是yoyo动画 */
-  yoyo = false;
-
-  get target(): any {
-    return super.target;
-  }
-  set target(value: any) {
-    super.target = value;
-  }
-
-  private _repeat = 1;
-  /** 动画重复次数，默认为1次，设置为0，等同于无数次 */
-  get repeat(): number {
-    return this._repeat;
-  }
-  set repeat(value: number) {
-    if (value !== this._repeat) {
-      this._repeat = value < 1 ? Number.POSITIVE_INFINITY : value;
-    }
-  }
+  from?: EffectProps = undefined;
 
   private _startTime = 0;
   private _delay = 0;
+  /** 动画延迟开始时间，单位为秒 */
   get delay(): number {
     return this._delay;
   }
@@ -64,10 +36,29 @@ export class Effect extends ScriptBase {
     this._startTime = value;
   }
 
+  /** 动画持续时长，单位为秒 */
+  duration = 1;
+
+  private _repeat = 1;
+  /** 动画重复次数，默认为1次，设置为0时表示无限重复 */
+  get repeat(): number {
+    return this._repeat;
+  }
+  set repeat(value: number) {
+    if (value !== this._repeat) {
+      this._repeat = value <= 0 ? Number.POSITIVE_INFINITY : value;
+    }
+  }
+
+  /** 动画重复间隔，单位为秒 */
+  repeatDelay = 0;
+  /** 是否为yoyo动画，为true时动画会来回播放 */
+  yoyo = false;
+
   private _ease = Ease.Linear;
-  /** 缓动曲线函数，默认为匀速缓动 */
+  /** 缓动曲线函数 */
   get ease(): (amount: number) => number {
-    return this._ease || Ease.Linear;
+    return this._ease;
   }
   set ease(value: ((amount: number) => number) | string) {
     if (typeof value === "string") {
@@ -77,32 +68,117 @@ export class Effect extends ScriptBase {
     }
   }
 
-  start(): void {
-    if (!this.started) {
-      // 设置初始化属性
-      this._initProp();
-      this.started = true;
-      this.onStart();
-      if (this.to) this._toKey(this.to);
-      else if (this.from) this._fromKey(this.from);
-    }
-  }
+  /** 是否第一次被激活 */
+  awaked = false;
+  /** 是否已经开始播放 */
+  started = false;
+  /** 是否已经结束播放 */
+  ended = false;
 
   /**
-   * 每次脚本开始执行时触发
+   * 通过数据设置属性
+   * @param props - 属性列表
    */
-  onStart(): void {}
-
-  private _initProp(): void {
-    const { initial } = this;
-    if (initial) {
-      const keys = Object.keys(initial);
-      for (const prop of keys) {
-        this.target[prop] = this._formatValue(prop, initial[prop]);
+  setProps(props?: Record<string, unknown>) {
+    if (props) {
+      const keys = Object.keys(props);
+      for (const key of keys) {
+        this.setProp(key, props[key]);
       }
     }
   }
 
+  /**
+   * 设置单个属性
+   * @param key - 属性名
+   * @param value - 属性值
+   */
+  setProp(key: string, value: any) {
+    if (key in this) (this as any)[key] = value;
+  }
+
+  /**
+   * 更新动画状态
+   * @param currTime - 当前时间
+   */
+  update(currTime: number): void {
+    if (!this.ended && currTime >= this._startTime) {
+      this.started || this._start();
+      if (currTime < this._startTime + this.duration) {
+        this._updateProgress(currTime);
+      } else {
+        this._end();
+      }
+    }
+  }
+
+  /**
+   * 开始动画
+   * 初始化动画参数并触发相关回调
+   */
+  private _start(): void {
+    if (!this.awaked) {
+      this.awaked = true;
+      if (this.to) this._toKey(this.to);
+      else if (this.from) this._fromKey(this.from);
+      this.onAwake(this.target);
+    }
+    if (!this.started) {
+      this.started = true;
+      this.onStart(this.target);
+    }
+  }
+
+  /**
+   * 处理目标状态属性
+   * @param value - 目标状态属性集合
+   */
+  private _toKey(value: EffectProps): void {
+    const keys = Object.keys(value);
+    for (const prop of keys) {
+      if (prop in this.target) {
+        this._setDiff(prop, this._fromTarget(prop, value[prop]), this._formatValue(prop, value[prop]));
+      }
+    }
+  }
+
+  /**
+   * 处理起始状态属性
+   * @param value - 起始状态属性集合
+   */
+  private _fromKey(value: EffectProps): void {
+    const keys = Object.keys(value);
+    for (const prop of keys) {
+      if (prop in this.target) {
+        this._setDiff(prop, this._formatValue(prop, value[prop]), this._fromTarget(prop, value[prop]));
+      }
+    }
+  }
+
+  /**
+   * 从目标对象获取属性值
+   * @param prop - 属性名
+   * @param value - 属性值定义
+   * @returns 格式化后的属性值
+   */
+  private _fromTarget(prop: string, value: PropValue): number | Record<string, number> {
+    const val = this.target[prop];
+    if (typeof val === "number") return val;
+
+    const obj: Record<string, number> = {};
+    const keys = Object.keys(value);
+    for (const key of keys) {
+      obj[key] = val[key];
+    }
+    return obj;
+  }
+
+  /**
+   * 格式化属性值，支持相对值和绝对值
+   * @param prop - 属性名
+   * @param value - 原始属性值
+   * @returns 格式化后的属性值
+   */
   private _formatValue(prop: string, value: PropValue): number | Record<string, number> {
     if (typeof value === "number") return value;
     if (typeof value === "string") {
@@ -128,42 +204,12 @@ export class Effect extends ScriptBase {
     return obj;
   }
 
-  private _toKey(value: Props): void {
-    if (!this._inited) {
-      const keys = Object.keys(value);
-      for (const prop of keys) {
-        if (prop in this.target) {
-          this._setDiff(prop, this._fromTarget(prop, value[prop]), this._formatValue(prop, value[prop]));
-        }
-      }
-      this._inited = this.initType === "awake";
-    }
-  }
-
-  private _fromKey(value: Props): void {
-    if (!this._inited) {
-      const keys = Object.keys(value);
-      for (const prop of keys) {
-        if (prop in this.target) {
-          this._setDiff(prop, this._formatValue(prop, value[prop]), this._fromTarget(prop, value[prop]));
-        }
-      }
-      this._inited = this.initType === "awake";
-    }
-  }
-
-  private _fromTarget(prop: string, value: PropValue): number | Record<string, number> {
-    const val = this.target[prop];
-    if (typeof val === "number") return val;
-
-    const obj: Record<string, number> = {};
-    const keys = Object.keys(value);
-    for (const key of keys) {
-      obj[key] = val[key];
-    }
-    return obj;
-  }
-
+  /**
+   * 设置属性的起始值和差值
+   * @param prop - 属性名
+   * @param fromValue - 起始值
+   * @param toValue - 目标值
+   */
   private _setDiff(
     prop: string,
     fromValue: number | Record<string, number>,
@@ -183,34 +229,20 @@ export class Effect extends ScriptBase {
   }
 
   /**
-   * 立即激活动画，即使还没有被执行到
+   * 更新动画进度
+   * @param currTime - 当前时间
    */
-  awakeNow(): void {
-    if (!this.awaked) {
-      this.awake();
-      this.start();
-      this.onUpdate(0);
-    }
-  }
-
-  override update(time: number): void {
-    if (this.enabled && !this.ended && time >= this._startTime) {
-      this.awaked || this.awake();
-      this.started || this.start();
-      if (time < this._startTime + this.duration) {
-        this.onUpdate(time);
-      } else {
-        this.end();
-      }
-    }
-  }
-
-  override onUpdate(time: number): void {
-    let elapsed = (time - this._startTime) / this.duration;
+  private _updateProgress(currTime: number): void {
+    let elapsed = (currTime - this._startTime) / this.duration;
     elapsed = elapsed < 0 ? 0 : elapsed < 1 ? elapsed : 1;
-    this.onValueChanged(this._easeValue(elapsed));
+    this.onUpdate(this._easeValue(elapsed));
   }
 
+  /**
+   * 应用缓动函数计算实际进度值
+   * @param elapsed - 原始进度值(0-1)
+   * @returns 应用缓动后的进度值
+   */
   private _easeValue(elapsed: number) {
     let value = elapsed;
     if (this.yoyo) value = this._repeatTimes % 2 === 0 ? elapsed : 1 - elapsed;
@@ -218,88 +250,58 @@ export class Effect extends ScriptBase {
   }
 
   /**
-   * 动画数据发送变化时
+   * 根据进度更新目标对象的属性
+   * @param progress - 当前动画进度(0-1)
    */
-  onValueChanged(value: number) {
-    if (!this.target.destroyed) {
-      const keys = Object.keys(this._diff);
-      for (const prop of keys) {
-        const diff = this._diff[prop];
-        if (typeof diff === "number") {
-          this.target[prop] = (this._from[prop] as number) + diff * value;
-        } else {
-          // const res: Record<string, number> = {};
-          const objProp = this.target[prop];
-          const diffKeys = Object.keys(diff);
-          for (const key of diffKeys) {
-            // res[key] = (this._from[prop] as Record<string, number>)[key] + diff[key] * value;
-            objProp[key] = (this._from[prop] as Record<string, number>)[key] + diff[key] * value;
-          }
-          // this.target[prop] = res;
+  onUpdate(progress: number) {
+    const keys = Object.keys(this._diff);
+    for (const prop of keys) {
+      const diff = this._diff[prop];
+      if (typeof diff === "number") {
+        this.target[prop] = (this._from[prop] as number) + diff * progress;
+      } else {
+        const objProp = this.target[prop];
+        const diffKeys = Object.keys(diff);
+        for (const key of diffKeys) {
+          objProp[key] = (this._from[prop] as Record<string, number>)[key] + diff[key] * progress;
         }
       }
     }
   }
 
   /**
-   * 结束当前动画循环
+   * 处理动画结束
+   * 如果需要重复播放，则重置状态并继续，否则完成动画
    */
-  end(): void {
+  private _end(): void {
     this._repeatTimes++;
     if (this._repeatTimes < this.repeat) {
       this._startTime = this.delay + (this.repeatDelay + this.duration) * this._repeatTimes;
       this.started = false;
       this.ended = false;
-      this.onValueChanged(this._easeValue(this.yoyo ? 0 : 1));
-      this.ended = true;
-      this.onEnd();
+      this.onUpdate(this._easeValue(this.yoyo ? 0 : 1));
+      this.onEnd(this.target);
     } else {
-      this.complete();
+      this._complete();
     }
   }
 
   /**
-   * 结束并停止动画，complete会结束所有动画循环
+   * 完成动画
+   * 设置最终状态并触发完成回调
    */
-  complete(): void {
-    if (this.ended) return;
-    if (this.initType === "awake") {
-      this._repeatTimes = this.repeat;
-      this.start();
-      this.onValueChanged(this._easeValue(this.yoyo ? 0 : 1));
-    } else {
-      if (this._repeatTimes === this.repeat) {
-        this.onValueChanged(this._easeValue(this.yoyo ? 0 : 1));
-      } else {
-        while (this._repeatTimes <= this.repeat) {
-          this.start();
-          this.end();
-        }
-      }
-    }
-
+  private _complete(): void {
+    this.onUpdate(this._easeValue(this.yoyo ? 0 : 1));
     this.ended = true;
-    this.stop();
-    this.onEnd();
+    this.onEnd(this.target);
     this.onComplete(this.target);
   }
 
   /**
-   * 每次脚本结束执行时触发
+   * 跳转到指定时间点的动画状态
+   * @param time - 目标时间点
    */
-  onEnd(): void {}
-
-  /**
-   * 动画播放完毕回调
-   */
-  // @ts-expect-error
-  onComplete(target: unknown): void {
-    //
-  }
-
   goto(time: number): void {
-    if (!this.enabled || this.destroyed) return;
-
     if (this.repeat > 1) {
       const interval = this.duration + this.repeatDelay;
       this._repeatTimes = time > this.delay + this.duration ? Math.floor((time - this.delay) / interval) : 0;
@@ -314,56 +316,39 @@ export class Effect extends ScriptBase {
     }
   }
 
-  reset(time: number): void {
-    if (time < this.delay) {
-      this.started = false;
-      this.ended = false;
-      if (this.awaked) this.onUpdate(0);
-    }
-  }
-
-  /** 自动播放开始时间 */
-  private _startPlayTime = 0;
-  private _playedTime = 0;
-  private _isPlaying = false;
-  /**
-   * 手动播放动画（相比基于时间轴驱动）
-   */
-  play(): void {
-    if (!this.destroyed && !this._isPlaying) {
-      this._isPlaying = true;
-      this._startPlayTime = this.stage!.timer.currentTime - this._playedTime;
-      this.stage?.timer.frameLoop(1, this._loop, this);
-      this._loop();
-    }
-  }
-
-  private _loop() {
-    if (this.target.destroyed) {
-      this.destroy();
-    } else {
-      this.update(this.stage!.timer.currentTime - this._startPlayTime);
-    }
+  reset() {
+    this._repeatTimes = 0;
+    this._startTime = this.delay;
+    this.started = false;
+    this.ended = false;
+    this.awaked = false;
   }
 
   /**
-   * 手动停止动画（相比基于时间轴驱动），如果想继续播放，可以直接调用play函数
+   * 动画被激活时触发，仅在第一次被激活时触发
+   * @param target - 动画目标对象
    */
-  stop(): void {
-    if (this._isPlaying) {
-      this._isPlaying = false;
-      this._playedTime = this.stage!.timer.currentTime - this._startPlayTime;
-      this.stage?.timer.clear(this._loop, this);
-    }
-  }
+  // @ts-expect-error
+  onAwake(target: EffectTarget): void {}
 
   /**
-   * 销毁动画
+   * 每次动画开始执行时触发（repeat>1时，会重复执行）
+   * @param target - 动画目标对象
    */
-  override destroy(): void {
-    if (!this.destroyed) {
-      this.stop();
-      super.destroy();
-    }
-  }
+  // @ts-expect-error
+  onStart(target: EffectTarget): void {}
+
+  /**
+   * 每次动画结束执行时触发（repeat>1时，会重复执行）
+   * @param target - 动画目标对象
+   */
+  // @ts-expect-error
+  onEnd(target: EffectTarget): void {}
+
+  /**
+   * 动画播放完毕回调
+   * @param target - 动画目标对象
+   */
+  // @ts-expect-error
+  onComplete(target: EffectTarget): void {}
 }

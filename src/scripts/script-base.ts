@@ -30,7 +30,7 @@ export abstract class ScriptBase {
   get enabled(): boolean {
     return this._enabled;
   }
-  set enabled(value) {
+  set enabled(value: boolean) {
     if (value !== this._enabled) {
       this._enabled = value;
       if (this._target) {
@@ -42,12 +42,17 @@ export abstract class ScriptBase {
   private _target?: Node;
   /** 脚本目标对象，设置 target 后回调 onCreate */
   get target(): Node {
+    if (!this._target) {
+      console.warn("Script target is not set");
+    }
     return this._target as Node;
   }
   set target(value: Node) {
     if (value !== this._target) {
       this._target = value;
-      value && this.onCreate();
+      if (value) {
+        this.onCreate();
+      }
     }
   }
 
@@ -66,21 +71,23 @@ export abstract class ScriptBase {
    * 脚本销毁时，target、root、scene、stage、timer 上的所有监听都会被自动取消，如果还监听 Timer.system 需要自己手动取消
    */
   destroy(): void {
-    if (!this._destroyed) {
-      this._destroyed = true;
-      this._enabled = false;
-      this._target?.offAll(this);
-      this.scene?.offAll(this);
-      this.stage?.offAll(this);
-      this.stage?.timer.clearAll(this);
-      this.onDestroy();
-      this._target = undefined;
-    }
+    if (this._destroyed) return;
+
+    this._destroyed = true;
+    this._enabled = false;
+    this.onDestroy();
+
+    this._target?.offAll(this);
+    this.scene?.offAll(this);
+    this.stage?.offAll(this);
+    this.stage?.timer.clearAll(this);
+    this._target = undefined;
   }
 
   /**
    * 通过数据设置属性
-   * @param props 属性列表
+   * @param props - 属性列表
+   * @returns 当前实例，支持链式调用
    */
   setProps(props?: Record<string, unknown>): this {
     if (props) {
@@ -94,21 +101,28 @@ export abstract class ScriptBase {
 
   /**
    * 设置属性
+   * @param key - 属性名
+   * @param value - 属性值
    */
-  setProp(key: string, value: any) {
-    if (key in this) (this as any)[key] = value;
+  setProp(key: string, value: unknown): void {
+    if (key in this) {
+      (this as Record<string, unknown>)[key] = value;
+    }
   }
 
   /**
    * 更新脚本，回调 onUpdate
-   * @param currTime 当前场景时间
+   * @param delta - 距离上一帧的时间间隔
    */
-  update(currTime: number): void {
-    // TODO 这里可以做性能优化
-    if (this._enabled) {
-      this._awaked || this.awake();
-      this.onUpdate(currTime);
+  update(delta: number): void {
+    // TODO 这里可以做性能优化，比如有 update 的时候才执行
+    if (!this._enabled) return;
+
+    if (!this._awaked) {
+      this.awake();
     }
+
+    this.onUpdate(delta);
   }
 
   /**
@@ -139,10 +153,10 @@ export abstract class ScriptBase {
   onAwake(): void {}
   /**
    * 脚本被 update 时触发
-   * @param time 当前场景时间
+   * @param delta - 距离上一帧的时间间隔
    */
-  // @ts-expect-error
-  onUpdate(time: number): void {}
+  // @ts-expect-error 此方法预期会被子类重写
+  onUpdate(delta: number): void {}
   /**
    * 脚本被销毁时触发
    */

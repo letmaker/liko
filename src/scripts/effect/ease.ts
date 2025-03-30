@@ -1,8 +1,13 @@
 // 效果速查: https://www.xuanfengge.com/easeing/easeing/#
 
-import { PI_2 } from "../../const";
+const PI_2 = Math.PI / 2;
+const BOUNCE_FACTOR = 7.5625;
+const BACK_FACTOR = 1.70158;
+const BACK_FACTOR_INOUT = BACK_FACTOR * 1.525;
 
-export const Ease = {
+type EaseFunction = (amount: number) => number;
+
+export const Ease: Record<string, EaseFunction> = {
   /**
    * 直线无缓动
    */
@@ -154,7 +159,7 @@ export const Ease = {
   CircInOut(amount: number): number {
     let v = amount * 2;
     if (v < 1) return -0.5 * (Math.sqrt(1 - v * v) - 1);
-    v = amount - 2;
+    v = v - 2;
     return 0.5 * (Math.sqrt(1 - v * v) + 1);
   },
   /**
@@ -181,32 +186,29 @@ export const Ease = {
     if (amount === 1) return 1;
     const v = amount * 2;
     if (v < 1) return -0.5 * 2 ** (10 * (v - 1)) * Math.sin((v - 1.1) * 5 * Math.PI);
-    return 0.5 * 2 ** (-10 * (v - 1)) * Math.sin((v - 1.1) * 5 * Math.PI) + 1;
+    return 0.5 * 2 ** (-10 * (v - 1)) * Math.sin((v - 0.1) * 5 * Math.PI) + 1;
   },
   /**
    * 返回缓动
    */
   BackIn(amount: number): number {
-    const s = 1.70158;
-    return amount === 1 ? 1 : amount * amount * ((s + 1) * amount - s);
+    return amount === 1 ? 1 : amount * amount * ((BACK_FACTOR + 1) * amount - BACK_FACTOR);
   },
   /**
    * 返回缓动
    */
   BackOut(amount: number): number {
-    const s = 1.70158;
     const v = amount - 1;
-    return amount === 0 ? 0 : v * v * ((s + 1) * v + s) + 1;
+    return amount === 0 ? 0 : v * v * ((BACK_FACTOR + 1) * v + BACK_FACTOR) + 1;
   },
   /**
    * 返回缓动
    */
   BackInOut(amount: number): number {
-    const s = 1.70158 * 1.525;
     let v = amount * 2;
-    if (v < 1) return 0.5 * (v * v * ((s + 1) * v - s));
+    if (v < 1) return 0.5 * (v * v * ((BACK_FACTOR_INOUT + 1) * v - BACK_FACTOR_INOUT));
     v = v - 2;
-    return 0.5 * (v * v * ((s + 1) * v + s) + 2);
+    return 0.5 * (v * v * ((BACK_FACTOR_INOUT + 1) * v + BACK_FACTOR_INOUT) + 2);
   },
   /**
    * 反弹缓动
@@ -219,18 +221,18 @@ export const Ease = {
    */
   BounceOut(amount: number): number {
     if (amount < 1 / 2.75) {
-      return 7.5625 * amount * amount;
+      return BOUNCE_FACTOR * amount * amount;
     }
     const v = amount - 1.5 / 2.75;
     if (amount < 2 / 2.75) {
-      return 7.5625 * v * v + 0.75;
+      return BOUNCE_FACTOR * v * v + 0.75;
     }
     let v2 = v - 2.25 / 2.75;
     if (v < 2.5 / 2.75) {
-      return 7.5625 * v2 * v2 + 0.9375;
+      return BOUNCE_FACTOR * v2 * v2 + 0.9375;
     }
     v2 = v2 - 2.625 / 2.75;
-    return 7.5625 * v2 * v2 + 0.984375;
+    return BOUNCE_FACTOR * v2 * v2 + 0.984375;
   },
   /**
    * 反弹缓动
@@ -332,6 +334,9 @@ export const Ease = {
   },
 };
 
-export function getEase(name: string): (amount: number) => number {
+/**
+ * 根据名称获取缓动函数
+ */
+export function getEase(name: string): EaseFunction {
   return Ease[name] || Ease.Linear;
 }
