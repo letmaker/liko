@@ -96,6 +96,7 @@ export interface INodeOptions {
   label?: string;
   pos?: IPoint;
   scale?: IPoint;
+  pivot?: IPoint;
   rotation?: number;
   angle?: number;
   width?: number;

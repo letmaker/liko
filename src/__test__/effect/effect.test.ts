@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Effect } from "../scripts/effect/effect";
-import { Ease } from "../scripts/effect/ease";
+import { Effect } from "../../scripts/effect/effect";
+import { Ease } from "../../scripts/effect/ease";
 
 describe("Effect", () => {
   let effect: Effect;

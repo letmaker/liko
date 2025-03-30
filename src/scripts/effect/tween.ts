@@ -9,7 +9,7 @@ interface TweenOption {
   /** 动画属性集合 */
   props: EffectProps;
   /** 动画持续时长(秒) */
-  duration: number;
+  duration?: number;
   /** 动画标签，可用于停止动画；多次tween时会自动停止相同标签的动画 */
   label?: string;
   /** 延迟时间(秒) */
@@ -166,9 +166,9 @@ export class Tween {
   private _add(isTo: boolean, options: TweenOption): this {
     const effect = new Effect();
     effect.target = options.target;
-    effect.duration = options.duration;
+    effect.duration = options.duration ?? 1;
     effect.ease = options.ease ?? Ease.Linear;
-    effect.delay = options.delay ?? 0;
+    effect.delay = this._lastEndTime() + (options.delay ?? 0);
     effect.repeat = options.repeat ?? 1;
     effect.repeatDelay = options.repeatDelay ?? 0;
     effect.yoyo = Boolean(options.yoyo);
@@ -182,6 +182,12 @@ export class Tween {
 
     this._effects.push(effect);
     return this;
+  }
+
+  private _lastEndTime() {
+    if (this._effects.length < 1) return 0;
+    const last = this._effects[this._effects.length - 1];
+    return last.delay + last.duration;
   }
 
   /**
@@ -218,14 +224,14 @@ export class Tween {
       this._resolve = resolve;
       this._playing = true;
       this._next();
-      Timer.system.loop(1, this._update, this);
+      Timer.system.frameLoop(1, this._update, this);
     });
   }
 
   /**
    * 更新当前缓动效果
    */
-  protected _update(delta?: number) {
+  private _update(delta?: number) {
     this._currentTime += delta ?? Timer.system.delta;
     this._current?.update(this._currentTime);
   }
@@ -249,7 +255,7 @@ export class Tween {
   resume(): this {
     if (this._playing && this._paused) {
       this._paused = false;
-      Timer.system.loop(1, this._update, this);
+      Timer.system.frameLoop(1, this._update, this);
     }
     return this;
   }
