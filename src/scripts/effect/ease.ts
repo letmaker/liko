@@ -4,6 +4,7 @@ const PI_2 = Math.PI / 2;
 const BOUNCE_FACTOR = 7.5625;
 const BACK_FACTOR = 1.70158;
 const BACK_FACTOR_INOUT = BACK_FACTOR * 1.525;
+const JELLY_FACTOR = 6.9813172;
 
 type EaseFunction = (amount: number) => number;
 
@@ -223,16 +224,16 @@ export const Ease: Record<string, EaseFunction> = {
     if (amount < 1 / 2.75) {
       return BOUNCE_FACTOR * amount * amount;
     }
-    const v = amount - 1.5 / 2.75;
     if (amount < 2 / 2.75) {
+      const v = amount - 1.5 / 2.75;
       return BOUNCE_FACTOR * v * v + 0.75;
     }
-    let v2 = v - 2.25 / 2.75;
-    if (v < 2.5 / 2.75) {
-      return BOUNCE_FACTOR * v2 * v2 + 0.9375;
+    if (amount < 2.5 / 2.75) {
+      const v = amount - 2.25 / 2.75;
+      return BOUNCE_FACTOR * v * v + 0.9375;
     }
-    v2 = v2 - 2.625 / 2.75;
-    return BOUNCE_FACTOR * v2 * v2 + 0.984375;
+    const v = amount - 2.625 / 2.75;
+    return BOUNCE_FACTOR * v * v + 0.984375;
   },
   /**
    * 反弹缓动
@@ -259,8 +260,8 @@ export const Ease: Record<string, EaseFunction> = {
    * 果冻效果
    */
   Jelly(amount: number): number {
-    if (amount < 0.5) return Math.sin(6.9813172 * Ease.SineIn(amount * 2));
-    return Math.sin(6.9813172 * (1 - Ease.SineOut((amount - 0.5) * 2)));
+    if (amount < 0.5) return Math.sin(JELLY_FACTOR * Ease.SineIn(amount * 2));
+    return Math.sin(JELLY_FACTOR * (1 - Ease.SineOut((amount - 0.5) * 2)));
   },
   /**
    * 冲撞反弹 0>1>0 QuarticOut>BounceOut
@@ -324,18 +325,18 @@ export const Ease: Record<string, EaseFunction> = {
     return Ease.Linear((amount - 0.5) * 2);
   },
   /**
-   * 抖动
+   * 抖动效果
    */
-  Shake(time: number): number {
-    if (time < 0.25) return Ease.Breathe(time * 4);
-    if (time < 0.5) return Ease.Breathe((time - 0.25) * 4);
-    if (time < 0.75) return Ease.Breathe((time - 0.5) * 4);
-    return Ease.Breathe((time - 0.75) * 4);
+  Shake(amount: number): number {
+    const decay = 1 - amount;
+    return Math.sin(amount * 30) * decay * decay;
   },
 };
 
 /**
  * 根据名称获取缓动函数
+ * @param name 缓动函数名称，必须是 Ease 对象中的一个键
+ * @returns 对应的缓动函数，如果未找到则返回 Linear 函数
  */
 export function getEase(name: string): EaseFunction {
   return Ease[name] || Ease.Linear;

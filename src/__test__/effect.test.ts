@@ -36,13 +36,19 @@ describe("Effect", () => {
     });
 
     it("应该能通过字符串设置ease属性", () => {
-      // 模拟Register.getEase
-      //   const mockEase = (t: number) => t * t;
-      //   vi.spyOn(window, "Register", "getEase").mockReturnValue({
-      //     getEase: () => mockEase,
-      //   } as any);
-      //   effect.ease = "quadIn";
-      //   expect(effect.ease).toBe(mockEase);
+      // 使用字符串设置ease属性
+      effect.ease = "QuadIn";
+
+      // 验证ease属性是否正确设置为对应的缓动函数
+      expect(effect.ease).toBe(Ease.QuadIn);
+
+      // 测试另一个缓动函数
+      effect.ease = "BounceOut";
+      expect(effect.ease).toBe(Ease.BounceOut);
+
+      // 测试默认情况（无效的缓动名称应该返回Linear）
+      effect.ease = "NonExistentEase";
+      expect(effect.ease).toBe(Ease.Linear);
     });
   });
 
