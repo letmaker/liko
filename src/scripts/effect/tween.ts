@@ -36,15 +36,13 @@ interface TweenOption {
 
 /**
  * 缓动动画管理类
- *
- * 用于创建和管理对象属性的平滑过渡动画
+ * 用于创建和管理对象属性的平滑过渡动画，结束时会自动销毁。
  */
 export class Tween {
   private static _list: Tween[] = [];
 
   /**
    * 从目标对象当前状态缓动到指定状态
-   *
    * @param options - 动画参数，设置label标签时会自动清除相同label的动画
    * @returns 新创建的Tween实例
    */
@@ -61,7 +59,6 @@ export class Tween {
 
   /**
    * 从指定状态缓动到目标对象当前状态
-   *
    * @param options - 动画参数，设置label标签时会自动清除相同label的动画
    * @returns 新创建的Tween实例
    */
@@ -78,7 +75,6 @@ export class Tween {
 
   /**
    * 清理指定标签的动画
-   *
    * @param label - 要清理的动画标签
    */
   static clear(label: string) {
@@ -90,20 +86,47 @@ export class Tween {
     }
   }
 
+  /**
+   * 清理所有动画实例
+   */
+  static clearAll() {
+    // 创建副本以避免在迭代过程中修改数组
+    const list = [...Tween._list];
+    for (const tween of list) {
+      tween.destroy();
+    }
+    Tween._list.length = 0;
+  }
+
+  // @testable
   private _effects: Array<Effect> = [];
   private _current?: Effect;
+  private _currentTime = 0;
   private _playing = false;
+  private _paused = false;
   private _destroyed = false;
+
   private _resolve?: (value: void | PromiseLike<void>) => void;
   private _onAllComplete?: () => void;
-  private _onDestroy?: () => void;
+
+  /** 是否已销毁 */
+  get destroyed(): boolean {
+    return this._destroyed;
+  }
+  /** 是否正在播放中 */
+  get playing(): boolean {
+    return this._playing;
+  }
+  /** 是否已暂停 */
+  get paused(): boolean {
+    return this._paused;
+  }
 
   /** 动画标签，用于标识和管理动画 */
   label?: string;
 
   /**
    * 立即设置目标对象的属性值
-   *
    * @param target - 目标对象
    * @param props - 要设置的属性集合
    * @returns 当前Tween实例
@@ -118,7 +141,6 @@ export class Tween {
 
   /**
    * 从目标对象当前状态缓动到指定状态
-   *
    * @param options - 动画参数
    * @returns 当前Tween实例
    */
@@ -128,7 +150,6 @@ export class Tween {
 
   /**
    * 从指定状态缓动到目标对象当前状态
-   *
    * @param options - 动画参数
    * @returns 当前Tween实例
    */
@@ -138,7 +159,6 @@ export class Tween {
 
   /**
    * 添加缓动效果到队列
-   *
    * @param isTo - 是否为to动画
    * @param options - 动画参数
    * @returns 当前Tween实例
@@ -161,33 +181,7 @@ export class Tween {
     else effect.from = options.props;
 
     this._effects.push(effect);
-    if (!this._current) {
-      this._next();
-    }
     return this;
-  }
-
-  /**
-   * 开始播放缓动队列
-   */
-  play(): Promise<void> {
-    return new Promise((resolve) => {
-      if (!this._destroyed && !this._playing) {
-        this._resolve = resolve;
-        this._playing = true;
-        this._next();
-        Timer.system.loop(1, this._update, this);
-      }
-    });
-  }
-
-  /**
-   * 更新当前缓动效果
-   */
-  private _update() {
-    if (this._playing) {
-      this._current?.update(Timer.system.delta);
-    }
   }
 
   /**
@@ -212,13 +206,62 @@ export class Tween {
   }
 
   /**
-   * 停止缓动队列，可通过play继续播放
-   *
+   * 开始播放缓动队列
+   * @returns 返回一个Promise，当所有动画完成时解析
+   */
+  play(): Promise<void> {
+    if (this._destroyed || this._playing) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      this._currentTime = 0;
+      this._paused = false;
+      this._resolve = resolve;
+      this._playing = true;
+      this._next();
+      Timer.system.loop(1, this._update, this);
+    });
+  }
+
+  /**
+   * 更新当前缓动效果
+   */
+  protected _update(delta?: number) {
+    this._currentTime += delta ?? Timer.system.delta;
+    this._current?.update(this._currentTime);
+  }
+
+  /**
+   * 暂停缓动队列，可通过resume恢复播放
    * @returns 当前Tween实例
    */
-  stop(): Tween {
+  pause(): this {
+    if (this._playing && !this._paused) {
+      this._paused = true;
+      Timer.system.clear(this._update, this);
+    }
+    return this;
+  }
+
+  /**
+   * 恢复已暂停的缓动队列
+   * @returns 当前Tween实例
+   */
+  resume(): this {
+    if (this._playing && this._paused) {
+      this._paused = false;
+      Timer.system.loop(1, this._update, this);
+    }
+    return this;
+  }
+
+  /**
+   * 停止缓动队列，可通过play继续播放
+   * @returns 当前Tween实例
+   */
+  stop(): this {
     if (this._playing) {
       this._playing = false;
+      this._paused = false; // 重置暂停状态
       Timer.system.clear(this._update, this);
     }
     return this;
@@ -228,44 +271,30 @@ export class Tween {
    * 销毁整个缓动队列，销毁后不可再用
    */
   destroy(): void {
-    if (!this._destroyed) {
-      this._destroyed = true;
-      this.stop();
+    if (this._destroyed) return;
 
-      this._effects.length = 0;
-      this._current = undefined;
+    this._destroyed = true;
+    this.stop();
 
-      // 清理队列
-      for (let i = 0; i < Tween._list.length; i++) {
-        const tween = Tween._list[i];
-        if (tween === this) {
-          Tween._list.splice(i, 1);
-          break;
-        }
-      }
-      if (this._onDestroy) this._onDestroy();
+    this._effects.length = 0;
+    this._current = undefined;
+    this._resolve = undefined;
+    this._onAllComplete = undefined;
+
+    // 清理队列
+    const index = Tween._list.indexOf(this);
+    if (index !== -1) {
+      Tween._list.splice(index, 1);
     }
   }
 
   /**
    * 设置整个缓动队列结束时的回调
-   *
-   * @param callBack - 结束回调函数
+   * @param callback - 结束回调函数
    * @returns 当前Tween实例
    */
-  onAllComplete(callBack: () => void): Tween {
-    this._onAllComplete = callBack;
-    return this;
-  }
-
-  /**
-   * 设置缓动队列被销毁时的回调
-   *
-   * @param callBack - 销毁回调函数
-   * @returns 当前Tween实例
-   */
-  onDestroy(callBack: () => void): Tween {
-    this._onDestroy = callBack;
+  onAllComplete(callback: () => void): this {
+    this._onAllComplete = callback;
     return this;
   }
 }
