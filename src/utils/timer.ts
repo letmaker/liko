@@ -238,6 +238,10 @@ export class Timer {
     this._paused = false;
   }
 
+  /**
+   * 更新计时器
+   * @param currTime 当前时间，单位为秒
+   */
   update(currTime: number = Timer.system.currentTime): void {
     if (this._paused || this._destroyed) {
       this.delta = 0;
