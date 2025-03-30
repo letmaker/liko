@@ -1,3 +1,4 @@
+import { EventType } from "../../const";
 import type { Node } from "../../nodes/node";
 import { BatchGroup } from "../batch/batch-group";
 
@@ -6,7 +7,7 @@ export function getBatchGroupFromCache(node: Node): BatchGroup {
   let batchGroup = groups.get(node);
   if (!batchGroup) {
     batchGroup = new BatchGroup();
-    node.on("destroyed", () => batchGroup?.reset());
+    node.on(EventType.destroyed, () => batchGroup?.reset());
     groups.set(node, batchGroup);
   }
   return batchGroup;

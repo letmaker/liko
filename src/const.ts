@@ -32,6 +32,8 @@ export enum EventType {
   addToStage = "addToStage",
   /** 节点从节点树移除后，由 node 派发 */
   removed = "removed",
+  /** 节点被销毁时，由 node 派发 */
+  destroyed = "destroyed",
 
   /** 节点更改大小时，由 node 派发 */
   resize = "resize",
@@ -59,6 +61,11 @@ export enum EventType {
   keyup = "keyup",
   /** 发生滚轮事件时，由 stage 派发 */
   wheel = "wheel",
+
+  /** 碰撞开始时，由 physics 派发 */
+  collisionStart = "collisionStart",
+  /** 碰撞结束时，由 physics 派发 */
+  collisionEnd = "collisionEnd",
 
   /** 动画开始播放时，由 animation、spriteAnimation 等动画类派发 */
   played = "played",
