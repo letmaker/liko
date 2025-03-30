@@ -67,12 +67,16 @@ export enum EventType {
   /** 碰撞结束时，由 physics 派发 */
   collisionEnd = "collisionEnd",
 
-  /** 动画开始播放时，由 animation、spriteAnimation 等动画类派发 */
+  /** 动画开始播放时，由动画类派发 */
   played = "played",
-  /** 动画停止播放时，由 animation、spriteAnimation 等动画类派发 */
+  /** 动画停止播放时，由动画类派发 */
   stopped = "stopped",
-  /** 动画播放结束时，由 animation、spriteAnimation 等动画类派发  */
+  /** 动画播放结束时，由动画类派发  */
   ended = "ended",
+  /** 动画暂停，由动画类派发 */
+  paused = "paused",
+  /** 动画恢复，由动画类派发 */
+  resumed = "resumed",
 
   /** 单个资源加载完毕时，由 sprite、animation 等需要加载的节点，及 loaderManager 派发 */
   loaded = "loaded",

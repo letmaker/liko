@@ -21,6 +21,7 @@ interface IAnimationPrivateProps extends INodePrivateProps {
   url: string;
   playing: boolean;
   currentTime: number;
+  paused: boolean;
 }
 
 interface IAnimationOptions extends INodeOptions {
@@ -52,6 +53,11 @@ export class Scene extends Node implements IScene {
   /** 是否正在播放 */
   get playing(): boolean {
     return this.pp.playing;
+  }
+
+  /** 是否暂停 */
+  get paused(): boolean {
+    return this.pp.paused;
   }
 
   /** 当前动画路径 */
@@ -130,6 +136,30 @@ export class Scene extends Node implements IScene {
       this.stage?.timer.frameLoop(1, this.update, this);
       this.update();
       this.emit(EventType.played);
+    }
+  }
+
+  /**
+   * 暂停播放
+   */
+  pause(): void {
+    const pp = this.pp;
+    if (pp.playing && !pp.paused) {
+      pp.paused = true;
+      this.stage?.timer.clear(this.update, this);
+      this.emit(EventType.paused);
+    }
+  }
+
+  /**
+   * 恢复播放
+   */
+  resume(): void {
+    const pp = this.pp;
+    if (!pp.playing && pp.paused) {
+      pp.paused = true;
+      this.stage?.timer.frameLoop(1, this.update, this);
+      this.emit(EventType.resumed);
     }
   }
 
