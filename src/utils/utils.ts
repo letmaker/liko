@@ -1,6 +1,6 @@
 import type { IScriptData } from "../nodes/node";
 import type { ScriptBase } from "../scripts/script-base";
-import { getRegScript } from "./register";
+import { createScriptInstance } from "./register";
 import { Timer } from "./timer";
 
 /** 临时画布 */
@@ -52,7 +52,7 @@ export function cloneJson(json: Record<string, unknown>): Record<string, unknown
 
 /** 根据脚本数据创建脚本 */
 export function createScript(json: IScriptData): ScriptBase | undefined {
-  const script = getRegScript(json.props.script);
+  const script = createScriptInstance(json.props.script);
   if (script) {
     script.id = json.id;
     script.setProps(json.props);

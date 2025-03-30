@@ -3,31 +3,31 @@ import type { Filter } from "../render/filter/filter";
 import type { ScriptBase } from "../scripts/script-base";
 
 /**
- * 注册器相关工具函数
+ * 注册器相关工具函数，用于管理脚本、节点和滤镜的注册与实例化
  */
 
-/** 脚本映射 */
+/** 存储已注册的脚本类型映射 */
 const scriptMap: Record<string, typeof ScriptBase> = {};
-/** 节点映射 */
+/** 存储已注册的节点类型映射 */
 const nodeMap: Record<string, typeof Node> = {};
-/** 滤镜映射 */
+/** 存储已注册的滤镜类型映射 */
 const filterMap: Record<string, typeof Filter> = {};
 
 /**
- * 注册脚本
- * @param name 脚本名称
- * @param script 脚本类
+ * 注册脚本类
+ * @param name - 脚本的唯一标识名称
+ * @param script - 要注册的脚本类
  */
 export function regScript(name: string, script: typeof ScriptBase): void {
   scriptMap[name] = script;
 }
 
 /**
- * 根据名称获得脚本类
- * @param name 脚本名称
- * @returns 脚本类
+ * 根据名称创建脚本实例
+ * @param name - 已注册的脚本名称
+ * @returns 创建的脚本实例，如果未找到对应名称则返回 undefined
  */
-export function getRegScript(name: string): ScriptBase | undefined {
+export function createScriptInstance(name: string): ScriptBase | undefined {
   const Class: any = scriptMap[name];
   if (Class === undefined) {
     console.error(`can not create script: ${name}`);
@@ -37,20 +37,20 @@ export function getRegScript(name: string): ScriptBase | undefined {
 }
 
 /**
- * 注册节点
- * @param name 节点名称
- * @param node 节点类
+ * 注册节点类
+ * @param name - 节点的唯一标识名称
+ * @param node - 要注册的节点类
  */
 export function regNode(name: string, node: typeof Node): void {
   nodeMap[name] = node;
 }
 
 /**
- * 根据名称获得节点实例
- * @param name 节点名称
- * @returns 节点实例
+ * 根据名称创建节点实例
+ * @param name - 已注册的节点名称
+ * @returns 创建的节点实例，如果未找到对应名称则返回 undefined
  */
-export function getRegNode(name: string): Node | undefined {
+export function createNodeInstance(name: string): Node | undefined {
   const Class: any = nodeMap[name];
   if (Class === undefined) {
     console.error(`can not create node: ${name}`);
@@ -60,20 +60,20 @@ export function getRegNode(name: string): Node | undefined {
 }
 
 /**
- * 注册滤镜
- * @param name 滤镜名称
- * @param node 滤镜类
+ * 注册滤镜类
+ * @param name - 滤镜的唯一标识名称
+ * @param node - 要注册的滤镜类
  */
 export function regFilter(name: string, node: typeof Filter): void {
   filterMap[name] = node;
 }
 
 /**
- * 根据名称获得滤镜实例
- * @param name 滤镜名称
- * @returns 滤镜实例
+ * 根据名称创建滤镜实例
+ * @param name - 已注册的滤镜名称
+ * @returns 创建的滤镜实例，如果未找到对应名称则返回 undefined
  */
-export function getRegFilter(name: string): Filter | undefined {
+export function createFilterInstance(name: string): Filter | undefined {
   const Class: any = filterMap[name];
   if (Class === undefined) {
     console.error(`can not create filter: ${name}`);

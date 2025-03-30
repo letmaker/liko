@@ -1,7 +1,7 @@
 import { EventType } from "../const";
 import { loader } from "../loader";
 import { RegNode } from "../utils/decorators";
-import { getRegNode } from "../utils/register";
+import { createNodeInstance } from "../utils/register";
 import { getUID } from "../utils/utils";
 import type { INodeData, INodeOptions } from "./node";
 import { type INodePrivateProps, Node } from "./node";
@@ -138,25 +138,26 @@ export class Scene extends Node implements IScene {
    */
   update(): void {
     if (this.enabled) {
+      const delta = this.stage!.timer.delta * this.timeScale;
       // 累加当前时间，并更新动画或场景 timer 和 脚本
-      this.pp.currentTime += this.stage!.timer.delta * this.timeScale;
+      this.pp.currentTime += delta;
       // 遍历所有子节点，执行脚本
-      this.__updateScripts(this);
+      this.__updateScripts(this, delta);
     }
   }
 
-  private __updateScripts(node: Node) {
+  private __updateScripts(node: Node, delta: number) {
     if (node.enabled) {
       const { scripts } = node;
       if (scripts.length) {
         for (const script of scripts) {
-          script.update(this.pp.currentTime);
+          script.update(delta);
         }
       }
       const { children } = node;
       if (children.length) {
         for (const child of children) {
-          this.__updateScripts(child);
+          this.__updateScripts(child, delta);
         }
       }
     }
@@ -190,7 +191,7 @@ export class Scene extends Node implements IScene {
   clone(id: string): Node | undefined {
     const data = this.__findNodeData(id, this.json);
     if (data) {
-      const node = getRegNode(data.type);
+      const node = createNodeInstance(data.type);
       if (node) {
         node.fromJson(data);
         node.id = getUID();

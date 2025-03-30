@@ -10,7 +10,7 @@ import { NodeCache } from "../render/utils/node-cache";
 import type { ScriptBase } from "../scripts/script-base";
 import { Color, type ColorData } from "../utils/color";
 import { Dispatcher } from "../utils/dispatcher";
-import { getRegFilter, getRegNode } from "../utils/register";
+import { createFilterInstance, createNodeInstance } from "../utils/register";
 import { createScript, getUID } from "../utils/utils";
 import type { IScene } from "./scene";
 import type { Stage } from "./stage";
@@ -843,7 +843,7 @@ export abstract class Node {
     const { children } = json;
     if (children) {
       for (const data of children) {
-        const child = getRegNode(data.type);
+        const child = createNodeInstance(data.type);
         if (child) {
           this.addChild(child);
           child.fromJson(data);
@@ -894,7 +894,7 @@ export abstract class Node {
     this.destroyFilters();
     if (filters) {
       for (const data of filters) {
-        const filter = getRegFilter(data.type);
+        const filter = createFilterInstance(data.type);
         if (filter) {
           this.addFilter(filter);
           filter.setProps(data.props);
