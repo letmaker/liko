@@ -4,7 +4,7 @@ import type { Bounds } from "../math/bounds";
 import { SpriteObject } from "../render/render/sprite-object";
 import type { Texture } from "../resource/texture";
 import { RegNode } from "../utils/decorators";
-import type { IAnimation } from "./animation";
+import type { IAnimation } from "./scene";
 import type { INodeOptions } from "./node";
 import { type INodePrivateProps, Node } from "./node";
 import type { IRenderable } from "./sprite";

@@ -12,7 +12,7 @@ import { Color, type ColorData } from "../utils/color";
 import { Dispatcher } from "../utils/dispatcher";
 import { Register } from "../utils/register";
 import { createScript, getUID } from "../utils/utils";
-import type { IAnimation, IScene } from "./animation";
+import type { IAnimation, IScene } from "./scene";
 import type { Stage } from "./stage";
 
 /** 节点数据接口 */
@@ -171,7 +171,6 @@ export abstract class Node {
       this.destroyFilters();
       this.destroyChildren();
       this.offAll();
-      this.root?.offAll(this);
       this.scene?.offAll(this);
       this.stage?.offAll(this);
       this.stage?.timer.clearAll(this);
@@ -191,13 +190,8 @@ export abstract class Node {
 
   /** 场景节点引用，只有被添加到场景后，此属性才有值（使用时尽量引用成局部变量，减少遍历获取） */
   get scene(): IScene | undefined {
+    // TODO 这里看看是不是继续递归？还是类似 stage 一样，存储起来
     if (this.pp.parent) return this.pp.parent.scene;
-    return undefined;
-  }
-
-  /** 动画根节点引用，只有被添加到 Scene 或者 Animation 后，此属性才有值（使用时尽量引用成局部变量，减少遍历获取） */
-  get root(): IAnimation | undefined {
-    if (this.pp.parent) return this.pp.parent.root;
     return undefined;
   }
 
@@ -529,6 +523,7 @@ export abstract class Node {
       const index = this.pp.children.indexOf(child);
       if (index !== -1) {
         child.pp.parent = undefined;
+        child.pp.stage = undefined;
         this.pp.children.splice(index, 1);
         child.emit(EventType.removed, this);
         this.onDirty(DirtyType.child);

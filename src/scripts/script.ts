@@ -1,4 +1,4 @@
-import type { IAnimation, IScene } from "../nodes/animation";
+import type { IAnimation, IScene } from "../nodes/scene";
 import type { Node } from "../nodes/node";
 import type { Stage } from "../nodes/stage";
 
@@ -75,11 +75,6 @@ export abstract class Script {
     return this._target?.scene;
   }
 
-  /** target 的 root（动画根节点） 引用 （使用时尽量引用成局部变量，减少遍历获取） */
-  get root(): IAnimation | undefined {
-    return this._target?.root;
-  }
-
   /**
    * 销毁脚本，脚本被销毁后，不再可用，回调 onDestroy
    * 脚本销毁时，target、root、scene、stage、timer 上的所有监听都会被自动取消，如果还监听 Timer.system 需要自己手动取消
@@ -89,7 +84,6 @@ export abstract class Script {
       this._destroyed = true;
       this._enabled = false;
       this._target?.offAll(this);
-      this.root?.offAll(this);
       this.scene?.offAll(this);
       this.stage?.offAll(this);
       this.stage?.timer.clearAll(this);
