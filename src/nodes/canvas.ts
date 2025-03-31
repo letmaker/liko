@@ -48,7 +48,7 @@ export class Canvas extends Node implements IRenderable {
 
   /** 渲染纹理 */
   get texture(): Texture {
-    if (this.pp.changed) this.__drawCanvas();
+    if (this.pp.changed) this._$drawCanvas();
     return this.pp.texture;
   }
 
@@ -74,8 +74,8 @@ export class Canvas extends Node implements IRenderable {
   rect(x: number, y: number, width: number, height: number): this {
     console.assert(width >= 0 && height >= 0);
     this.pp.cmd.push({ type: "rect", params: [x, y, width, height] });
-    this.__addPoint(x, y);
-    this.__addPoint(x + width, y + height);
+    this._$addPoint(x, y);
+    this._$addPoint(x + width, y + height);
     return this;
   }
 
@@ -95,8 +95,8 @@ export class Canvas extends Node implements IRenderable {
     radii?: number | DOMPointInit | (number | DOMPointInit)[],
   ): this {
     this.pp.cmd.push({ type: "roundRect", params: [x, y, width, height, radii] });
-    this.__addPoint(x, y);
-    this.__addPoint(x + width, y + height);
+    this._$addPoint(x, y);
+    this._$addPoint(x + width, y + height);
     return this;
   }
 
@@ -108,8 +108,8 @@ export class Canvas extends Node implements IRenderable {
    */
   circle(x: number, y: number, radius: number): this {
     this.pp.cmd.push({ type: "arc", params: [x, y, radius, 0, PI2] });
-    this.__addPoint(x - radius, y - radius);
-    this.__addPoint(x + radius, y + radius);
+    this._$addPoint(x - radius, y - radius);
+    this._$addPoint(x + radius, y + radius);
     return this;
   }
 
@@ -127,8 +127,8 @@ export class Canvas extends Node implements IRenderable {
       type: "ellipse",
       params: [x, y, radiusX, radiusY, 0, startAngle, endAngle],
     });
-    this.__addPoint(x - radiusX, y - radiusY);
-    this.__addPoint(x + radiusX, y + radiusY);
+    this._$addPoint(x - radiusX, y - radiusY);
+    this._$addPoint(x + radiusX, y + radiusY);
     return this;
   }
 
@@ -170,8 +170,8 @@ export class Canvas extends Node implements IRenderable {
       throw new Error("arguments length error");
     }
 
-    this.__addPoint(dx, dy);
-    this.__addPoint(dx + width, dy + height);
+    this._$addPoint(dx, dy);
+    this._$addPoint(dx + width, dy + height);
 
     return this;
   }
@@ -195,8 +195,8 @@ export class Canvas extends Node implements IRenderable {
       const width = img.width * scale;
       const height = img.height * scale;
       this.pp.cmd.push({ type: "drawImage", params: [img, dx, dy, width, height] });
-      this.__addPoint(dx, dy);
-      this.__addPoint(dx + width, dy + height);
+      this._$addPoint(dx, dy);
+      this._$addPoint(dx + width, dy + height);
 
       this.pp.changed = true;
     };
@@ -211,7 +211,7 @@ export class Canvas extends Node implements IRenderable {
    */
   moveTo(x: number, y: number): this {
     this.pp.cmd.push({ type: "moveTo", params: [x, y] });
-    this.__addPoint(x, y);
+    this._$addPoint(x, y);
     return this;
   }
 
@@ -222,7 +222,7 @@ export class Canvas extends Node implements IRenderable {
    */
   lineTo(x: number, y: number): this {
     this.pp.cmd.push({ type: "lineTo", params: [x, y] });
-    this.__addPoint(x, y);
+    this._$addPoint(x, y);
     return this;
   }
 
@@ -236,8 +236,8 @@ export class Canvas extends Node implements IRenderable {
    */
   arc(x: number, y: number, radius: number, startAngle: number, endAngle: number): this {
     this.pp.cmd.push({ type: "arc", params: [x, y, radius, startAngle, endAngle] });
-    this.__addPoint(x - radius, y - radius);
-    this.__addPoint(x + radius, y + radius);
+    this._$addPoint(x - radius, y - radius);
+    this._$addPoint(x + radius, y + radius);
     return this;
   }
 
@@ -251,8 +251,8 @@ export class Canvas extends Node implements IRenderable {
    */
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): this {
     this.pp.cmd.push({ type: "arcTo", params: [x1, y1, x2, y2, radius] });
-    this.__addPoint(x1, y1);
-    this.__addPoint(x2, y2);
+    this._$addPoint(x1, y1);
+    this._$addPoint(x2, y2);
     return this;
   }
 
@@ -265,8 +265,8 @@ export class Canvas extends Node implements IRenderable {
    */
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): this {
     this.pp.cmd.push({ type: "quadraticCurveTo", params: [cpx, cpy, x, y] });
-    this.__addPoint(x, y);
-    this.__addPoint(cpx, cpy);
+    this._$addPoint(x, y);
+    this._$addPoint(cpx, cpy);
     return this;
   }
 
@@ -281,9 +281,9 @@ export class Canvas extends Node implements IRenderable {
    */
   bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): this {
     this.pp.cmd.push({ type: "bezierCurveTo", params: [cp1x, cp1y, cp2x, cp2y, x, y] });
-    this.__addPoint(x, y);
-    this.__addPoint(cp2x, cp2y);
-    this.__addPoint(cp2x, cp2y);
+    this._$addPoint(x, y);
+    this._$addPoint(cp2x, cp2y);
+    this._$addPoint(cp2x, cp2y);
     return this;
   }
 
@@ -330,7 +330,7 @@ export class Canvas extends Node implements IRenderable {
     return this;
   }
 
-  private __fill(color: string | CanvasGradient | CanvasPattern) {
+  private _$fill(color: string | CanvasGradient | CanvasPattern) {
     this.pp.ctx.fillStyle = color;
     this.pp.ctx.fill();
   }
@@ -366,7 +366,7 @@ export class Canvas extends Node implements IRenderable {
     return this;
   }
 
-  private __stroke(
+  private _$stroke(
     color: string | CanvasGradient | CanvasPattern,
     lineWidth?: number,
     lineCap?: CanvasLineCap,
@@ -387,14 +387,14 @@ export class Canvas extends Node implements IRenderable {
     ctx.stroke();
   }
 
-  private __drawCanvas() {
+  private _$drawCanvas() {
     const pp = this.pp;
     if (pp.changed) {
       pp.changed = false;
       this.onDirty(DirtyType.texture);
       if (pp.cmd.length) {
         // 根据 bounds，重置画布大小
-        this.__resizeCanvas();
+        this._$resizeCanvas();
 
         // 开始绘制
         // TODO 为啥必须用 reset
@@ -403,9 +403,9 @@ export class Canvas extends Node implements IRenderable {
         pp.ctx.translate(-pp.offset.x, -pp.offset.y);
         for (const cmd of pp.cmd) {
           if (cmd.type === "fill") {
-            this.__fill.apply(this, cmd.params);
+            this._$fill.apply(this, cmd.params);
           } else if (cmd.type === "stroke") {
-            this.__stroke.apply(this, cmd.params);
+            this._$stroke.apply(this, cmd.params);
           } else {
             const fun = (CanvasRenderingContext2D.prototype as any)[cmd.type];
             fun.apply(pp.ctx, cmd.params);
@@ -415,7 +415,7 @@ export class Canvas extends Node implements IRenderable {
     }
   }
 
-  private __resizeCanvas() {
+  private _$resizeCanvas() {
     const pp = this.pp;
 
     // 根据 bounds，重置画布大小
@@ -460,7 +460,7 @@ export class Canvas extends Node implements IRenderable {
     }
   }
 
-  private __addPoint(x: number, y: number) {
+  private _$addPoint(x: number, y: number) {
     const bounds = this.pp.bounds;
     if (x < bounds.minX) bounds.minX = x;
     else if (x > bounds.maxX) bounds.maxX = x;
@@ -475,13 +475,13 @@ export class Canvas extends Node implements IRenderable {
 
   getLocalBounds(): Bounds {
     // 获取 bounds 之前，先绘制
-    if (this.pp.changed) this.__drawCanvas();
+    if (this.pp.changed) this._$drawCanvas();
     return super.getLocalBounds();
   }
 
   getWorldBounds(): Bounds {
     // 获取 bounds 之前，先绘制
-    if (this.pp.changed) this.__drawCanvas();
+    if (this.pp.changed) this._$drawCanvas();
     return super.getWorldBounds();
   }
 }

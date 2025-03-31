@@ -108,7 +108,7 @@ export class Scene extends Node implements IScene {
    */
   async loadAllAssets(json: INodeData) {
     const res: string[] = [];
-    this.__collectAsset(json, res);
+    this._$collectAsset(json, res);
     if (res.length) {
       const all = [];
       for (const url of res) {
@@ -118,11 +118,11 @@ export class Scene extends Node implements IScene {
     }
   }
 
-  private __collectAsset(data: INodeData, res: string[]) {
+  private _$collectAsset(data: INodeData, res: string[]) {
     if (data.props.url) res.push(data.props.url as string);
     if (data.children?.length) {
       for (const child of data.children) {
-        this.__collectAsset(child, res);
+        this._$collectAsset(child, res);
       }
     }
   }
@@ -172,11 +172,11 @@ export class Scene extends Node implements IScene {
       // 累加当前时间，并更新动画或场景 timer 和 脚本
       this.pp.currentTime += delta;
       // 遍历所有子节点，执行脚本
-      this.__updateScripts(this, delta);
+      this._$updateScripts(this, delta);
     }
   }
 
-  private __updateScripts(node: Node, delta: number) {
+  private _$updateScripts(node: Node, delta: number) {
     if (node.enabled) {
       const { scripts } = node;
       if (scripts.length) {
@@ -187,7 +187,7 @@ export class Scene extends Node implements IScene {
       const { children } = node;
       if (children.length) {
         for (const child of children) {
-          this.__updateScripts(child, delta);
+          this._$updateScripts(child, delta);
         }
       }
     }
@@ -219,7 +219,7 @@ export class Scene extends Node implements IScene {
    * @returns 返回被 clone 的节点实例
    */
   clone(id: string): Node | undefined {
-    const data = this.__findNodeData(id, this.json);
+    const data = this._$findNodeData(id, this.json);
     if (data) {
       const node = createNodeInstance(data.type);
       if (node) {
@@ -231,12 +231,12 @@ export class Scene extends Node implements IScene {
     return undefined;
   }
 
-  private __findNodeData(id: string, data?: INodeData): INodeData | undefined {
+  private _$findNodeData(id: string, data?: INodeData): INodeData | undefined {
     if (!data) return undefined;
     if (data.id === id) return data;
     if (data.children?.length) {
       for (const child of data.children) {
-        const node = this.__findNodeData(id, child);
+        const node = this._$findNodeData(id, child);
         if (node) return node;
       }
     }

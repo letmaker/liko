@@ -372,17 +372,17 @@ export abstract class Node {
     const pp = this.pp;
     // 矩阵发生变化时，才重新计算世界矩阵
     if (pp.dirty & DirtyType.transform) {
-      const parentWorldMatrix = this.__getParentWorldMatrix(this, pp.worldMatrix.identity());
+      const parentWorldMatrix = this._$getParentWorldMatrix(this, pp.worldMatrix.identity());
       parentWorldMatrix.append(this.localMatrix);
     }
     return pp.worldMatrix;
   }
 
-  private __getParentWorldMatrix(target: Node, parentTransform: Matrix) {
+  private _$getParentWorldMatrix(target: Node, parentTransform: Matrix) {
     const parent = target.parent;
 
     if (parent) {
-      this.__getParentWorldMatrix(parent, parentTransform);
+      this._$getParentWorldMatrix(parent, parentTransform);
       parentTransform.append(parent.localMatrix);
     }
 
@@ -398,30 +398,30 @@ export abstract class Node {
       pp.dirty |= type;
       if (type === DirtyType.transform || type === DirtyType.color) {
         // 子节点标脏
-        pp.children.length && this.__dirtyChildren(type);
+        pp.children.length && this._$dirtyChildren(type);
       } else if (type === DirtyType.child) {
         // 父节点标脏
-        return this.__dirtyParent(type);
+        return this._$dirtyParent(type);
       }
-      this.__dirtyParent(DirtyType.parent);
+      this._$dirtyParent(DirtyType.parent);
     }
   }
 
   // 子节点影响父节点
-  private __dirtyParent(type: DirtyType) {
+  private _$dirtyParent(type: DirtyType) {
     const parent = this.parent;
     if (parent && (parent.pp.dirty & type) === 0) {
       parent.pp.dirty |= type;
-      parent.__dirtyParent(type);
+      parent._$dirtyParent(type);
     }
   }
 
   // 父节点影响子节点
-  private __dirtyChildren(type: DirtyType) {
+  private _$dirtyChildren(type: DirtyType) {
     for (const child of this.children) {
       if ((child.pp.dirty & type) === 0) {
         child.pp.dirty |= type;
-        child.children.length && child.__dirtyChildren(type);
+        child.children.length && child._$dirtyChildren(type);
       }
     }
   }
@@ -439,17 +439,17 @@ export abstract class Node {
     child.pp.parent = this;
     if (index !== undefined) pp.children.splice(index, 0, child);
     else pp.children.push(child);
-    if (pp.stage) this.__addToStage(child, pp.stage);
+    if (pp.stage) this._$addToStage(child, pp.stage);
     child.emit(EventType.added, this);
     this.onDirty(DirtyType.child);
     return child;
   }
 
-  private __addToStage(child: Node, stage: Stage) {
+  private _$addToStage(child: Node, stage: Stage) {
     child.pp.stage = stage;
     child.emit(EventType.addToStage, stage);
     for (const node of child.children) {
-      this.__addToStage(node, stage);
+      this._$addToStage(node, stage);
     }
   }
 
@@ -494,10 +494,10 @@ export abstract class Node {
     const ClassObj = !isString ? selector : undefined;
     const id = isString && selector.startsWith("#") ? selector.substring(1) : "";
     const label = id || ClassObj ? "" : (selector as string);
-    return this.__getChild(id, label, ClassObj, deep);
+    return this._$getChild(id, label, ClassObj, deep);
   }
 
-  private __getChild(id?: string, label?: string, ClassObj?: any, deep?: boolean): Node | undefined {
+  private _$getChild(id?: string, label?: string, ClassObj?: any, deep?: boolean): Node | undefined {
     const { children } = this;
     for (let i = 0, len = children.length; i < len; i++) {
       const child = children[i];
@@ -507,7 +507,7 @@ export abstract class Node {
     }
     if (deep) {
       for (let i = 0, len = children.length; i < len; i++) {
-        const child = children[i].__getChild(id, label, ClassObj, true);
+        const child = children[i]._$getChild(id, label, ClassObj, true);
         if (child) return child;
       }
     }
@@ -926,12 +926,12 @@ export abstract class Node {
     if (mouseMap[type]) {
       this.mouseEnable = true;
       this.mouseEnableChildren = true;
-      this.__mouseEnableParent();
+      this._$mouseEnableParent();
     }
     this.pp.event.on(type, listener, caller);
   }
 
-  private __mouseEnableParent() {
+  private _$mouseEnableParent() {
     let parent = this.parent;
     while (parent && !parent.mouseEnableChildren) {
       parent.mouseEnableChildren = true;
@@ -950,7 +950,7 @@ export abstract class Node {
     if (mouseMap[type]) {
       this.mouseEnable = true;
       this.mouseEnableChildren = true;
-      this.__mouseEnableParent();
+      this._$mouseEnableParent();
     }
     this.pp.event.once(type, listener, caller);
   }

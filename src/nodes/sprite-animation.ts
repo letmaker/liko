@@ -43,7 +43,7 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
     this.pp.frame = 0;
 
     this.setProps(options as Record<string, unknown>);
-    this.__renderFrame(this.pp.frame);
+    this._$renderFrame(this.pp.frame);
   }
 
   destroy(): void {
@@ -74,11 +74,11 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
   set frame(value) {
     if (this.pp.frame !== value) {
       this.pp.frame = value;
-      this.__renderFrame(value);
+      this._$renderFrame(value);
     }
   }
 
-  private __renderFrame(frame: number) {
+  private _$renderFrame(frame: number) {
     if (this.textures.length) {
       let index = frame;
       if (index >= this.textures.length) {
@@ -112,7 +112,7 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
       console.assert(textures.length > 0);
 
       this.textures = textures;
-      this.__renderFrame(this.pp.frame);
+      this._$renderFrame(this.pp.frame);
     }
     this.emit(EventType.loaded);
   }
@@ -131,7 +131,7 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
       this.playing = true;
       console.assert(this.stage !== undefined, "please add to stage first before play");
 
-      this.stage?.timer.loop(1 / this.frameRate, this.__update, this);
+      this.stage?.timer.loop(1 / this.frameRate, this._$update, this);
       this.emit(EventType.played);
     }
   }
@@ -142,12 +142,12 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
   stop() {
     if (this.playing) {
       this.playing = false;
-      this.stage?.timer.clear(this.__update, this);
+      this.stage?.timer.clear(this._$update, this);
       this.emit(EventType.stopped);
     }
   }
 
-  private __update() {
+  private _$update() {
     this.frame++;
   }
 

@@ -62,7 +62,7 @@ export class Text extends Node implements IRenderable {
 
   /** 渲染纹理 */
   get texture(): Texture {
-    if (this.pp.changed) this.__drawText();
+    if (this.pp.changed) this._$drawText();
     return this.pp.texture;
   }
 
@@ -231,7 +231,7 @@ export class Text extends Node implements IRenderable {
     // document.body.appendChild(pp.canvas);
   }
 
-  private __resetStyle() {
+  private _$resetStyle() {
     const pp = this.pp;
     const ctx = pp.ctx;
     ctx.textBaseline = "alphabetic";
@@ -241,9 +241,9 @@ export class Text extends Node implements IRenderable {
     ctx.strokeStyle = pp.strokeColor;
   }
 
-  private __measure() {
+  private _$measure() {
     const pp = this.pp;
-    this.__resetStyle();
+    this._$resetStyle();
 
     let maxWidth = 0;
     for (const text of this.pp.lines) {
@@ -268,17 +268,17 @@ export class Text extends Node implements IRenderable {
 
   getLocalBounds(): Bounds {
     // 获取 bounds 之前，先绘制
-    if (this.pp.changed) this.__drawText();
+    if (this.pp.changed) this._$drawText();
     return super.getLocalBounds();
   }
 
   getWorldBounds(): Bounds {
     // 获取 bounds 之前，先绘制
-    if (this.pp.changed) this.__drawText();
+    if (this.pp.changed) this._$drawText();
     return super.getWorldBounds();
   }
 
-  private __drawText() {
+  private _$drawText() {
     const pp = this.pp;
     if (pp.changed) {
       pp.changed = false;
@@ -286,13 +286,13 @@ export class Text extends Node implements IRenderable {
       pp.ctx.clearRect(0, 0, pp.canvas.width, pp.canvas.height);
 
       // 度量文本
-      const metrics = this.__measure();
+      const metrics = this._$measure();
       const scale = App.pixelRatio;
 
       // 根据大小，重置画布及 texture
-      this.__resizeCanvas(Math.ceil(this.textWidth * scale), Math.ceil(this.textHeight * scale));
+      this._$resizeCanvas(Math.ceil(this.textWidth * scale), Math.ceil(this.textHeight * scale));
       // 重置了 canvas 后，会丢失样式，这里重新设置一次
-      this.__resetStyle();
+      this._$resetStyle();
 
       const ctx = pp.ctx;
       const startX = pp.align === "left" ? 0 : pp.align === "right" ? pp.textWidth : pp.textWidth * 0.5;
@@ -328,7 +328,7 @@ export class Text extends Node implements IRenderable {
     }
   }
 
-  private __resizeCanvas(canvasWidth: number, canvasHeight: number) {
+  private _$resizeCanvas(canvasWidth: number, canvasHeight: number) {
     const pp = this.pp;
     const canvas = pp.canvas;
 
