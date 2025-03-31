@@ -1,42 +1,53 @@
+/** 匹配 RGBA 格式的正则表达式 */
 const RGBA_PATTERN = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/i;
+const RGB_PATTERN = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i;
 const HEX_PATTERN = /^(#|0x)([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i;
 
-/** 颜色类型 */
-export type ColorData = string | number;
+export type ColorHex = `#${string}` | `0x${string}`;
+export type ColorRGBA = `rgba(${number},${number},${number},${number})`;
+export type ColorRGB = `rgb(${number},${number},${number})`;
+export type ColorData = ColorHex | ColorRGBA | ColorRGB | number;
 
 /**
- * 支持的颜色格式：0xff0000,'rgba(0-255,0-255,0-255,0-1)','#rrggbb','0xrrggbb'
+ * 颜色类，用于处理和转换不同格式的颜色
+ * @remarks 支持的颜色格式：0xff0000, '#rrggbb', '0xrrggbb', 'rgb(0-255,0-255,0-255)', 'rgba(0-255,0-255,0-255,0-1)'
  */
 export class Color {
-  /** 默认颜色，请不要修改 */
-  static readonly Default = new Color();
+  /** 默认白色颜色实例，请不要修改 */
+  static readonly Default = new Color(0xffffff);
 
   private _color = new Float32Array([1, 1, 1, 1]);
-  private _value: ColorData = "";
+  private _value: ColorData = "#ffffff";
 
-  /** gpu 使用的颜色，不要手动修改 */
+  /** webGPU 使用的颜色值，ARGB 格式的整数 */
   argb = 0;
 
-  constructor(value: ColorData = "rgba(255,255,255,1)") {
-    this.value = value;
+  constructor(value?: ColorData) {
+    this.value = value ?? 0xffffff;
   }
 
   /**
-   * 传入的原始颜色值，支持 0xff0000,'rgba(0-255,0-255,0-255,0-1)','#rrggbb','0xrrggbb'
+   * 设置颜色值
+   * @param value - 支持的颜色格式：0xff0000, '#rrggbb', '0xrrggbb', 'rgb(0-255,0-255,0-255)', 'rgba(0-255,0-255,0-255,0-1)'
    */
   set value(value: ColorData) {
     if (this._value !== value) {
       this._value = value;
-      this._praseColor(value);
+      this._parseColor(value);
     }
   }
+
+  /** 获取原始颜色值 */
   get value(): ColorData {
     return this._value;
   }
 
-  private _praseColor(value: ColorData) {
-    let rgbaArray = [1, 1, 1, 1];
-    let [r, g, b, a] = rgbaArray;
+  /**
+   * 解析颜色值为内部表示
+   * @param value - 要解析的颜色值
+   */
+  private _parseColor(value: ColorData) {
+    let [r, g, b, a] = [0, 0, 0, 1];
     switch (typeof value) {
       case "number": {
         const uint = value;
@@ -47,18 +58,31 @@ export class Color {
       }
       case "string": {
         // 匹配 'rgba(r, g, b, a)'
-        const rgbaMatch = value.match(RGBA_PATTERN);
-        if (rgbaMatch) {
-          rgbaArray = rgbaMatch.slice(1, 5).map(Number);
-          a = rgbaArray[3];
-        } else {
+        if (value.startsWith("rgba")) {
+          const rgbaMatch = value.match(RGBA_PATTERN);
+          if (rgbaMatch) {
+            r = Number(rgbaMatch[1]);
+            g = Number(rgbaMatch[2]);
+            b = Number(rgbaMatch[3]);
+            a = Number(rgbaMatch[4]);
+          }
+        } else if (value.startsWith("rgb")) {
+          // 匹配 'rgb(r, g, b)'
+          const rgbMatch = value.match(RGB_PATTERN);
+          if (rgbMatch) {
+            r = Number(rgbMatch[1]);
+            g = Number(rgbMatch[2]);
+            b = Number(rgbMatch[3]);
+          }
+        } else if (value.startsWith("#") || value.startsWith("0x")) {
           // 匹配 "#rrggbb","0xrrggbb"
           const hexMatch = value.match(HEX_PATTERN);
           if (hexMatch) {
-            rgbaArray = hexMatch.map((hex) => Number.parseInt(hex, 16));
+            r = Number.parseInt(hexMatch[2], 16);
+            g = Number.parseInt(hexMatch[3], 16);
+            b = Number.parseInt(hexMatch[4], 16);
           }
         }
-        [r, g, b] = rgbaArray;
         break;
       }
     }
@@ -66,9 +90,10 @@ export class Color {
     this._color[0] = r / 255;
     this._color[1] = g / 255;
     this._color[2] = b / 255;
-    this._color[3] = a / 255;
+    this._color[3] = a;
 
-    this.argb = (a << 24) | (r << 16) | (g << 8) | b;
+    const intAlpha = a * 255;
+    this.argb = (intAlpha << 24) | (r << 16) | (g << 8) | b;
   }
 
   /** 获取红色值，范围：0 - 1 */
@@ -91,19 +116,22 @@ export class Color {
     return this._color[3];
   }
 
-  /** 获取 rgba 字符串 */
+  /**
+   * 获取 RGBA 字符串
+   * @returns RGBA 格式的颜色字符串
+   */
   toString(): string {
-    const [r, g, b, a] = this._color.map((v) => Math.round(v * 255));
-    return `rgba(${r},${g},${b},${a})`;
+    const [r, g, b] = this._color.map((v) => v * 255);
+    return `rgba(${r},${g},${b},${this._color[3]})`;
   }
 
   /**
-   * 更改颜色的 alpha 值
-   * @param value alpha 值，范围 0-1
+   * 更改颜色的透明度
+   * @param alpha - 新的透明度值，范围 0-1
    */
   changeAlpha(alpha: number) {
     this._color[3] = alpha;
-    const [r, g, b, a] = this._color.map((v) => Math.round(v * 255));
+    const [r, g, b, a] = this._color.map((v) => v * 255);
     this.argb = (a << 24) | (r << 16) | (g << 8) | b;
   }
 }

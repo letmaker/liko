@@ -13,43 +13,43 @@ export abstract class ScriptBase {
   /** 脚本标签，方便标识 */
   label = "";
 
-  private _awaked = false;
+  private _$awaked = false;
   /** 是否激活过，添加到场景后，会被激活 */
   get awaked(): boolean {
-    return this._awaked;
+    return this._$awaked;
   }
 
-  private _destroyed = false;
+  private _$destroyed = false;
   /** 是否销毁了 */
   get destroyed(): boolean {
-    return this._destroyed;
+    return this._$destroyed;
   }
 
-  private _enabled = true;
+  private _$enabled = true;
   /** 是否启用脚本，不启用则脚本不被执行，改变状态会回调 onEnable 和 onDisable */
   get enabled(): boolean {
-    return this._enabled;
+    return this._$enabled;
   }
   set enabled(value: boolean) {
-    if (value !== this._enabled) {
-      this._enabled = value;
-      if (this._target) {
+    if (value !== this._$enabled) {
+      this._$enabled = value;
+      if (this._$target) {
         value ? this.onEnable() : this.onDisable();
       }
     }
   }
 
-  private _target?: Node;
+  private _$target?: Node;
   /** 脚本目标对象，设置 target 后回调 onCreate */
   get target(): Node {
-    if (!this._target) {
+    if (!this._$target) {
       console.warn("Script target is not set");
     }
-    return this._target as Node;
+    return this._$target as Node;
   }
   set target(value: Node) {
-    if (value !== this._target) {
-      this._target = value;
+    if (value !== this._$target) {
+      this._$target = value;
       if (value) {
         this.onCreate();
       }
@@ -58,12 +58,12 @@ export abstract class ScriptBase {
 
   /** target 的 stage 引用 */
   get stage(): Stage | undefined {
-    return this._target?.stage;
+    return this._$target?.stage;
   }
 
   /** target 的 scene 引用（使用时尽量引用成局部变量，减少遍历获取） */
   get scene(): IScene | undefined {
-    return this._target?.scene;
+    return this._$target?.scene;
   }
 
   /**
@@ -71,17 +71,17 @@ export abstract class ScriptBase {
    * 脚本销毁时，target、root、scene、stage、timer 上的所有监听都会被自动取消，如果还监听 Timer.system 需要自己手动取消
    */
   destroy(): void {
-    if (this._destroyed) return;
+    if (this._$destroyed) return;
 
-    this._destroyed = true;
-    this._enabled = false;
+    this._$destroyed = true;
+    this._$enabled = false;
     this.onDestroy();
 
-    this._target?.offAll(this);
+    this._$target?.offAll(this);
     this.scene?.offAll(this);
     this.stage?.offAll(this);
     this.stage?.timer.clearAll(this);
-    this._target = undefined;
+    this._$target = undefined;
   }
 
   /**
@@ -116,9 +116,9 @@ export abstract class ScriptBase {
    */
   update(delta: number): void {
     // TODO 这里可以做性能优化，比如有 update 的时候才执行
-    if (!this._enabled) return;
+    if (!this._$enabled) return;
 
-    if (!this._awaked) {
+    if (!this._$awaked) {
       this.awake();
     }
 
@@ -129,8 +129,8 @@ export abstract class ScriptBase {
    * 激活脚本（第一次执行），回调 onAwake
    */
   awake(): void {
-    if (!this._awaked) {
-      this._awaked = true;
+    if (!this._$awaked) {
+      this._$awaked = true;
       this.onAwake();
     }
   }
@@ -155,7 +155,7 @@ export abstract class ScriptBase {
    * 脚本被 update 时触发
    * @param delta - 距离上一帧的时间间隔
    */
-  // @ts-expect-error 此方法预期会被子类重写
+  // @ts-expect-error
   onUpdate(delta: number): void {}
   /**
    * 脚本被销毁时触发

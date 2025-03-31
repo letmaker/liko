@@ -7,7 +7,7 @@ import { Ease } from "../../scripts/effect/ease";
 vi.mock("../../utils/timer", () => ({
   Timer: {
     system: {
-      loop: vi.fn(),
+      frameLoop: vi.fn(),
       clear: vi.fn(),
       delta: 0.016, // 模拟 16ms 的帧时间
     },
@@ -159,7 +159,7 @@ describe("Tween", () => {
       const promise = tween.play();
       expect(promise).toBeInstanceOf(Promise);
       expect(tween.playing).toBe(true);
-      expect(Timer.system.loop).toHaveBeenCalled();
+      expect(Timer.system.frameLoop).toHaveBeenCalled();
 
       // 模拟动画完成
       // @ts-ignore - 使用私有方法进行测试
@@ -194,7 +194,7 @@ describe("Tween", () => {
       tween.resume();
 
       expect(tween.paused).toBe(false);
-      expect(Timer.system.loop).toHaveBeenCalledTimes(2);
+      expect(Timer.system.frameLoop).toHaveBeenCalledTimes(2);
     });
 
     it("stop() 应该停止缓动队列", () => {

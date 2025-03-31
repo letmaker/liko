@@ -1,33 +1,32 @@
-// @ts-nocheck
-import { EventType, type Node } from "..";
+import { EventType } from "..";
 import type { MouseEvent } from "../events/mouse-event";
 import type { RigidBody } from "../physics/rigidBody";
-import type { Store } from "../utils/store";
-import type { Blueprint } from "./blueprint";
-import { Effect } from "./effect/effect";
 import { ScriptBase } from "./script-base";
 
-/** 碰撞信息 */
+/**
+ * 碰撞信息接口
+ */
 export interface ICollision {
-  /** 被碰撞 RigidBody */
+  /** 被碰撞的刚体对象 */
   other: RigidBody;
-  /** 碰撞信息 */
+  /** 碰撞接触信息，包含法线向量 */
   contact: { normal: { x: number; y: number; z: number } };
 }
 
 /**
- * 图块
+ * 脚本类，用于处理游戏对象的行为逻辑
+ * @extends ScriptBase
  */
 export class Script extends ScriptBase {
   override awake(): void {
     if (!this.awaked) {
-      this._regEvent();
+      this._$regEvent();
       super.awake();
     }
   }
 
-  private _regEvent(): void {
-    const prototype = ScriptBase.prototype;
+  private _$regEvent(): void {
+    const prototype = Script.prototype;
     const target = this.target;
     if (target) {
       // 鼠标事件
@@ -46,10 +45,10 @@ export class Script extends ScriptBase {
 
       // 键盘事件
       if (this.onKeyDown !== prototype.onKeyDown) {
-        this.stage?.on(EventType.keydown, this.onKeyDown.bind(this));
+        this.stage?.on(EventType.keydown, this.onKeyDown, this);
       }
       if (this.onKeyUp !== prototype.onKeyUp) {
-        this.stage?.on(EventType.keyup, this.onKeyUp.bind(this));
+        this.stage?.on(EventType.keyup, this.onKeyUp, this);
       }
 
       // 物理事件
@@ -63,45 +62,58 @@ export class Script extends ScriptBase {
   }
 
   /**
-   * target被点击时触发
+   * 目标被点击时触发
    * @param e 鼠标事件对象
    */
+  // @ts-expect-error
   onClick(e: MouseEvent): void {}
+
   /**
-   * target在鼠标按下时触发
+   * 目标在鼠标按下时触发
    * @param e 鼠标事件对象
    */
+  // @ts-expect-error
   onMouseDown(e: MouseEvent): void {}
+
   /**
-   * target在鼠标抬起时触发
+   * 目标在鼠标抬起时触发
    * @param e 鼠标事件对象
    */
+  // @ts-expect-error
   onMouseUp(e: MouseEvent): void {}
+
   /**
-   * target在鼠标移动时触发
+   * 目标在鼠标移动时触发
    * @param e 鼠标事件对象
    */
+  // @ts-expect-error
   onMouseMove(e: MouseEvent): void {}
 
   /**
-   * 键盘按下时
-   * @param key 键盘按键
+   * 键盘按下时触发
+   * @param e 键盘事件对象
    */
+  // @ts-expect-error
   onKeyDown(e: KeyboardEvent): void {}
+
   /**
-   * 键盘抬起时
-   * @param key 键盘按键
+   * 键盘抬起时触发
+   * @param e 键盘事件对象
    */
+  // @ts-expect-error
   onKeyUp(e: KeyboardEvent): void {}
 
   /**
    * 物理碰撞开始时触发
    * @param e 碰撞事件对象
    */
+  // @ts-expect-error
   onCollisionStart(e: ICollision): void {}
+
   /**
    * 物理碰撞结束时触发
    * @param e 碰撞事件对象
    */
+  // @ts-expect-error
   onCollisionEnd(e: ICollision): void {}
 }
