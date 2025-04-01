@@ -99,7 +99,7 @@ export class Tween {
   }
 
   // @testable
-  private _effects: Array<Effect> = [];
+  private _effects: Effect[] = [];
   private _current?: Effect;
   private _currentTime = 0;
   private _playing = false;

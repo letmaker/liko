@@ -480,11 +480,12 @@ export abstract class Node {
 
   /**
    * 根据筛选器获得子节点实例，获取后尽量缓存，不要频繁获取
-   * @param selector 滤镜筛选器，支持 'label'、'#id'、Sprite(类名), 1(索引)
+   * @param selector 滤镜筛选器，支持 'id'、'#label'、Sprite(类名), number(索引)
    * @param deep 是否深度遍历，深度遍历子节点
    * @returns 返回查找到的子节点
    */
-  getChild(selector: string | number, deep?: boolean): Node | undefined;
+  getChild(index: number, deep?: boolean): Node | undefined;
+  getChild(idOrLabel: string, deep?: boolean): Node | undefined;
   getChild<T extends new (...args: any[]) => Node>(NodeClass: T): InstanceType<T> | undefined;
   getChild<T extends new (...args: any[]) => Node>(selector: string | number | T, deep = false): Node | undefined {
     if (typeof selector === "number") return this.children[selector] as Node;
@@ -492,8 +493,8 @@ export abstract class Node {
     if (!selector) return undefined;
     const isString = typeof selector === "string";
     const ClassObj = !isString ? selector : undefined;
-    const id = isString && selector.startsWith("#") ? selector.substring(1) : "";
-    const label = id || ClassObj ? "" : (selector as string);
+    const label = isString && selector.startsWith("#") ? selector.substring(1) : undefined;
+    const id = isString && !label ? selector : undefined;
     return this._$getChild(id, label, ClassObj, deep);
   }
 

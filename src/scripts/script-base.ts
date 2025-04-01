@@ -1,6 +1,7 @@
 import type { IScene } from "../nodes/scene";
 import type { Node } from "../nodes/node";
 import type { Stage } from "../nodes/stage";
+import { EventType } from "../const";
 
 /**
  * 节点扩展脚本，扩展 node 的功能
@@ -111,6 +112,17 @@ export abstract class ScriptBase {
   }
 
   /**
+   * 发送信号，所有信号可以在 script 的 onSignal 内被监听到，用于脚本及节点之间的消息通信
+   * @param type 事件名称，不区分大小写
+   * @param args 可选参数，支持多个，以逗号隔开
+   */
+  signal(key: string, ...args: any[]): void {
+    if (this._$target) {
+      this._$target.emit(EventType.signal, key, this, ...args);
+    }
+  }
+
+  /**
    * 更新脚本，回调 onUpdate
    * @param delta - 距离上一帧的时间间隔
    */
@@ -119,7 +131,7 @@ export abstract class ScriptBase {
     if (!this._$enabled) return;
 
     if (!this._$awaked) {
-      this.awake();
+      this._$awake();
     }
 
     this.onUpdate(delta);
@@ -128,7 +140,7 @@ export abstract class ScriptBase {
   /**
    * 激活脚本（第一次执行），回调 onAwake
    */
-  awake(): void {
+  protected _$awake(): void {
     if (!this._$awaked) {
       this._$awaked = true;
       this.onAwake();

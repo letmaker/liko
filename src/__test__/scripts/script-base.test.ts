@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ScriptBase } from "../scripts/script-base";
-import type { Node } from "../nodes/node";
-import type { Stage } from "../nodes/stage";
-import type { IScene } from "../nodes/scene";
+import { ScriptBase } from "../../scripts/script-base";
+import type { Node } from "../../nodes/node";
+import type { Stage } from "../../nodes/stage";
+import type { IScene } from "../../nodes/scene";
+import { EventType } from "../../const";
 
 // 创建一个具体的 ScriptBase 子类用于测试
 class TestScript extends ScriptBase {
@@ -166,5 +167,25 @@ describe("ScriptBase", () => {
     // 确保没有再次调用相关方法
     expect((node.offAll as any).mock.calls.length).toBe(offAllCallCount);
     expect(script.onDestroyCalled).toBe(false);
+  });
+
+  it("调用 signal 方法应该正确触发事件", () => {
+    script.target = node;
+
+    // 模拟 node.emit 方法
+    const emitSpy = vi.fn();
+    node.emit = emitSpy;
+
+    // 调用 signal 方法
+    script.signal("test", 123, "abc");
+
+    // 验证 emit 方法被正确调用
+    expect(emitSpy).toHaveBeenCalledWith(EventType.signal, "test", script, 123, "abc");
+
+    // 测试没有 target 时不应该触发事件
+    script.destroy(); // 清除 target
+    emitSpy.mockClear();
+    script.signal("test");
+    expect(emitSpy).not.toHaveBeenCalled();
   });
 });

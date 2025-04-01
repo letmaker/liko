@@ -18,10 +18,10 @@ export interface ICollision {
  * @extends ScriptBase
  */
 export class Script extends ScriptBase {
-  override awake(): void {
+  override _$awake(): void {
     if (!this.awaked) {
       this._$regEvent();
-      super.awake();
+      super._$awake();
     }
   }
 
@@ -57,6 +57,11 @@ export class Script extends ScriptBase {
       }
       if (this.onCollisionEnd !== prototype.onCollisionEnd) {
         target.on(EventType.collisionEnd, this.onCollisionEnd, this);
+      }
+
+      // 信号事件
+      if (this.onSignal !== prototype.onSignal) {
+        target.on(EventType.signal, this.onSignal, this);
       }
     }
   }
@@ -116,4 +121,10 @@ export class Script extends ScriptBase {
    */
   // @ts-expect-error
   onCollisionEnd(e: ICollision): void {}
+
+  /**
+   * 同节点的脚本调用 signal 时触发，方便脚本间的通信
+   */
+  // @ts-expect-error
+  onSignal(type: string, script: ScriptBase, ...args): void {}
 }

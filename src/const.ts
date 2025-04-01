@@ -54,6 +54,8 @@ export enum EventType {
   mouseupoutside = "mouseupoutside",
   /** 鼠标点击时，由 node 派发 */
   click = "click",
+  /** 信号触发时，由 node 派发 */
+  signal = "signal",
 
   /** 键盘被按下时，由 stage 派发 */
   keydown = "keydown",
