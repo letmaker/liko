@@ -7,40 +7,66 @@ import type { INodeData, INodeOptions } from "./node";
 import { type INodePrivateProps, Node } from "./node";
 
 export interface IAnimation extends Node {
-  duration: number;
+  /** 播放动画 */
   play: () => void;
+  /** 停止动画 */
   stop: () => void;
 }
 
 export interface IScene extends IAnimation {
+  /** 场景资源路径 */
+  url: string;
+  /** 时间缩放比率 */
   timeScale: number;
+  /** 当前播放时间 */
+  currentTime: number;
+  /** 是否正在播放 */
+  playing: boolean;
+  /** 是否暂停 */
+  paused: boolean;
+  /**
+   * 克隆场景中的节点
+   * @param id - 节点ID
+   */
   clone: (id: string) => Node | undefined;
+  /** 暂停播放 */
+  pause: () => void;
+  /** 恢复播放 */
+  resume: () => void;
+  /**
+   * 加载场景
+   * @param url - 场景资源路径
+   * @param loadAllAssets - 是否预加载场景内的所有资源
+   */
+  load: (url: string, loadAllAssets?: boolean) => Promise<void>;
 }
 
-interface IAnimationPrivateProps extends INodePrivateProps {
+interface IScenePrivateProps extends INodePrivateProps {
   url: string;
-  playing: boolean;
   currentTime: number;
+  playing: boolean;
   paused: boolean;
 }
 
-interface IAnimationOptions extends INodeOptions {
+interface ISceneOptions extends INodeOptions {
   url: string;
-  currentTime: number;
 }
 
 /**
+ * 场景类，用于管理场景内的节点、动画、脚本等内容
  * 所有动画、脚本、动效均由所在的场景统一驱动
  */
 @RegNode("Scene")
 export class Scene extends Node implements IScene {
-  declare pp: IAnimationPrivateProps;
-  /** 动画数据，记录方便实现 clone */
+  declare pp: IScenePrivateProps;
+  /** 场景数据，用于实现节点克隆 */
   json?: INodeData;
-  /** 动画持续时长 */
-  duration = 0;
+  /** 时间缩放比率，控制场景播放速度 */
   timeScale = 1;
 
+  /**
+   * 获取当前场景实例
+   */
   override get scene(): Scene {
     return this;
   }
@@ -60,7 +86,7 @@ export class Scene extends Node implements IScene {
     return this.pp.paused;
   }
 
-  /** 当前动画路径 */
+  /** 当前场景资源路径 */
   get url(): string {
     return this.pp.url;
   }
@@ -68,17 +94,21 @@ export class Scene extends Node implements IScene {
     this.load(value);
   }
 
-  constructor(options?: IAnimationOptions) {
+  constructor(options?: ISceneOptions) {
     super();
     this.pp.url = "";
-    this.pp.playing = false;
     this.pp.currentTime = 0;
+    this.pp.playing = false;
+    this.pp.paused = false;
     this.setProps(options as Record<string, any>);
 
     this.on(EventType.addToStage, this.play, this);
     this.on(EventType.removed, this.stop, this);
   }
 
+  /**
+   * 销毁场景实例
+   */
   override destroy(): void {
     if (!this.destroyed) {
       this.stop();
@@ -88,31 +118,47 @@ export class Scene extends Node implements IScene {
   }
 
   /**
-   * 加载动画
-   * @param url 动画路径
-   * @param loadAllAssets 预加载动画内的所有资源，默认为 true
+   * 加载场景
+   * @param url - 场景资源路径
+   * @param loadAllAssets - 是否预加载场景内的所有资源，默认为true
    */
   async load(url: string, loadAllAssets = true) {
     if (this.pp.url !== url) {
       this.pp.url = url;
-      const json = await loader.load(url);
-      loadAllAssets && (await this.loadAllAssets(json));
-      this.fromJson(json);
+      try {
+        const json = await loader.load(url);
+        if (loadAllAssets) {
+          await this.loadAllAssets(json);
+        }
+        this.fromJson(json);
+        this.emit(EventType.loaded);
+      } catch (error) {
+        this.emit(EventType.error, error);
+        throw error;
+      }
+    } else {
+      this.emit(EventType.loaded);
     }
-    this.emit(EventType.loaded);
   }
 
   /**
-   * 根据数据，加载动画或场景内的所有资源
-   * @param json 动画或场景数据
+   * 加载场景内的所有资源
+   * @param json - 场景数据
    */
   async loadAllAssets(json: INodeData) {
     const res: string[] = [];
     this._$collectAsset(json, res);
-    if (res.length) {
+    const total = res.length;
+    if (total) {
       const all = [];
+      let loaded = 0;
       for (const url of res) {
-        all.push(loader.load(url));
+        const p = loader.load(url);
+        p.then(() => {
+          loaded++;
+          this.emit(EventType.progress, loaded / total);
+        });
+        all.push(p);
       }
       await Promise.all(all);
     }
@@ -128,11 +174,13 @@ export class Scene extends Node implements IScene {
   }
 
   /**
-   * 播放动画，在编辑器内，动画一般由 controller 控制播放，也可以调用此方法独立播放
+   * 播放场景
    */
   play(): void {
-    if (!this.pp.playing) {
-      this.pp.playing = true;
+    const pp = this.pp;
+    if (!pp.playing) {
+      pp.playing = true;
+      pp.paused = false;
       this.stage?.timer.frameLoop(1, this.update, this);
       this.update();
       this.emit(EventType.played);
@@ -144,11 +192,11 @@ export class Scene extends Node implements IScene {
    */
   pause(): void {
     const pp = this.pp;
-    if (pp.playing && !pp.paused) {
-      pp.paused = true;
-      this.stage?.timer.clear(this.update, this);
-      this.emit(EventType.paused);
-    }
+    if (!pp.playing || pp.paused) return;
+
+    pp.paused = true;
+    this.stage?.timer.clear(this.update, this);
+    this.emit(EventType.paused);
   }
 
   /**
@@ -156,24 +204,24 @@ export class Scene extends Node implements IScene {
    */
   resume(): void {
     const pp = this.pp;
-    if (!pp.playing && pp.paused) {
-      pp.paused = true;
-      this.stage?.timer.frameLoop(1, this.update, this);
-      this.emit(EventType.resumed);
-    }
+    if (!pp.playing || !pp.paused) return;
+
+    pp.paused = false;
+    this.stage?.timer.frameLoop(1, this.update, this);
+    this.emit(EventType.resumed);
   }
 
   /**
-   * 更新动画及脚本
+   * 更新场景及脚本
    */
-  update(): void {
-    if (this.enabled) {
-      const delta = this.stage!.timer.delta * this.timeScale;
-      // 累加当前时间，并更新动画或场景 timer 和 脚本
-      this.pp.currentTime += delta;
-      // 遍历所有子节点，执行脚本
-      this._$updateScripts(this, delta);
-    }
+  update(delta?: number): void {
+    const stage = this.stage;
+    if (!this.enabled || !stage || this.pp.paused) return;
+
+    const scaleDelta = delta ?? stage.timer.delta * this.timeScale;
+    this.pp.currentTime += scaleDelta;
+    // 遍历所有子节点，执行脚本
+    this._$updateScripts(this, scaleDelta);
   }
 
   private _$updateScripts(node: Node, delta: number) {
@@ -205,8 +253,8 @@ export class Scene extends Node implements IScene {
   }
 
   /**
-   * 从数据创建动画或场景
-   * @param json 动画或场景数据
+   * 从数据创建场景
+   * @param json - 场景数据
    */
   fromJson(json: INodeData): void {
     this.json = json;
@@ -214,9 +262,8 @@ export class Scene extends Node implements IScene {
   }
 
   /**
-   * clone 动画或场景中某个节点，仅限于初始状态
-   * @param id 节点 id
-   * @returns 返回被 clone 的节点实例
+   * 克隆场景中某个节点
+   * @param id - 节点ID
    */
   clone(id: string): Node | undefined {
     const data = this._$findNodeData(id, this.json);
