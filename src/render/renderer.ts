@@ -18,7 +18,7 @@ export class Renderer {
 
   destroy() {
     // TODO
-    this.camera.destroy();
+    this.camera?.destroy();
   }
 
   async init(options: RenderOptions) {

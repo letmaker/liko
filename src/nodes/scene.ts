@@ -3,8 +3,8 @@ import { loader } from "../loader";
 import { RegNode } from "../utils/decorators";
 import { createNodeInstance } from "../utils/register";
 import { getUID } from "../utils/utils";
-import type { INodeData, INodeOptions } from "./node";
-import { type INodePrivateProps, Node } from "./node";
+import type { INodeData, INodeOptions, INodePrivateProps } from "./node";
+import { Node } from "./node";
 
 export interface IAnimation extends Node {
   /** 播放动画 */
@@ -182,7 +182,6 @@ export class Scene extends Node implements IScene {
       pp.playing = true;
       pp.paused = false;
       this.stage?.timer.frameLoop(1, this.update, this);
-      this.update();
       this.emit(EventType.played);
     }
   }
