@@ -22,6 +22,7 @@ export { Ease } from "./scripts/effect/ease";
 export { ScriptBase } from "./scripts/script-base";
 export { Script, type ICollision } from "./scripts/script";
 export { Dispatcher } from "./utils/dispatcher";
+export { Timer } from "./utils/timer";
 export { physics } from "./physics/physics";
 export { loader } from "./loader";
 export * from "./const";
