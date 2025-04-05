@@ -102,11 +102,8 @@ export class Sound {
    * 加载音频资源并创建音频源
    */
   private async _load() {
-    const buffer = (await loader.load(this.url)) as AudioBuffer;
-    if (!buffer) {
-      console.error("Failed to load audio:", this.url);
-      return;
-    }
+    const buffer = await loader.load<AudioBuffer>(this.url);
+    if (!buffer) return;
 
     const source = Sound.audioContext.createBufferSource();
     source.buffer = buffer;

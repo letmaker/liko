@@ -76,8 +76,8 @@ export class Sprite extends Node implements IRenderable {
     if (this.pp.url !== url) {
       this.pp.url = url;
 
-      const texture = await loader.load(url);
-      if (this.destroyed) return;
+      const texture = await loader.load<Texture>(url);
+      if (this.destroyed || !texture) return;
       this.texture = texture;
     }
     this.emit(EventType.loaded);

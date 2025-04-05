@@ -107,8 +107,8 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
     if (this.pp.url !== url) {
       this.pp.url = url;
 
-      const textures = await loader.load(url);
-      if (this.destroyed) return;
+      const textures = await loader.load<Texture[]>(url);
+      if (this.destroyed || !textures) return;
       console.assert(textures.length > 0);
 
       this.textures = textures;

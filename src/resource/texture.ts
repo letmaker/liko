@@ -81,7 +81,7 @@ export class Texture {
    * @param url url 地址
    * @returns 新的 Texture
    */
-  static async from(url: string): Promise<Texture> {
+  static async from(url: string): Promise<Texture | undefined> {
     return loader.load(url, "image");
   }
 

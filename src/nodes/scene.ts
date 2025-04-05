@@ -126,7 +126,9 @@ export class Scene extends Node implements IScene {
     if (this.pp.url !== url) {
       this.pp.url = url;
       try {
-        const json = await loader.load(url);
+        const json = await loader.load<INodeData>(url);
+        if (!json) return;
+
         if (loadAllAssets) {
           await this.loadAllAssets(json);
         }
@@ -153,7 +155,7 @@ export class Scene extends Node implements IScene {
       const all = [];
       let loaded = 0;
       for (const url of res) {
-        const p = loader.load(url);
+        const p = loader.load<INodeData>(url);
         p.then(() => {
           loaded++;
           this.emit(EventType.progress, loaded / total);

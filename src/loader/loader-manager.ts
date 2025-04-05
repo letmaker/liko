@@ -1,48 +1,57 @@
 import { EventType } from "../const";
 import { Dispatcher } from "../utils/dispatcher";
 
+/** 定义资源加载器的接口规范 */
 export interface ILoader {
-  /** 测试是否使用本加载器 */
+  /** 判断加载器是否支持指定的资源类型 */
   test: (type: string) => boolean;
-  /** 加载 */
+  /** 执行资源加载操作 */
   load: (url: string, manager: LoaderManager) => Promise<any>;
 }
 
-/**
- * 加载管理器
- */
+/** 资源加载管理器，负责资源的加载、缓存和事件分发 */
 export class LoaderManager extends Dispatcher {
   private static _loaders: ILoader[] = [];
+
+  /**
+   * 注册一个新的资源加载器
+   * @param loader - 实现了 ILoader 接口的加载器实例
+   */
+  static regLoader(loader: ILoader) {
+    LoaderManager._loaders.push(loader);
+  }
+
   private _loadingMap: Record<string, Promise<any>> = {};
+  /** 存储已加载资源的缓存映射表 */
   cacheMap: Record<string, any> = {};
 
   private _total = 0;
-  /** 所有加载的总数量 */
+  /** 待加载的资源总数 */
   get total(): number {
     return this._total;
   }
 
   private _loaded = 0;
-  /** 加载完成的数量 */
+  /** 已完成加载的资源数量 */
   get loaded(): number {
     return this._loaded;
   }
 
-  /** 正在加载中的数量 */
+  /** 当前正在加载中的资源数量 */
   get loadingCount(): number {
     return this._total - this._loaded;
   }
 
   /**
-   * 加载资源
-   * @param url url 地址
-   * @param type 类型，可选，如果不设置则根据 url 后缀分析
-   * @returns 返回加载后的资源
+   * 加载指定的资源
+   * @param url - 资源的URL地址
+   * @param type - 可选的资源类型，若未指定则根据URL后缀自动判断
+   * @returns 返回加载完成的资源，加载失败时返回undefined
    */
-  load(url: string, type?: string): Promise<any> | any {
+  load<T>(url: string, type?: string): Promise<T | undefined> {
     // 如果有缓存，则优先从缓存获取
     const res = this.get(url);
-    if (res) return res;
+    if (res) return Promise.resolve(res);
 
     // 同一个 url 只会加载一次
     const promise = this._loadingMap[url];
@@ -50,22 +59,16 @@ export class LoaderManager extends Dispatcher {
 
     this._total++;
     const resType = type ?? this._getTypeByExt(url);
-    let resLoader: ILoader | undefined;
-    for (const loader of LoaderManager._loaders) {
-      if (loader.test(resType)) {
-        resLoader = loader;
-        break;
-      }
-    }
+    const resLoader = LoaderManager._loaders.find((loader) => loader.test(resType));
 
     // 找不到合适的加载器
     if (!resLoader) {
       this._error("no loader can load:", url);
-      return undefined;
+      return Promise.resolve(undefined);
     }
 
     // 开始加载
-    const newPromise = new Promise((resolve) => {
+    const newPromise = new Promise<T | undefined>((resolve) => {
       // TODO: 增加重试机制
       resLoader
         .load(url, this)
@@ -83,11 +86,9 @@ export class LoaderManager extends Dispatcher {
     return newPromise;
   }
 
-  /** 根据后缀获得类型 */
   private _getTypeByExt(url: string): string {
-    let ext = url.substring(url.lastIndexOf(".") + 1);
-    if (ext.indexOf("?") !== -1) ext = ext.substring(0, ext.lastIndexOf("?"));
-    return ext.toLowerCase();
+    const urlObj = new URL(url);
+    return urlObj.pathname.split(".").pop()?.toLowerCase() ?? "";
   }
 
   private _complete(url: string, res: any): void {
@@ -116,46 +117,53 @@ export class LoaderManager extends Dispatcher {
   }
 
   /**
-   * 缓存资源
-   * @param url 资源路径
-   * @param res 资源 url
+   * 将资源存入缓存
+   * @param url - 资源的URL地址
+   * @param res - 要缓存的资源对象
    */
   cache(url: string, res: unknown) {
     if (res !== undefined) this.cacheMap[url] = res;
   }
 
   /**
-   * 从缓存获取资源
-   * @param url 资源路径
-   * @returns 缓存的资源
+   * 从缓存中获取资源
+   * @param url - 资源的URL地址
+   * @returns 返回缓存的资源，如果不存在则返回undefined
    */
   get(url: string) {
     return this.cacheMap[url];
   }
 
   /**
-   * 删除缓存
-   * @param url 资源路径
+   * 卸载并释放相关资源
+   * @param url - 要卸载的资源URL地址
    */
   unload(url: string) {
     const res = this.cacheMap[url];
     delete this.cacheMap[url];
-    if ("destroy" in res) res.destroy();
+    if (res) {
+      if (typeof res.destroy === "function") res.destroy();
+      if (typeof res.dispose === "function") res.dispose();
+    }
   }
 
   /**
-   * 重置 loaded 和 total，方便重新计算百分比
+   * 清空所有已缓存的资源并重置加载状态
    */
-  resetCount() {
-    this._total -= this._loaded;
+  clear() {
+    for (const url of Object.keys(this.cacheMap)) {
+      this.unload(url);
+    }
+    this._loadingMap = {};
+    this._total = 0;
     this._loaded = 0;
   }
 
   /**
-   * 注册加载器
-   * @param loader 加载器实例 // TODO: 会不会有并发问题
+   * 重置加载计数器，用于重新开始加载进度的计算
    */
-  static regLoader(loader: ILoader) {
-    LoaderManager._loaders.push(loader);
+  resetCount() {
+    this._total -= this._loaded;
+    this._loaded = 0;
   }
 }
