@@ -136,12 +136,11 @@ export class LoaderManager extends Dispatcher {
   /**
    * 删除缓存
    * @param url 资源路径
-   * @param destroy 是否同时销毁资源，默认为 false
    */
-  remove(url: string, destroy = false) {
+  unload(url: string) {
     const res = this.cacheMap[url];
     delete this.cacheMap[url];
-    if (destroy && "destroy" in res) res.destroy();
+    if ("destroy" in res) res.destroy();
   }
 
   /**
