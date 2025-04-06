@@ -10,7 +10,7 @@ Liko can be used for game development, H5 applications, and interactive scenario
 - Specially designed for artificial intelligence and editors
 - Lightweight
 - High performance
-- Integrated with Planck physics engine
+- Covers all functionality needed for games
 
 ## Capabilities
 - 2D rendering
