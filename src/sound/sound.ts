@@ -1,4 +1,5 @@
 import { loader } from "../loader";
+import { getUniqueID } from "../utils/utils";
 
 /**
  * 音频处理类，基于Web Audio API
@@ -45,6 +46,8 @@ export class Sound {
   private _source?: AudioBufferSourceNode;
   private _startTime = 0;
   private _offset = 0;
+  private _audioPlaying = false;
+  private _playID = 0;
 
   /**
    * 获取当前播放时间
@@ -77,6 +80,8 @@ export class Sound {
 
     this._gainNode.gain.value = volume;
     this._gainNode.connect(Sound.audioContext.destination);
+
+    console.log("create sound", this.url);
   }
 
   /**
@@ -87,13 +92,15 @@ export class Sound {
     if (this.isPlaying || this.destroyed) return;
 
     this.isPlaying = true;
-    this._load().then(() => {
-      if (this.destroyed || !this.isPlaying) return;
-
-      if (this._source) {
-        this._source.start(0, offset);
+    this._playID = getUniqueID();
+    this._offset = offset;
+    this._load(this._playID).then((source) => {
+      if (source) {
+        this._source = source;
+        console.log("play", this.url, this._offset);
+        this._audioPlaying = true;
+        this._source.start(0, this._offset);
         this._startTime = Sound.audioContext.currentTime;
-        this._offset = offset;
       }
     });
   }
@@ -101,9 +108,11 @@ export class Sound {
   /**
    * 加载音频资源并创建音频源
    */
-  private async _load() {
+  private async _load(playID: number) {
     const buffer = await loader.load<AudioBuffer>(this.url);
-    if (!buffer) return;
+    if (!buffer || this.destroyed || !this.isPlaying || this._playID !== playID) {
+      return undefined;
+    }
 
     const source = Sound.audioContext.createBufferSource();
     source.buffer = buffer;
@@ -118,7 +127,7 @@ export class Sound {
       }
     };
 
-    this._source = source;
+    return source;
   }
 
   /**
@@ -126,12 +135,16 @@ export class Sound {
    * @returns 暂停时的播放位置(秒)
    */
   pause(): number {
-    if (!this.isPlaying || this.destroyed || !this._source) return this._offset;
+    if (!this.isPlaying || this.destroyed) return this._offset;
 
     this.isPlaying = false;
-    this._offset = Sound.audioContext.currentTime - this._startTime;
-    this._source.stop();
-    this._source = undefined;
+    this._offset += Sound.audioContext.currentTime - this._startTime;
+
+    if (this._source && this._audioPlaying) {
+      this._source.stop();
+      this._source = undefined;
+      this._audioPlaying = false;
+    }
 
     return this._offset;
   }
@@ -153,9 +166,13 @@ export class Sound {
 
     this.isPlaying = false;
     this._offset = 0;
-    if (this._source) {
+
+    console.log("stop", this.url, this._offset);
+
+    if (this._source && this._audioPlaying) {
       this._source.stop();
       this._source = undefined;
+      this._audioPlaying = false;
     }
   }
 
@@ -175,22 +192,41 @@ export class Sound {
   /**
    * 设置音量
    * @param volume - 音量大小(0.0-1.0)
-   * @param fadeTime - 淡入淡出时间(秒)
    */
-  setVolume(volume: number, fadeTime = 0) {
+  setVolume(volume: number) {
     if (this.volume === volume || this.destroyed) return this.volume;
 
     const newVolume = Math.max(0, Math.min(1, volume));
     this.volume = newVolume;
-
-    if (fadeTime <= 0) {
-      this._gainNode.gain.value = newVolume;
-    } else {
-      const currentTime = Sound.audioContext.currentTime;
-      this._gainNode.gain.linearRampToValueAtTime(newVolume, currentTime + fadeTime);
-    }
+    this._gainNode.gain.value = newVolume;
 
     return newVolume;
+  }
+
+  /**
+   * 淡入音频
+   * @param fadeTime - 淡入时间(秒)
+   */
+  fadeIn(fadeTime = 0) {
+    const gain = this._gainNode.gain;
+    if (fadeTime > 0) {
+      const currentTime = Sound.audioContext.currentTime;
+      gain.linearRampToValueAtTime(gain.value, currentTime + fadeTime);
+      gain.setValueAtTime(0, currentTime);
+    }
+  }
+
+  /**
+   * 淡出音频
+   * @param fadeTime - 淡出时间(秒)
+   */
+  fadeOut(fadeTime = 0) {
+    const gain = this._gainNode.gain;
+    if (fadeTime > 0) {
+      const currentTime = Sound.audioContext.currentTime;
+      gain.linearRampToValueAtTime(0, currentTime + fadeTime);
+      gain.setValueAtTime(gain.value, currentTime);
+    }
   }
 
   /**

@@ -4,6 +4,11 @@ import { createScriptInstance } from "./register";
 import { Timer } from "./timer";
 
 let id = 0;
+
+export function getUniqueID(): number {
+  return id++;
+}
+
 /**
  * 生成全局唯一标识符
  * @param type - 标识符前缀

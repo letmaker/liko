@@ -87,8 +87,9 @@ export class LoaderManager extends Dispatcher {
   }
 
   private _getTypeByExt(url: string): string {
-    const urlObj = new URL(url);
-    return urlObj.pathname.split(".").pop()?.toLowerCase() ?? "";
+    let ext = url.substring(url.lastIndexOf(".") + 1);
+    if (ext.indexOf("?") !== -1) ext = ext.substring(0, ext.lastIndexOf("?"));
+    return ext.toLowerCase();
   }
 
   private _complete(url: string, res: any): void {

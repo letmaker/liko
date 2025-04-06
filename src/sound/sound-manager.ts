@@ -13,7 +13,7 @@ class SoundManager {
    * @param volume - 音效音量，范围0-1
    * @param autoDestroy - 是否在播放结束后自动销毁，默认为false，会被回收到对象池
    */
-  play(url: string, volume: number, autoDestroy = false) {
+  play(url: string, volume = 1, autoDestroy = false) {
     let sound = this._sounds.find((sound) => sound.url === url && !sound.isPlaying);
     if (!sound) {
       sound = new Sound(url, false, volume);
@@ -155,20 +155,56 @@ class MusicManager {
    * 设置指定URL音乐的音量
    * @param url - 音乐资源的URL
    * @param volume - 音量值，范围0-1
-   * @param fadeTime - 淡入淡出时间(秒)，0表示立即生效
    */
-  setVolume(url: string, volume: number, fadeTime = 0) {
-    this._music[url]?.setVolume(volume, fadeTime);
+  setVolume(url: string, volume: number) {
+    this._music[url]?.setVolume(volume);
   }
 
   /**
    * 设置所有音乐的音量
    * @param volume 音量值，范围0-1
-   * @param fadeTime 淡入淡出时间(秒)，0表示立即生效，默认为0
    */
-  setVolumeAll(volume: number, fadeTime = 0) {
+  setVolumeAll(volume: number) {
     for (const music of Object.values(this._music)) {
-      music.setVolume(volume, fadeTime);
+      music.setVolume(volume);
+    }
+  }
+
+  /**
+   * 淡入指定URL的音乐
+   * @param url - 音乐资源的URL
+   * @param fadeTime - 淡入时间，单位秒
+   */
+  fadeIn(url: string, fadeTime = 1) {
+    this._music[url]?.fadeIn(fadeTime);
+  }
+
+  /**
+   * 淡入所有音乐
+   * @param fadeTime - 淡入时间，单位秒
+   */
+  fadeInAll(fadeTime = 1) {
+    for (const music of Object.values(this._music)) {
+      music.fadeIn(fadeTime);
+    }
+  }
+
+  /**
+   * 淡出指定URL的音乐
+   * @param url - 音乐资源的URL
+   * @param fadeTime - 淡出时间，单位秒
+   */
+  fadeOut(url: string, fadeTime = 1) {
+    this._music[url]?.fadeOut(fadeTime);
+  }
+
+  /**
+   * 淡出所有音乐
+   * @param fadeTime - 淡出时间，单位秒
+   */
+  fadeOutAll(fadeTime = 1) {
+    for (const music of Object.values(this._music)) {
+      music.fadeOut(fadeTime);
     }
   }
 

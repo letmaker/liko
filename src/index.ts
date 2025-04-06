@@ -25,4 +25,5 @@ export { Dispatcher } from "./utils/dispatcher";
 export { Timer } from "./utils/timer";
 export { physics } from "./physics/physics";
 export { loader } from "./loader";
+export { sound, music } from "./sound/sound-manager";
 export * from "./const";
