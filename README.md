@@ -1,16 +1,33 @@
 # liko [中文文档](README-CN.md)
-Liko is a simple, fast, and lightweight H5 render framework by typescript.
+Liko is a lightweight, high-performance H5 rendering framework developed using TypeScript.
 
-Liko is a high-performance rendering engine based on WebGPU, designed for AI.
+Liko is a high-performance rendering engine based on WebGPU, specially designed for AI.
 
-Liko can be used for games, H5 applications, and interactive interactions.
+Liko can be used for game development, H5 applications, and interactive scenarios.
 
 ## Features
-- designed based on webGPU
-- designed for AI and editors
-- simple and fast
-- high-performance
-- integrated Planck physics engine
+- Designed based on WebGPU
+- Specially designed for artificial intelligence and editors
+- Lightweight
+- High performance
+- Integrated with Planck physics engine
+
+## Capabilities
+- 2D rendering
+- Sprite rendering
+- SpriteAnimation rendering
+- Text rendering
+- Canvas rendering
+- Built-in physics engine
+- Built-in audio system
+- Built-in particle system (under construction)
+- Built-in script system
+- Built-in animation system
+- Built-in easing system
+- Built-in event system
+- Built-in resource management
+- Built-in scene management
+- Built-in timing management
 
 ## How to use
 
@@ -22,15 +39,19 @@ npm install liko
 import { App, Text } from 'liko';
 
 async function test() {
+  // Create application instance
   const app = new App();
+  // Initialize the application, set canvas size to 800x800
   await app.init({ width: 800, height: 800 });
+
+  // Create text object
   const text = new Text({
-    text: 'Hello World',
-    fillColor: '#ff0000',
-    fontSize: 30,
-    pos: { x: 100, y: 100 },
+    text: "Hello World", // Text content
+    fillColor: "#ff0000", // Text color (red)
+    fontSize: 30, // Font size
+    pos: { x: 100, y: 100 }, // Text position
+    parent: app.stage, // Parent node is stage
   });
-  app.stage.addChild(text);
 }
 
 test();

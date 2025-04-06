@@ -80,8 +80,6 @@ export class Sound {
 
     this._gainNode.gain.value = volume;
     this._gainNode.connect(Sound.audioContext.destination);
-
-    console.log("create sound", this.url);
   }
 
   /**
@@ -98,7 +96,6 @@ export class Sound {
     this._load(this._playID).then((source) => {
       if (source) {
         this._source = source;
-        console.log("play", this.url, this._offset);
         this._audioPlaying = true;
         this._source.start(0, this._offset);
         this._startTime = Sound.audioContext.currentTime;
@@ -173,8 +170,6 @@ export class Sound {
 
     this.isPlaying = false;
     this._offset = 0;
-
-    console.log("stop", this.url, this._offset);
 
     if (this._source && this._audioPlaying) {
       this._source.stop();
