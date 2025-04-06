@@ -70,13 +70,13 @@ export class Sound {
   /**
    * 创建音频实例
    * @param url - 音频资源URL
-   * @param volume - 音量大小(0.0-1.0)
    * @param loop - 是否循环播放
+   * @param volume - 音量大小(0.0-1.0)
    */
   constructor(url: string, loop = false, volume = 1) {
     this.url = url;
     this.loop = loop;
-    this.volume = this.setVolume(volume);
+    this.volume = Math.max(0, Math.min(1, volume));
 
     this._gainNode.gain.value = volume;
     this._gainNode.connect(Sound.audioContext.destination);
@@ -87,6 +87,7 @@ export class Sound {
   /**
    * 播放音频
    * @param offset - 开始播放的时间偏移量(秒)
+   * @returns 当前实例，支持链式调用
    */
   play(offset = 0) {
     if (this.isPlaying || this.destroyed) return;
@@ -103,10 +104,13 @@ export class Sound {
         this._startTime = Sound.audioContext.currentTime;
       }
     });
+    return this;
   }
 
   /**
    * 加载音频资源并创建音频源
+   * @param playID - 播放ID，用于防止重复播放
+   * @returns 创建的音频源或undefined（加载失败时）
    */
   private async _load(playID: number) {
     const buffer = await loader.load<AudioBuffer>(this.url);
@@ -132,9 +136,9 @@ export class Sound {
 
   /**
    * 暂停播放
-   * @returns 暂停时的播放位置(秒)
+   * @returns 当前实例，支持链式调用
    */
-  pause(): number {
+  pause() {
     if (!this.isPlaying || this.destroyed) return this._offset;
 
     this.isPlaying = false;
@@ -146,20 +150,23 @@ export class Sound {
       this._audioPlaying = false;
     }
 
-    return this._offset;
+    return this;
   }
 
   /**
    * 从暂停位置恢复播放
+   * @returns 当前实例，支持链式调用
    */
   resume() {
     if (this.isPlaying || this.destroyed) return;
 
     this.play(this._offset);
+    return this;
   }
 
   /**
    * 停止播放并重置播放位置
+   * @returns 当前实例，支持链式调用
    */
   stop() {
     if (!this.isPlaying || this.destroyed) return;
@@ -174,11 +181,13 @@ export class Sound {
       this._source = undefined;
       this._audioPlaying = false;
     }
+    return this;
   }
 
   /**
    * 设置是否循环播放
    * @param loop - 是否循环播放
+   * @returns 当前实例，支持链式调用
    */
   setLoop(loop: boolean) {
     if (this.loop === loop || this.destroyed) return;
@@ -187,11 +196,13 @@ export class Sound {
     if (this._source) {
       this._source.loop = loop;
     }
+    return this;
   }
 
   /**
    * 设置音量
    * @param volume - 音量大小(0.0-1.0)
+   * @returns 当前实例，支持链式调用
    */
   setVolume(volume: number) {
     if (this.volume === volume || this.destroyed) return this.volume;
@@ -200,12 +211,13 @@ export class Sound {
     this.volume = newVolume;
     this._gainNode.gain.value = newVolume;
 
-    return newVolume;
+    return this;
   }
 
   /**
    * 淡入音频
    * @param fadeTime - 淡入时间(秒)
+   * @returns 当前实例，支持链式调用
    */
   fadeIn(fadeTime = 0) {
     const gain = this._gainNode.gain;
@@ -214,11 +226,13 @@ export class Sound {
       gain.linearRampToValueAtTime(gain.value, currentTime + fadeTime);
       gain.setValueAtTime(0, currentTime);
     }
+    return this;
   }
 
   /**
    * 淡出音频
    * @param fadeTime - 淡出时间(秒)
+   * @returns 当前实例，支持链式调用
    */
   fadeOut(fadeTime = 0) {
     const gain = this._gainNode.gain;
@@ -227,11 +241,13 @@ export class Sound {
       gain.linearRampToValueAtTime(0, currentTime + fadeTime);
       gain.setValueAtTime(gain.value, currentTime);
     }
+    return this;
   }
 
   /**
    * 设置播放速率
-   * @param rate - 播放速率倍数 0.1-10
+   * @param rate - 播放速率倍数(0.1-10)
+   * @returns 当前实例，支持链式调用
    */
   setPlaybackRate(rate: number) {
     if (this.playbackRate === rate || this.destroyed) return this.playbackRate;
@@ -242,7 +258,7 @@ export class Sound {
     if (this._source) {
       this._source.playbackRate.value = newRate;
     }
-    return newRate;
+    return this;
   }
 
   /**

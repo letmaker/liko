@@ -106,6 +106,7 @@ export interface INodeOptions {
   mouseEnable?: boolean;
   mouseEnableChildren?: boolean;
   data?: Record<string, any>;
+  parent?: Node;
 }
 
 /**
@@ -199,6 +200,13 @@ export abstract class Node {
   /** 父节点引用，只有被添加到父节点内，此属性才有值 */
   get parent(): Node | undefined {
     return this.pp.parent;
+  }
+  set parent(value: Node | undefined) {
+    if (value) {
+      value.addChild(this);
+    } else {
+      this.removeSelf();
+    }
   }
 
   /** 子节点列表，请勿直接修改此数组，但可以直接读取 */
