@@ -81,23 +81,10 @@ export const physics = {
     script.src = "https://cdn.jsdelivr.net/npm/planck/dist/planck-with-testbed.min.js";
     script.onload = () => {
       const Testbed = (window as any).planck.Testbed;
+      const testbed = Testbed.mount();
+      testbed.start(world);
 
-      const div1 = document.createElement("div");
-      div1.id = "testbed-play";
-      document.body.appendChild(div1);
-
-      const div2 = document.createElement("div");
-      div2.id = "testbed-status";
-      document.body.appendChild(div2);
-
-      const div3 = document.createElement("div");
-      div3.id = "testbed-info";
-      document.body.appendChild(div3);
-
-      const testbed = Testbed.start(world);
-      testbed.step = () => {};
-
-      const canvas = document.getElementsByTagName("canvas")[0];
+      const canvas = testbed.canvas;
       canvas.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
       canvas.style.transform = "scaleY(-1)";
       canvas.style.pointerEvents = "none";
