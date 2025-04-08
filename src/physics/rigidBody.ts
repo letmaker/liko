@@ -165,6 +165,13 @@ export class RigidBody extends ScriptBase {
     return this._body.getMass();
   }
 
+  constructor(options?: IRigidBodyData) {
+    super();
+    if (options) {
+      this.setProps(options as Record<string, any>);
+    }
+  }
+
   onAwake(): void {
     if (!this.scene) throw new Error("Please add to a scene first");
 
@@ -236,17 +243,17 @@ export class RigidBody extends ScriptBase {
       case "box": {
         const hw = toPhy(width) / 2;
         const hh = toPhy(height) / 2;
-        fixture = this._body.createFixture(pl.Box(hw, hh, pl.Vec2(hw + offsetX, hh + offsetY)), options);
+        fixture = this._body.createFixture(new pl.Box(hw, hh, { x: hw + offsetX, y: hh + offsetY }), options);
         break;
       }
       case "circle": {
         const radius = toPhy(width);
-        fixture = this._body.createFixture(pl.Circle(pl.Vec2(offsetX, offsetY), radius), options);
+        fixture = this._body.createFixture(new pl.Circle({ x: offsetX, y: offsetY }, radius), options);
         break;
       }
       case "edge": {
         fixture = this._body.createFixture(
-          pl.Edge(pl.Vec2(offsetX, offsetY), pl.Vec2(offsetX + toPhy(width), offsetY)),
+          new pl.Edge({ x: offsetX, y: offsetY }, { x: offsetX + toPhy(width), y: offsetY }),
           options,
         );
         break;
@@ -257,7 +264,7 @@ export class RigidBody extends ScriptBase {
         for (const point of points) {
           vertices.push(toPhyPos(point));
         }
-        fixture = this._body.createFixture(pl.Polygon(vertices), options);
+        fixture = this._body.createFixture(new pl.Polygon(vertices), options);
         break;
       }
     }
@@ -282,7 +289,7 @@ export class RigidBody extends ScriptBase {
    * @param y 如果x为空，则不改变y方向速度
    */
   setVelocity(x?: number, y?: number): void {
-    this._body.setLinearVelocity(new pl.Vec2(x ?? this.linearVelocity.x, y ?? this.linearVelocity.y));
+    this._body.setLinearVelocity({ x: x ?? this.linearVelocity.x, y: y ?? this.linearVelocity.y });
   }
 
   /**

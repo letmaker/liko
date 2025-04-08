@@ -68,24 +68,6 @@ export abstract class ScriptBase {
   }
 
   /**
-   * 销毁脚本，脚本被销毁后，不再可用，回调 onDestroy
-   * 脚本销毁时，target、root、scene、stage、timer 上的所有监听都会被自动取消，如果还监听 Timer.system 需要自己手动取消
-   */
-  destroy(): void {
-    if (this._$destroyed) return;
-
-    this._$destroyed = true;
-    this._$enabled = false;
-    this.onDestroy();
-
-    this._$target?.offAll(this);
-    this.scene?.offAll(this);
-    this.stage?.offAll(this);
-    this.stage?.timer.clearAll(this);
-    this._$target = undefined;
-  }
-
-  /**
    * 通过数据设置属性
    * @param props - 属性列表
    * @returns 当前实例，支持链式调用
@@ -173,4 +155,22 @@ export abstract class ScriptBase {
    * 脚本被销毁时触发
    */
   onDestroy(): void {}
+
+  /**
+   * 销毁脚本，脚本被销毁后，不再可用，回调 onDestroy
+   * 脚本销毁时，target、root、scene、stage、timer 上的所有监听都会被自动取消，如果还监听 Timer.system 需要自己手动取消
+   */
+  destroy(): void {
+    if (this._$destroyed) return;
+
+    this._$destroyed = true;
+    this._$enabled = false;
+    this.onDestroy();
+
+    this._$target?.offAll(this);
+    this.scene?.offAll(this);
+    this.stage?.offAll(this);
+    this.stage?.timer.clearAll(this);
+    this._$target = undefined;
+  }
 }

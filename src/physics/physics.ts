@@ -9,7 +9,9 @@ const pixelRatio = 50;
 /** planck 物理 */
 export const pl = planck;
 /** 物理世界 */
-export const world = planck.World({ gravity: pl.Vec2(0, 20) });
+export const world = new planck.World({ gravity: { x: 0, y: -20 } });
+
+// planck.Settings.lengthUnitsPerMeter = 50;
 
 /** 2D 物理 */
 export const physics = {
@@ -20,7 +22,7 @@ export const physics = {
    * 设置重力，默认 y=20
    */
   setGravity: function (x = 0, y = 20) {
-    world.setGravity(pl.Vec2(x, y));
+    world.setGravity({ x, y });
     return this;
   },
 
@@ -44,7 +46,7 @@ export const physics = {
    * 移动世界的原点，对于大场景移动比较有用，不过也不推荐
    */
   shiftOrigin: function (x = 0, y = 10) {
-    world.shiftOrigin(pl.Vec2(x, y));
+    world.shiftOrigin({ x, y });
     return this;
   },
 
@@ -136,7 +138,7 @@ export function to2D(value: number) {
  * 转换游戏坐标到物理世界坐标
  */
 export function toPhyPos(pos: IPoint) {
-  return pl.Vec2(pos.x / pixelRatio, pos.y / pixelRatio);
+  return { x: pos.x / pixelRatio, y: pos.y / pixelRatio };
 }
 
 /**

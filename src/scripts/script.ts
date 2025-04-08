@@ -43,14 +43,6 @@ export class Script extends ScriptBase {
         target.on(EventType.mousemove, this.onMouseMove, this);
       }
 
-      // 键盘事件
-      if (this.onKeyDown !== prototype.onKeyDown) {
-        this.stage?.on(EventType.keydown, this.onKeyDown, this);
-      }
-      if (this.onKeyUp !== prototype.onKeyUp) {
-        this.stage?.on(EventType.keyup, this.onKeyUp, this);
-      }
-
       // 物理事件
       if (this.onCollisionStart !== prototype.onCollisionStart) {
         target.on(EventType.collisionStart, this.onCollisionStart, this);
@@ -62,6 +54,31 @@ export class Script extends ScriptBase {
       // 信号事件
       if (this.onSignal !== prototype.onSignal) {
         target.on(EventType.signal, this.onSignal, this);
+      }
+
+      const { stage } = this;
+      if (stage) {
+        // stage 事件
+        if (this.onStageClick !== prototype.onStageClick) {
+          stage.on(EventType.click, this.onStageClick, this);
+        }
+        if (this.onStageMouseDown !== prototype.onStageMouseDown) {
+          stage.on(EventType.mousedown, this.onStageMouseDown, this);
+        }
+        if (this.onStageMouseUp !== prototype.onStageMouseUp) {
+          stage.on(EventType.mouseup, this.onStageMouseUp, this);
+        }
+        if (this.onStageMouseMove !== prototype.onStageMouseMove) {
+          stage.on(EventType.mousemove, this.onStageMouseMove, this);
+        }
+
+        // 键盘事件
+        if (this.onKeyDown !== prototype.onKeyDown) {
+          stage.on(EventType.keydown, this.onKeyDown, this);
+        }
+        if (this.onKeyUp !== prototype.onKeyUp) {
+          stage.on(EventType.keyup, this.onKeyUp, this);
+        }
       }
     }
   }
@@ -95,20 +112,6 @@ export class Script extends ScriptBase {
   onMouseMove(e: MouseEvent): void {}
 
   /**
-   * 键盘按下时触发
-   * @param e 键盘事件对象
-   */
-  // @ts-expect-error
-  onKeyDown(e: KeyboardEvent): void {}
-
-  /**
-   * 键盘抬起时触发
-   * @param e 键盘事件对象
-   */
-  // @ts-expect-error
-  onKeyUp(e: KeyboardEvent): void {}
-
-  /**
    * 物理碰撞开始时触发
    * @param e 碰撞事件对象
    */
@@ -127,4 +130,46 @@ export class Script extends ScriptBase {
    */
   // @ts-expect-error
   onSignal(type: string, script: ScriptBase, ...args): void {}
+
+  /**
+   * 目标被点击时触发
+   * @param e 鼠标事件对象
+   */
+  // @ts-expect-error
+  onStageClick(e: MouseEvent): void {}
+
+  /**
+   * 目标在鼠标按下时触发
+   * @param e 鼠标事件对象
+   */
+  // @ts-expect-error
+  onStageMouseDown(e: MouseEvent): void {}
+
+  /**
+   * 目标在鼠标抬起时触发
+   * @param e 鼠标事件对象
+   */
+  // @ts-expect-error
+  onStageMouseUp(e: MouseEvent): void {}
+
+  /**
+   * 目标在鼠标移动时触发
+   * @param e 鼠标事件对象
+   */
+  // @ts-expect-error
+  onStageMouseMove(e: MouseEvent): void {}
+
+  /**
+   * 键盘按下时触发
+   * @param e 键盘事件对象
+   */
+  // @ts-expect-error
+  onKeyDown(e: KeyboardEvent): void {}
+
+  /**
+   * 键盘抬起时触发
+   * @param e 键盘事件对象
+   */
+  // @ts-expect-error
+  onKeyUp(e: KeyboardEvent): void {}
 }

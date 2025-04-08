@@ -773,6 +773,9 @@ export abstract class Node {
         bounds.addFrame(pos.x, pos.y, pos.x + child.width, pos.y + child.height);
       }
     }
+    if (bounds.width < 0 || bounds.height < 0) {
+      console.warn("bounds width <=0", this);
+    }
     return bounds;
   }
 

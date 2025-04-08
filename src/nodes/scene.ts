@@ -100,10 +100,11 @@ export class Scene extends Node implements IScene {
     this.pp.currentTime = 0;
     this.pp.playing = false;
     this.pp.paused = false;
-    this.setProps(options as Record<string, any>);
 
     this.on(EventType.addToStage, this.play, this);
     this.on(EventType.removed, this.stop, this);
+
+    this.setProps(options as Record<string, any>);
   }
 
   /**
