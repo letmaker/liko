@@ -2,6 +2,7 @@ import * as planck from "planck";
 import type { RigidBody } from "./rigidBody";
 import type { IPoint } from "../math/point";
 import { Timer } from "../utils/timer";
+import type { Rectangle } from "../math/rectangle";
 
 /** 像素点到物理世界的比率 */
 const pixelRatio = 50;
@@ -12,6 +13,7 @@ export const pl = planck;
 export const world = new planck.World({ gravity: { x: 0, y: -20 } });
 
 // planck.Settings.lengthUnitsPerMeter = 50;
+let boundaryArea: Rectangle | undefined = undefined;
 
 /** 2D 物理 */
 export const physics = {
@@ -63,6 +65,15 @@ export const physics = {
   },
 
   /**
+   * 设置全局边界，操过边界的刚体会被销毁
+   * @param area 边界区域，默认为空，即不限制
+   */
+  setBoundaryArea(area?: Rectangle) {
+    boundaryArea = area;
+    return this;
+  },
+
+  /**
    * 启动物理调试
    */
   debug: function () {
@@ -86,7 +97,10 @@ export const physics = {
       const testbed = Testbed.start(world);
       testbed.step = () => {};
 
-      document.body.getElementsByTagName("canvas")[0].style.background = "";
+      const canvas = document.getElementsByTagName("canvas")[0];
+      canvas.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+      canvas.style.transform = "scaleY(-1)";
+      canvas.style.pointerEvents = "none";
     };
     document.body.appendChild(script);
     return this;
@@ -146,6 +160,14 @@ export function toPhyPos(pos: IPoint) {
  */
 export function to2DPos(pos: IPoint) {
   return { x: pos.x * pixelRatio, y: pos.y * pixelRatio };
+}
+
+/**
+ * 检测点是否在全局边界内，如果不在，则销毁 target
+ */
+export function inBoundaryArea(pos: IPoint) {
+  if (!boundaryArea) return true;
+  return boundaryArea?.contains(pos.x, pos.y);
 }
 
 /**

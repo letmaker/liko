@@ -2,7 +2,7 @@ import type { Fixture } from "planck";
 import { Point, type IPoint } from "../math/point";
 import { ScriptBase } from "../scripts/script-base";
 import { RegScript } from "../utils/decorators";
-import { getCategoryBit, getCategoryMask, pl, to2DPos, toPhy, toPhyPos, world } from "./physics";
+import { getCategoryBit, getCategoryMask, inBoundaryArea, pl, to2DPos, toPhy, toPhyPos, world } from "./physics";
 
 /** 物理类型 */
 export type RigidType = "static" | "kinematic" | "dynamic";
@@ -200,6 +200,13 @@ export class RigidBody extends ScriptBase {
     const target = this.target;
     const pos = this._body.getPosition();
     let pos2D = to2DPos(pos);
+
+    // 检测是否在全局边界内，不在则销毁 target
+    if (!inBoundaryArea(pos2D)) {
+      this.target.destroy();
+      return;
+    }
+
     if (this.target.parent !== this.scene) {
       pos2D = this.target.parent!.toLocalPoint(pos2D, pos2D, this.scene);
     }
