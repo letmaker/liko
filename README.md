@@ -45,7 +45,7 @@ async function test() {
   await app.init({ width: 800, height: 800 });
 
   // Create text object
-  const text = new Text({
+  new Text({
     text: "Hello World", // Text content
     fillColor: "#ff0000", // Text color (red)
     fontSize: 30, // Font size

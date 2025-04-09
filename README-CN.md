@@ -47,7 +47,7 @@ async function test() {
   await app.init({ width: 800, height: 800 });
 
   // 创建文本对象
-  const text = new Text({
+  new Text({
     text: "Hello World", // 文本内容
     fillColor: "#ff0000", // 文本颜色（红色）
     fontSize: 30, // 字体大小
