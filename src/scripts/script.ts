@@ -1,6 +1,6 @@
 import { EventType } from "..";
 import type { MouseEvent } from "../events/mouse-event";
-import type { IRigidBody } from "../physics/rigidBody";
+import type { IRigidBody } from "../physics/rigidBody.interface";
 import { ScriptBase } from "./script-base";
 
 /**
