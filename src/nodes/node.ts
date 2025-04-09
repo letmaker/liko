@@ -17,22 +17,44 @@ import type { Stage } from "./stage";
 
 /** 节点数据接口 */
 export interface INodeData {
+  /** 节点 id，是节点的唯一标识，一般由编辑器指定  */
   id: string;
+  /** 节点类型，一般由编辑器指定 */
   type: string;
+  /** 节点描述，方便 AI 读取 */
+  description?: string;
+  /** 节点属性 */
   props: {
     label?: string;
     enabled?: boolean;
-    [key: string]: any;
+    editorOnly?: boolean;
+    pos?: IPoint;
+    scale?: IPoint;
+    anchor?: IPoint;
+    rotation?: number;
+    angle?: number;
+    width?: number;
+    height?: number;
+    alpha?: number;
+    visible?: boolean;
+    mouseEnable?: boolean;
+    mouseEnableChildren?: boolean;
+    [key: string]: unknown;
   };
-  children?: Array<INodeData>;
-  filters?: Array<IFilterData>;
-  scripts?: Array<IScriptData>;
+  /** 子节点列表 */
+  children?: INodeData[];
+  /** 滤镜列表 */
+  filters?: IFilterData[];
+  /** 脚本列表 */
+  scripts?: IScriptData[];
 }
 
 /** 脚本数据接口 */
 export interface IScriptData {
   id: string;
   type: "Script" | "Effect" | "Controller";
+  /** 脚本描述，方便 AI 读取 */
+  description?: string;
   props: {
     script: string;
     label?: string;
@@ -47,6 +69,8 @@ export interface IScriptData {
 export interface IFilterData {
   id: string;
   type: string;
+  /** 滤镜描述，方便 AI 读取 */
+  description?: string;
   props: {
     [key: string]: unknown;
   };
@@ -82,6 +106,7 @@ export interface INodePrivateProps {
   localMatrix: Matrix;
   worldMatrix: Matrix;
   pos: ObservablePoint;
+  anchor: ObservablePoint;
   width: number;
   height: number;
   visible: boolean;
@@ -96,7 +121,7 @@ export interface INodeOptions {
   label?: string;
   pos?: IPoint;
   scale?: IPoint;
-  pivot?: IPoint;
+  anchor?: IPoint;
   rotation?: number;
   angle?: number;
   width?: number;
@@ -127,6 +152,7 @@ export abstract class Node {
     localMatrix: new Matrix(),
     worldMatrix: new Matrix(),
     pos: new ObservablePoint(this),
+    anchor: new ObservablePoint(this),
     /** -1代表通过 getLocalBounds 获得宽 */
     width: -1,
     /** -1代表通过 getLocalBounds 获得高 */
@@ -262,8 +288,10 @@ export abstract class Node {
     return this.getLocalBounds().width;
   }
   set width(value: number) {
-    if (this.pp.width !== value) {
-      this.pp.width = value;
+    const pp = this.pp;
+    if (pp.width !== value) {
+      pp.width = value;
+      this.getTransform().pivot.x = value * pp.anchor.x;
       this.emit(EventType.resize);
       this.onDirty(DirtyType.size);
     }
@@ -275,8 +303,10 @@ export abstract class Node {
     return this.getLocalBounds().height;
   }
   set height(value: number) {
-    if (this.pp.height !== value) {
-      this.pp.height = value;
+    const pp = this.pp;
+    if (pp.height !== value) {
+      pp.height = value;
+      this.getTransform().pivot.y = value * pp.anchor.y;
       this.emit(EventType.resize);
       this.onDirty(DirtyType.size);
     }
@@ -314,12 +344,26 @@ export abstract class Node {
     this.getTransform().rotation = value * DEG_TO_RAD;
   }
 
-  /** 节点轴心点，此值影响节点旋转和缩放的中心 */
-  get pivot(): ObservablePoint {
+  /** 【只读】节点轴心点，此值影响节点旋转和缩放的中心 */
+  get pivot(): IPoint {
     return this.getTransform().pivot;
   }
-  set pivot(value: IPoint) {
-    this.getTransform().pivot.copyFrom(value);
+
+  /** 节点轴心点，此值为相比宽高的百分比，比如 0.5，为图片的中心 */
+  get anchor(): ObservablePoint {
+    return this.pp.anchor;
+  }
+  set anchor(value: IPoint) {
+    const pp = this.pp;
+    pp.anchor.copyFrom(value);
+
+    const { pivot } = this.getTransform();
+    if (pp.width !== -1) {
+      pivot.x = pp.width * value.x;
+    }
+    if (pp.height !== -1) {
+      pivot.y = pp.height * value.y;
+    }
   }
 
   /** 节点叠加颜色 */
@@ -488,36 +532,23 @@ export abstract class Node {
 
   /**
    * 根据筛选器获得子节点实例，获取后尽量缓存，不要频繁获取
-   * @param selector 滤镜筛选器，支持 'id'、'#label'、Sprite(类名), number(索引)
-   * @param deep 是否深度遍历，深度遍历子节点
    * @returns 返回查找到的子节点
    */
-  getChild(index: number, deep?: boolean): Node | undefined;
-  getChild(idOrLabel: string, deep?: boolean): Node | undefined;
-  getChild<T extends new (...args: any[]) => Node>(NodeClass: T): InstanceType<T> | undefined;
-  getChild<T extends new (...args: any[]) => Node>(selector: string | number | T, deep = false): Node | undefined {
-    if (typeof selector === "number") return this.children[selector] as Node;
-
-    if (!selector) return undefined;
-    const isString = typeof selector === "string";
-    const ClassObj = !isString ? selector : undefined;
-    const label = isString && selector.startsWith("#") ? selector.substring(1) : undefined;
-    const id = isString && !label ? selector : undefined;
-    return this._$getChild(id, label, ClassObj, deep);
-  }
-
-  private _$getChild(id?: string, label?: string, ClassObj?: any, deep?: boolean): Node | undefined {
-    const { children } = this;
+  getChild<T extends Node>(options: { id?: string; label?: string; Class?: typeof Node; deep?: boolean }):
+    | T
+    | undefined {
+    const { id, label, Class, deep } = options;
+    const { children } = this.pp;
     for (let i = 0, len = children.length; i < len; i++) {
       const child = children[i];
-      if (ClassObj && child instanceof ClassObj) return child;
-      if (id && child.id === id) return child;
-      if (label && child.label === label) return child;
+      if (id && child.id === id) return child as T;
+      if (label && child.label === label) return child as T;
+      if (Class && child instanceof Class) return child as T;
     }
     if (deep) {
       for (let i = 0, len = children.length; i < len; i++) {
-        const child = children[i]._$getChild(id, label, ClassObj, true);
-        if (child) return child;
+        const child = children[i].getChild(options);
+        if (child) return child as T;
       }
     }
     return undefined;
@@ -603,24 +634,16 @@ export abstract class Node {
 
   /**
    * 根据筛选器获取滤镜实例，获取后尽量缓存，不要频繁获取
-   * @param selector 滤镜筛选器，支持 'label'、'#id'、BlurFilter(类名)
    * @returns 返回匹配的滤镜实例
    */
-  getFilter(selector: string): Filter | undefined;
-  getFilter<T extends new (...args: any[]) => Filter>(FilterClass: T): InstanceType<T> | undefined;
-  getFilter<T extends new (...args: any[]) => Filter>(selector: string | T): Filter | undefined {
-    if (!selector) return undefined;
-    const isString = typeof selector === "string";
-    const ClassObj = !isString ? selector : undefined;
-    const id = isString && selector.startsWith("#") ? selector.substring(1) : "";
-    const label = id || ClassObj ? "" : (selector as string);
-
+  getFilter<T extends Filter>(options: { id?: string; label?: string; Class?: typeof Filter }): T | undefined {
+    const { id, label, Class } = options;
     const { filters } = this.pp;
     for (let i = 0, len = filters.length; i < len; i++) {
       const filter = filters[i];
-      if (ClassObj && filter instanceof ClassObj) return filter;
-      if (id && filter.id === id) return filter;
-      if (label && filter.label === label) return filter;
+      if (id && filter.id === id) return filter as T;
+      if (label && filter.label === label) return filter as T;
+      if (Class && filter instanceof Class) return filter as T;
     }
     return undefined;
   }
@@ -670,24 +693,17 @@ export abstract class Node {
 
   /**
    * 根据筛选器获取脚本实例，获取后尽量缓存，不要频繁获取
-   * @param selector 脚本筛选器，支持 'label'、'#id'、RigidBody(类名)
    * @returns 返回匹配的脚本实例
    */
-  getScript(selector: string): ScriptBase | undefined;
-  getScript<T extends new (...args: any[]) => ScriptBase>(ScriptClass: T): InstanceType<T> | undefined;
-  getScript<T extends new (...args: any[]) => ScriptBase>(selector: string | T): ScriptBase | undefined {
-    if (!selector) return undefined;
-    const isString = typeof selector === "string";
-    const ClassObj = !isString ? selector : undefined;
-    const id = isString && selector.startsWith("#") ? selector.substring(1) : "";
-    const label = id || ClassObj ? "" : (selector as string);
-
+  getScript<T extends ScriptBase>(options: { id?: string; label?: string; Class?: typeof ScriptBase }): T | undefined {
+    const { id, label, Class } = options;
     const { scripts } = this.pp;
+
     for (let i = 0, len = scripts.length; i < len; i++) {
       const script = scripts[i];
-      if (ClassObj && script instanceof ClassObj) return script;
-      if (id && script.id === id) return script;
-      if (label && script.label === label) return script;
+      if (id && script.id === id) return script as T;
+      if (label && script.label === label) return script as T;
+      if (Class && script instanceof Class) return script as T;
     }
     return undefined;
   }
@@ -856,7 +872,7 @@ export abstract class Node {
     const { children } = json;
     if (children) {
       for (const data of children) {
-        const child = createNodeInstance(data.type);
+        const child = data.props.editorOnly ? undefined : createNodeInstance(data.type);
         if (child) {
           this.addChild(child);
           child.fromJson(data);

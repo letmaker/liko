@@ -5,7 +5,8 @@ import type { IPoint } from "../math/point";
 import type { Renderer } from "../render/renderer";
 import { Store } from "../utils/store";
 import { Timer } from "../utils/timer";
-import { Node } from "./node";
+import { type INodeData, Node } from "./node";
+import { Scene } from "./scene";
 
 export class Stage extends Node {
   /** 场景时间轴，可以用来做加速及减速 */
@@ -42,17 +43,15 @@ export class Stage extends Node {
    * 重设 stage 大小
    */
   resize(width: number, height: number) {
+    this.width = width;
+    this.height = height;
     if (App.pixelRatio !== 1) {
       const newWidth = width * App.pixelRatio;
       const newHeight = height * App.pixelRatio;
-      this.width = newWidth;
-      this.height = newHeight;
       this.canvas.width = newWidth;
       this.canvas.height = newHeight;
       this.canvas.style.cssText = `width: ${width}px; height: ${height}px; `;
     } else {
-      this.width = width;
-      this.height = height;
       this.canvas.width = width;
       this.canvas.height = height;
     }
@@ -67,5 +66,25 @@ export class Stage extends Node {
   override hitTest(point: IPoint) {
     const bounds = this.getLocalBounds();
     return bounds.contains(point.x, point.y);
+  }
+
+  async loadScene(url: string, destroyOther = false) {
+    const scene = new Scene();
+    await scene.load(url);
+    if (destroyOther) {
+      this.destroyChildren();
+    }
+    this.addChild(scene);
+    return scene;
+  }
+
+  createScene(json: INodeData, destroyOther = false) {
+    const scene = new Scene();
+    scene.fromJson(json);
+    if (destroyOther) {
+      this.destroyChildren();
+    }
+    this.addChild(scene);
+    return scene;
   }
 }

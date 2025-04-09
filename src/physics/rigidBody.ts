@@ -61,6 +61,9 @@ export interface IRigidBodyData {
   categoryAccepted?: string[];
   /** 物理形状列表，用来描述碰撞的区域，如果为空，则默认为矩形，大小和宽高相同 */
   shapes?: IShape[];
+  id?: string;
+  label?: string;
+  isSensor?: boolean;
 }
 
 /**
@@ -78,14 +81,19 @@ export class RigidBody extends ScriptBase {
   shapes: IShape[] = [];
   /** 物理分类，用来作为碰撞依据 */
   category = "";
+  isSensor = false;
 
   private _categoryAccepted?: string[] | undefined;
   /** 接受碰撞的分类列表，本物体和只和列表中物品发生碰撞，如果为空，则和所有物体发生碰撞 */
   get categoryAccepted(): string[] | undefined {
     return this._categoryAccepted;
   }
-  set categoryAccepted(value: string) {
-    this._categoryAccepted = value.split(/[,，]/);
+  set categoryAccepted(value: string | string[] | undefined) {
+    if (typeof value === "string") {
+      this._categoryAccepted = value.split(/[,，]/);
+    } else {
+      this._categoryAccepted = value;
+    }
   }
 
   /** 当前物品的旋转速度 */
@@ -233,6 +241,7 @@ export class RigidBody extends ScriptBase {
 
     const options = {
       density: 1,
+      isSensor: this.isSensor,
       filterGroupIndex: 0,
       filterCategoryBits: getCategoryBit(this.category),
       filterMaskBits: getCategoryMask(this.categoryAccepted),
@@ -282,6 +291,7 @@ export class RigidBody extends ScriptBase {
 
   /**
    * 设置刚体位置
+   * 注意：如果物体使用了刚体，直接 node.pos.x = 100 是无效的，需要使用 setPosition 方法
    * @param x x轴坐标
    * @param y y轴坐标
    */

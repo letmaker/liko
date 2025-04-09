@@ -215,8 +215,8 @@ export class Text extends Node implements IRenderable {
     pp.ctx = pp.canvas.getContext("2d") as CanvasRenderingContext2D;
     pp.text = "";
     pp.lines = [];
-    pp.fillColor = "";
-    pp.strokeColor = "#efefef";
+    pp.fillColor = "#efefef";
+    pp.strokeColor = "";
     pp.strokeWidth = 0;
     pp.fontFamily = "Arial";
     pp.fontSize = 12;
@@ -229,6 +229,10 @@ export class Text extends Node implements IRenderable {
 
     this.setProps(options as Record<string, unknown>);
     // document.body.appendChild(pp.canvas);
+  }
+
+  setText(text: string) {
+    this.text = text;
   }
 
   private _$resetStyle() {

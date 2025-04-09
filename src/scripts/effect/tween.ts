@@ -224,6 +224,7 @@ export class Tween {
       this._resolve = resolve;
       this._playing = true;
       this._next();
+      this._update();
       Timer.system.frameLoop(1, this._update, this);
     });
   }

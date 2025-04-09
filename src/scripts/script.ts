@@ -53,7 +53,10 @@ export class Script extends ScriptBase {
 
       // 信号事件
       if (this.onSignal !== prototype.onSignal) {
-        target.on(EventType.signal, this.onSignal, this);
+        this.scene?.on(EventType.signal, this.onSignal, this);
+      }
+      if (this.onBroadcast !== prototype.onBroadcast) {
+        this.stage?.on(EventType.signal, this.onBroadcast, this);
       }
 
       const { stage } = this;
@@ -126,10 +129,16 @@ export class Script extends ScriptBase {
   onCollisionEnd(e: ICollision): void {}
 
   /**
-   * 同节点的脚本调用 signal 时触发，方便脚本间的通信
+   * 同场景的脚本调用 signal 时触发，方便同场景脚本间的通信
    */
   // @ts-expect-error
-  onSignal(type: string, script: ScriptBase, ...args): void {}
+  onSignal(type: string, params?: Record<string, any>): void {}
+
+  /**
+   * 全场景的脚本调用 broadcast 时触发，方便跨场景脚本间的通信
+   */
+  // @ts-expect-error
+  onBroadcast(type: string, params?: Record<string, any>): void {}
 
   /**
    * 目标被点击时触发

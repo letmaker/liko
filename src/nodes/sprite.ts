@@ -73,12 +73,20 @@ export class Sprite extends Node implements IRenderable {
 
   /** 加载图片 */
   async load(url: string) {
-    if (this.pp.url !== url) {
-      this.pp.url = url;
+    const pp = this.pp;
+    if (pp.url !== url) {
+      pp.url = url;
 
       const texture = await loader.load<Texture>(url);
       if (this.destroyed || !texture) return;
       this.texture = texture;
+
+      if (pp.width === -1) {
+        this.width = texture.width;
+      }
+      if (pp.height === -1) {
+        this.height = texture.height;
+      }
     }
     this.emit(EventType.loaded);
   }

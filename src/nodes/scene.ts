@@ -2,7 +2,7 @@ import { EventType } from "../const";
 import { loader } from "../loader";
 import { RegNode } from "../utils/decorators";
 import { createNodeInstance } from "../utils/register";
-import { getUID } from "../utils/utils";
+import { cloneJson, getUID } from "../utils/utils";
 import type { INodeData, INodeOptions, INodePrivateProps } from "./node";
 import { Node } from "./node";
 
@@ -24,11 +24,8 @@ export interface IScene extends IAnimation {
   playing: boolean;
   /** 是否暂停 */
   paused: boolean;
-  /**
-   * 克隆场景中的节点
-   * @param id - 节点ID
-   */
-  clone: (id: string) => Node | undefined;
+  /** 克隆场景中的节点 */
+  clone<T extends Node>(options: { id?: string; label?: string }): T | undefined;
   /** 暂停播放 */
   pause: () => void;
   /** 恢复播放 */
@@ -265,28 +262,35 @@ export class Scene extends Node implements IScene {
 
   /**
    * 克隆场景中某个节点
-   * @param id - 节点ID
    */
-  clone(id: string): Node | undefined {
-    const data = this._$findNodeData(id, this.json);
+  clone<T extends Node>(options: { id?: string; label?: string }): T | undefined {
+    const data = this._$findNodeData(options, this.json);
     if (data) {
-      const node = createNodeInstance(data.type);
+      // 深度克隆数据
+      const json = cloneJson(data);
+      const node = createNodeInstance(json.type);
       if (node) {
-        node.fromJson(data);
-        node.id = getUID();
-        return node;
+        json.props.id = getUID();
+        json.props.editorOnly = false;
+        node.fromJson(json);
+        return node as T;
       }
     }
+    console.warn(`clone node ${options.id ?? options.label} failed`);
     return undefined;
   }
 
-  private _$findNodeData(id: string, data?: INodeData): INodeData | undefined {
-    if (!data) return undefined;
-    if (data.id === id) return data;
-    if (data.children?.length) {
-      for (const child of data.children) {
-        const node = this._$findNodeData(id, child);
-        if (node) return node;
+  private _$findNodeData(options: { id?: string; label?: string }, json?: INodeData): INodeData | undefined {
+    if (!json) return undefined;
+
+    const { id, label } = options;
+    if (json.id === id) return json;
+    if (json.props.label === label) return json;
+
+    if (json.children?.length) {
+      for (const child of json.children) {
+        const data = this._$findNodeData(options, child);
+        if (data) return data;
       }
     }
     return undefined;
