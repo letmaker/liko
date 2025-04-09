@@ -104,17 +104,6 @@ export abstract class ScriptBase {
   }
 
   /**
-   * 全场景广播信号，发射的信号可以全场景 script 的 onSignal 内被监听到，用于跨场景脚本及节点之间的消息通信
-   * 注意：广播的信号，所有 script 内都会被监听到，消息太多的时候，会稍微影响性能。优先考虑使用同场景场景的 signal 方法
-   * 注意：broadcast 需要在脚本 destroy 前面触发，否则无法正确发送
-   * @param type 事件名称，不区分大小写
-   * @param params 可选参数
-   */
-  broadcast(key: string, params?: Record<string, any>): void {
-    this._$target?.stage?.emit(EventType.signal, key, params);
-  }
-
-  /**
    * 更新脚本，回调 onUpdate
    * @param delta - 距离上一帧的时间间隔
    */

@@ -177,10 +177,10 @@ describe("ScriptBase", () => {
     node.emit = emitSpy;
 
     // 调用 signal 方法
-    script.signal("test", 123, "abc");
+    script.signal("test", { data: 123, message: "abc" });
 
     // 验证 emit 方法被正确调用
-    expect(emitSpy).toHaveBeenCalledWith(EventType.signal, "test", script, 123, "abc");
+    expect(emitSpy).toHaveBeenCalledWith(EventType.signal, "test", { data: 123, message: "abc" });
 
     // 测试没有 target 时不应该触发事件
     script.destroy(); // 清除 target

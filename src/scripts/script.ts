@@ -55,9 +55,6 @@ export class Script extends ScriptBase {
       if (this.onSignal !== prototype.onSignal) {
         this.scene?.on(EventType.signal, this.onSignal, this);
       }
-      if (this.onBroadcast !== prototype.onBroadcast) {
-        this.stage?.on(EventType.signal, this.onBroadcast, this);
-      }
 
       const { stage } = this;
       if (stage) {
@@ -133,12 +130,6 @@ export class Script extends ScriptBase {
    */
   // @ts-expect-error
   onSignal(type: string, params?: Record<string, any>): void {}
-
-  /**
-   * 全场景的脚本调用 broadcast 时触发，方便跨场景脚本间的通信
-   */
-  // @ts-expect-error
-  onBroadcast(type: string, params?: Record<string, any>): void {}
 
   /**
    * 目标被点击时触发
