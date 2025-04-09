@@ -69,3 +69,4 @@ MIT
 ## 感谢
 - [planck-js](https://github.com/piqnt/planck.js)
 - [pixi.js](https://github.com/pixijs/pixijs)
+- [npm](https://www.npmjs.com/package/liko)
