@@ -1,6 +1,7 @@
 export * from "./const";
 export * from "./utils/register";
 export * from "./utils/decorators";
+export * from "./physics/rigidBody";
 export { Dispatcher } from "./utils/dispatcher";
 export { Timer } from "./utils/timer";
 export { App, type IAppOptions } from "./app";
