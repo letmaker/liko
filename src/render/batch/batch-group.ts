@@ -1,7 +1,7 @@
 import { DirtyType } from "../../const";
 import type { Matrix } from "../../math/matrix";
 import type { Node } from "../../nodes/node";
-import type { IRenderable } from "../../nodes/sprite";
+import type { IRenderable, Sprite } from "../../nodes/sprite";
 import { Color } from "../../utils/color";
 import type { CameraBuffer } from "../buffer/camera-buffer";
 import { IndexBuffer } from "../buffer/index-buffer";
@@ -87,7 +87,9 @@ export class BatchGroup {
         pp.color.changeAlpha(pp.alpha * pp.parent!.pp.color.alpha);
       }
 
-      if ("renderObject" in node) {
+      // TODO： texture的检查是否必须？
+      // 检查节点是否有 texture 和 renderObject
+      if ("renderObject" in node && (node as Sprite).texture) {
         const renderObject = node.renderObject as SpriteObject;
 
         if (tfDirty || dirty & DirtyType.size) {
