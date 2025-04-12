@@ -340,25 +340,25 @@ export class Canvas extends Node implements IRenderable {
    */
   stroke(options: {
     color: string | CanvasGradient | CanvasPattern;
-    lineWidth?: number;
-    lineCap?: CanvasLineCap;
-    lineJoin?: CanvasLineJoin;
-    lineDash?: number[];
-    lineDashOffset?: number;
+    width?: number;
+    cap?: CanvasLineCap;
+    join?: CanvasLineJoin;
+    dash?: number[];
+    dashOffset?: number;
     miterLimit?: number;
   }): this {
-    if (options.lineWidth && options.lineWidth > this.pp.maxLineWidth) {
-      this.pp.maxLineWidth = options.lineWidth;
+    if (options.width && options.width > this.pp.maxLineWidth) {
+      this.pp.maxLineWidth = options.width;
     }
     this.pp.cmd.push({
       type: "stroke",
       params: [
         options.color,
-        options.lineWidth,
-        options.lineCap,
-        options.lineJoin,
-        options.lineDash,
-        options.lineDashOffset,
+        options.width,
+        options.cap,
+        options.join,
+        options.dash,
+        options.dashOffset,
         options.miterLimit,
       ],
     });
@@ -368,20 +368,20 @@ export class Canvas extends Node implements IRenderable {
 
   private _$stroke(
     color: string | CanvasGradient | CanvasPattern,
-    lineWidth?: number,
-    lineCap?: CanvasLineCap,
-    lineJoin?: CanvasLineJoin,
-    lineDash?: number[],
-    lineDashOffset?: number,
+    width?: number,
+    cap?: CanvasLineCap,
+    join?: CanvasLineJoin,
+    dash?: number[],
+    dashOffset?: number,
     miterLimit?: number,
   ) {
     const ctx = this.pp.ctx;
     ctx.strokeStyle = color;
-    if (lineWidth) ctx.lineWidth = lineWidth;
-    if (lineCap) ctx.lineCap = lineCap;
-    if (lineJoin) ctx.lineJoin = lineJoin;
-    if (lineDash) ctx.setLineDash(lineDash);
-    if (lineDashOffset) ctx.lineDashOffset = lineDashOffset;
+    if (width) ctx.lineWidth = width;
+    if (cap) ctx.lineCap = cap;
+    if (join) ctx.lineJoin = join;
+    if (dash) ctx.setLineDash(dash);
+    if (dashOffset) ctx.lineDashOffset = dashOffset;
     if (miterLimit) ctx.miterLimit = miterLimit;
 
     ctx.stroke();
@@ -400,6 +400,7 @@ export class Canvas extends Node implements IRenderable {
         // TODO 为啥必须用 reset
         pp.ctx.reset();
         pp.ctx.scale(App.pixelRatio, App.pixelRatio);
+        // 确保正确应用 offset
         pp.ctx.translate(-pp.offset.x, -pp.offset.y);
         for (const cmd of pp.cmd) {
           if (cmd.type === "fill") {
@@ -425,13 +426,14 @@ export class Canvas extends Node implements IRenderable {
 
     // 根据线宽，留出一部分余地
     const linePadding = pp.maxLineWidth ? pp.maxLineWidth / 2 + 1 : 0;
-    const offsetX = (bounds.minX < 0 ? bounds.minX : 0) - linePadding;
-    const offsetY = (bounds.minY < 0 ? bounds.minY : 0) - linePadding;
+    // 修正 offset 计算，确保所有内容都在可视区域内
+    const offsetX = bounds.minX - linePadding;
+    const offsetY = bounds.minY - linePadding;
     pp.offset.set(offsetX, offsetY);
 
-    // 根据pixelRatio计算出新的宽高
     const scaleWidth = width * scale;
     const scaleHeight = height * scale;
+    // 根据pixelRatio计算出新的宽高
     const canvasWidth = Math.ceil(scaleWidth + linePadding * 2 * scale);
     const canvasHeight = Math.ceil(scaleHeight + linePadding * 2 * scale);
 

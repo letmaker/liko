@@ -93,10 +93,12 @@ export class Scene extends Node implements IScene {
 
   constructor(options?: ISceneOptions) {
     super();
-    this.pp.url = "";
-    this.pp.currentTime = 0;
-    this.pp.playing = false;
-    this.pp.paused = false;
+    const pp = this.pp;
+    pp.url = "";
+    pp.currentTime = 0;
+    pp.playing = false;
+    pp.paused = false;
+    this.mouseEnableChildren = true;
 
     this.on(EventType.addToStage, this.play, this);
     this.on(EventType.removed, this.stop, this);

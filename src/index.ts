@@ -1,7 +1,6 @@
 export * from "./const";
 export * from "./utils/register";
 export * from "./utils/decorators";
-export * from "./physics/rigidBody.interface";
 export { Dispatcher } from "./utils/dispatcher";
 export { Timer } from "./utils/timer";
 export { App, type IAppOptions } from "./app";
@@ -29,5 +28,4 @@ export { loader } from "./loader";
 export { sound, music } from "./sound/sound-manager";
 
 // 物理引擎
-export { physics } from "./physics/physics";
 export { RigidBody } from "./physics/rigidBody";

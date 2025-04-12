@@ -1,6 +1,6 @@
-import { EventType } from "..";
+import { EventType } from "../const";
 import type { MouseEvent } from "../events/mouse-event";
-import type { IRigidBody } from "../physics/rigidBody.interface";
+import type { RigidBody } from "../physics/rigidBody";
 import { ScriptBase } from "./script-base";
 
 /**
@@ -8,7 +8,7 @@ import { ScriptBase } from "./script-base";
  */
 export interface ICollision {
   /** 被碰撞的刚体对象 */
-  other: IRigidBody;
+  other: RigidBody;
   /** 碰撞接触信息，包含法线向量 */
   contact: { normal: { x: number; y: number; z: number } };
 }

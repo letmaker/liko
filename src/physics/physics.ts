@@ -2,61 +2,58 @@ import * as planck from "planck";
 import type { RigidBody } from "./rigidBody";
 import { type Rectangle, Timer, type IPoint } from "../";
 
-export const pl = planck;
-const pixelRatio = 50;
-
-/**
- * 转换游戏坐标到物理世界坐标
- */
-export function toPhy(value: number) {
-  return value / pixelRatio;
+interface FixtureUserData {
+  /** 允许穿透的边界方向 */
+  crossSide?: "left" | "right" | "top" | "bottom" | "none";
 }
 
 /**
- * 转换物理坐标到游戏坐标
+ * 物理引擎配置选项
  */
-export function to2D(value: number) {
-  return value * pixelRatio;
-}
-
-/**
- * 转换游戏坐标到物理世界坐标
- */
-export function toPhyPos(pos: IPoint) {
-  return { x: pos.x / pixelRatio, y: pos.y / pixelRatio };
-}
-
-/**
- * 转换物理坐标到游戏坐标
- */
-export function to2DPos(pos: IPoint) {
-  return { x: pos.x * pixelRatio, y: pos.y * pixelRatio };
-}
-
 export interface PhysicsOptions {
+  /** 是否启用物理引擎 */
+  enabled?: boolean;
+  /** 使用的计时器实例 */
   timer?: Timer;
+  /** 重力向量 */
   gravity?: { x: number; y: number };
+  /** 是否允许物体休眠 */
   allowSleeping?: boolean;
+  /** 物理世界边界区域，碰到边界会自动销毁，提升性能 */
   boundaryArea?: Rectangle;
+  /** 是否启用调试模式 */
   debug?: boolean;
 }
 
+/**
+ * 物理引擎类
+ * 2D 物理引擎封装，提供了坐标转换、碰撞检测、物理模拟等功能
+ */
 export class Physics {
-  private _count = 1;
-  private _categoryMap: Record<string, number> = {};
-  private _contacts: any[] = [];
+  private _categoryBitCount = 1;
+  private _categoryMap: { [category: string]: number } = {};
+  private _contacts: (number | planck.Contact)[] = [];
   private _enabled = false;
   private _timer = Timer.system;
+  private _pixelRatio = 50;
 
-  world = new planck.World({ gravity: { x: 0, y: -20 } });
+  /** Planck 物理引擎实例 */
+  pl = planck;
+  /** 物理世界实例 */
+  world = new planck.World({ gravity: { x: 0, y: 20 } });
+  /** 物理世界边界区域，超出此区域的刚体会被销毁 */
   boundaryArea?: Rectangle = undefined;
 
   constructor() {
+    this._setupCollision();
+  }
+
+  private _setupCollision(): void {
     const world = this.world;
 
     // 处理碰撞穿透
     world.on("pre-solve", (contact: planck.Contact) => {
-      const data = contact.getFixtureA().getUserData() as any;
+      const data = contact.getFixtureA().getUserData() as FixtureUserData;
       if (data?.crossSide) {
         const normal = contact.getManifold().localNormal;
         switch (data.crossSide) {
@@ -77,40 +74,91 @@ export class Physics {
     });
 
     // 处理碰撞
-    world.on("begin-contact", (contact) => onContact(0, contact));
-    world.on("end-contact", (contact) => onContact(1, contact));
-
-    const { _contacts: contacts } = this;
-    function onContact(type: number, contact: planck.Contact): void {
-      contacts.push(type, contact);
-    }
+    world.on("begin-contact", (contact) => this._onContact(0, contact));
+    world.on("end-contact", (contact) => this._onContact(1, contact));
   }
 
+  private _onContact(type: number, contact: planck.Contact): void {
+    this._contacts.push(type, contact);
+  }
+
+  /**
+   * 初始化物理引擎
+   * @param options - 物理引擎配置选项
+   * @returns 当前物理引擎实例，支持链式调用
+   */
   init(options?: PhysicsOptions) {
     if (options) {
+      if (options.timer) {
+        this._timer = options.timer;
+      }
+      if (options.gravity) {
+        this.setGravity(options.gravity.x, options.gravity.y);
+      }
       if (options.allowSleeping) {
         this.allowSleeping(options.allowSleeping);
       }
       if (options.boundaryArea) {
         this.setBoundaryArea(options.boundaryArea);
       }
-      if (options.gravity) {
-        this.setGravity(options.gravity.x, options.gravity.y);
-      }
-      if (options.timer) {
-        this._timer = options.timer;
+      if (options.enabled) {
+        this.enable(true);
       }
       if (options.debug) {
         this.debug();
       }
     }
 
-    this.enable(true);
     return this;
   }
 
   /**
-   * 设置重力，默认 y=20
+   * 转换游戏坐标到物理世界坐标
+   * @param value - 游戏世界中的坐标值
+   * @returns 物理世界中的坐标值
+   */
+  toPh(value: number) {
+    return value / this._pixelRatio;
+  }
+
+  /**
+   * 转换物理坐标到游戏坐标
+   * @param value - 物理世界中的坐标值
+   * @returns 游戏世界中的坐标值
+   */
+  to2D(value: number) {
+    return value * this._pixelRatio;
+  }
+
+  /**
+   * 转换游戏坐标点到物理世界坐标点
+   * @param pos - 游戏世界中的坐标点
+   * @param out - 输出结果的对象，默认为新对象
+   * @returns 物理世界中的坐标点
+   */
+  toPhPos(pos: IPoint, out: IPoint = { x: 0, y: 0 }) {
+    out.x = pos.x / this._pixelRatio;
+    out.y = pos.y / this._pixelRatio;
+    return out;
+  }
+
+  /**
+   * 转换物理坐标点到游戏坐标点
+   * @param pos - 物理世界中的坐标点
+   * @param out - 输出结果的对象，默认为新对象
+   * @returns 游戏世界中的坐标点
+   */
+  to2DPos(pos: IPoint, out: IPoint = { x: 0, y: 0 }) {
+    out.x = pos.x * this._pixelRatio;
+    out.y = pos.y * this._pixelRatio;
+    return out;
+  }
+
+  /**
+   * 设置重力
+   * @param x - 水平方向重力，默认为 0
+   * @param y - 垂直方向重力，默认为 20
+   * @returns 当前物理引擎实例，支持链式调用
    */
   setGravity(x = 0, y = 20) {
     this.world.setGravity({ x, y });
@@ -118,7 +166,9 @@ export class Physics {
   }
 
   /**
-   * 是否允许休眠
+   * 设置是否允许物体休眠
+   * @param value - 是否允许休眠
+   * @returns 当前物理引擎实例，支持链式调用
    */
   allowSleeping(value: boolean) {
     this.world.setAllowSleeping(value);
@@ -127,6 +177,7 @@ export class Physics {
 
   /**
    * 清理世界内的所有施加的力
+   * @returns 当前物理引擎实例，支持链式调用
    */
   clearForces() {
     this.world.clearForces();
@@ -134,7 +185,10 @@ export class Physics {
   }
 
   /**
-   * 移动世界的原点，对于大场景移动比较有用，不过也不推荐
+   * 移动世界的原点
+   * @param x - 新原点的 X 坐标，默认为 0
+   * @param y - 新原点的 Y 坐标，默认为 10
+   * @returns 当前物理引擎实例，支持链式调用
    */
   shiftOrigin(x = 0, y = 10) {
     this.world.shiftOrigin({ x, y });
@@ -142,7 +196,9 @@ export class Physics {
   }
 
   /**
-   * 开启或者禁用物理
+   * 启用或禁用物理引擎
+   * @param value - 是否启用，默认为 true
+   * @returns 当前物理引擎实例，支持链式调用
    */
   enable(value = true) {
     if (this._enabled !== value) {
@@ -154,8 +210,9 @@ export class Physics {
   }
 
   /**
-   * 设置全局边界，操过边界的刚体会被销毁
-   * @param area 边界区域，默认为空，即不限制
+   * 设置全局边界，超过边界的刚体会被销毁
+   * @param area - 边界区域，默认为 undefined（不限制）
+   * @returns 当前物理引擎实例，支持链式调用
    */
   setBoundaryArea(area?: Rectangle) {
     this.boundaryArea = area;
@@ -163,27 +220,37 @@ export class Physics {
   }
 
   /**
-   * 检测点是否在全局边界内，如果不在，则销毁 target
+   * 检测点是否在全局边界内
+   * @param pos - 要检测的点
+   * @returns 是否在边界内
    */
-  inBoundaryArea(pos: IPoint) {
+  inBoundaryArea(pos: IPoint): boolean {
     if (!this.boundaryArea) return true;
-    return this.boundaryArea?.contains(pos.x, pos.y);
+    return this.boundaryArea.contains(pos.x, pos.y);
   }
 
   /**
-   * 根据分类字符串获得分类的 bit 码
+   * 根据分类字符串获取分类的位掩码
+   * @param category - 分类名称
+   * @returns 对应的位掩码值
    */
   getCategoryBit(category?: string): number {
     if (!category) return 1;
     if (!this._categoryMap[category]) {
-      this._categoryMap[category] = 2 ** this._count;
-      this._count++;
+      if (this._categoryBitCount >= 31) {
+        console.error("物理引擎分类已达到最大数量(30)，无法创建新分类");
+        return 1; // 返回默认值
+      }
+      this._categoryMap[category] = 2 ** this._categoryBitCount;
+      this._categoryBitCount++;
     }
     return this._categoryMap[category];
   }
 
   /**
    * 根据碰撞列表，返回碰撞掩码
+   * @param masks - 碰撞分类名称列表
+   * @returns 组合后的碰撞掩码
    */
   getCategoryMask(masks?: string[]): number {
     if (!masks || masks.length === 0) return 65535;
@@ -195,11 +262,18 @@ export class Physics {
   }
 
   /**
-   * 物理循环
+   * 物理世界更新
+   * 处理物理模拟和碰撞事件，由计时器自动调用
    */
   update(): void {
-    const { world, _contacts: contacts } = this;
-    world.step(Timer.system.delta);
+    this.world.step(Timer.system.delta);
+    this._processContacts();
+  }
+
+  private _processContacts(): void {
+    const { _contacts: contacts } = this;
+
+    // 处理所有碰撞事件
     for (let i = 0; i < contacts.length; i += 2) {
       const type = contacts[i] ? "collisionEnd" : "collisionStart";
       const contact = contacts[i + 1] as planck.Contact;
@@ -222,11 +296,14 @@ export class Physics {
         });
       }
     }
+    // TODO 这个地方会有性能问题，待优化
     contacts.length = 0;
   }
 
   /**
-   * 启动物理调试
+   * 启动物理调试可视化
+   * 加载测试台并显示物理世界
+   * @returns 当前物理引擎实例，支持链式调用
    */
   debug() {
     const script = document.createElement("script");
@@ -246,4 +323,5 @@ export class Physics {
   }
 }
 
+/** 全局物理引擎实例 */
 export const physics = new Physics();

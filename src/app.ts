@@ -1,6 +1,7 @@
 import { KeyBoardManager } from "./events/keyboard-manager";
 import { MouseManager } from "./events/mouse-manager";
 import { Stage } from "./nodes/stage";
+import { createPhysics, type PhysicsOptions } from "./physics";
 import { Device, initDevice } from "./render/device/device";
 import { Renderer } from "./render/renderer";
 import type { ColorData } from "./utils/color";
@@ -21,6 +22,7 @@ export interface IAppOptions {
   canvas?: HTMLCanvasElement;
   pixelRatio?: number;
   autoResize?: boolean;
+  physics?: PhysicsOptions;
 }
 
 /**
@@ -70,6 +72,11 @@ export class App {
         const containerBounds = container.getBoundingClientRect();
         this.stage.resize(containerBounds.width, containerBounds.height);
       };
+    }
+
+    if (params.physics) {
+      const physics = await createPhysics();
+      physics.init({ timer: this.stage.timer, ...params.physics });
     }
 
     this.start();
