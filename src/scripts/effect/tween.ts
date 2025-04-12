@@ -225,7 +225,7 @@ export class Tween {
       this._playing = true;
       this._next();
       this._update();
-      Timer.system.frameLoop(1, this._update, this);
+      Timer.system.onFrame(this._update, this);
     });
   }
 
@@ -244,7 +244,7 @@ export class Tween {
   pause(): this {
     if (this._playing && !this._paused) {
       this._paused = true;
-      Timer.system.clear(this._update, this);
+      Timer.system.clearTimer(this._update, this);
     }
     return this;
   }
@@ -256,7 +256,7 @@ export class Tween {
   resume(): this {
     if (this._playing && this._paused) {
       this._paused = false;
-      Timer.system.frameLoop(1, this._update, this);
+      Timer.system.onFrame(this._update, this);
     }
     return this;
   }
@@ -269,7 +269,7 @@ export class Tween {
     if (this._playing) {
       this._playing = false;
       this._paused = false; // 重置暂停状态
-      Timer.system.clear(this._update, this);
+      Timer.system.clearTimer(this._update, this);
     }
     return this;
   }

@@ -2,7 +2,7 @@ import type { Node } from "../nodes/node";
 
 // biome-ignore format:
 /** 鼠标事件类型 */
-export type MouseEventType =  "mousedown" | "mouseup" | "click" | "mousemove" | "mouseout" | "mouseleave" | "mouseover" | "mouseupoutside";
+export type MouseEventType = "click" | "mousedown" | "mouseup" | "mousemove" | "mouseover" | "mouseout" | "mouseupoutside";
 
 /**
  * 鼠标事件，出于性能考虑，鼠标事件节点是复用的，每个类型（比如 mouseup，click 等）共用一个鼠标事件节点

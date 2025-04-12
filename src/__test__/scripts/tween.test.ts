@@ -159,7 +159,7 @@ describe("Tween", () => {
       const promise = tween.play();
       expect(promise).toBeInstanceOf(Promise);
       expect(tween.playing).toBe(true);
-      expect(Timer.system.frameLoop).toHaveBeenCalled();
+      expect(Timer.system.onFrame).toHaveBeenCalled();
 
       // 模拟动画完成
       // @ts-ignore - 使用私有方法进行测试
@@ -179,7 +179,7 @@ describe("Tween", () => {
       tween.pause();
 
       expect(tween.paused).toBe(true);
-      expect(Timer.system.clear).toHaveBeenCalled();
+      expect(Timer.system.clearTimer).toHaveBeenCalled();
     });
 
     it("resume() 应该恢复已暂停的缓动队列", () => {
@@ -194,7 +194,7 @@ describe("Tween", () => {
       tween.resume();
 
       expect(tween.paused).toBe(false);
-      expect(Timer.system.frameLoop).toHaveBeenCalledTimes(2);
+      expect(Timer.system.onFrame).toHaveBeenCalledTimes(2);
     });
 
     it("stop() 应该停止缓动队列", () => {
@@ -208,7 +208,7 @@ describe("Tween", () => {
       tween.stop();
 
       expect(tween.playing).toBe(false);
-      expect(Timer.system.clear).toHaveBeenCalled();
+      expect(Timer.system.clearTimer).toHaveBeenCalled();
     });
 
     it("destroy() 应该销毁整个缓动队列", () => {
@@ -223,7 +223,7 @@ describe("Tween", () => {
 
       expect(tween.destroyed).toBe(true);
       expect(tween.playing).toBe(false);
-      expect(Timer.system.clear).toHaveBeenCalled();
+      expect(Timer.system.clearTimer).toHaveBeenCalled();
     });
 
     it("onAllComplete() 应该设置整个缓动队列结束时的回调", async () => {

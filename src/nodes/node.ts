@@ -1,4 +1,5 @@
 import { DEG_TO_RAD, DirtyType, EventType, RAD_TO_DEG } from "../const";
+import type { MouseEvent } from "../events/mouse-event";
 import type { Bounds } from "../math/bounds";
 import { Matrix } from "../math/matrix";
 import { ObservablePoint } from "../math/observable-point";
@@ -77,13 +78,13 @@ export interface IFilterData {
 }
 
 const mouseMap: Record<string, boolean> = {
+  click: true,
   mousedown: true,
   mouseup: true,
   mousemove: true,
   mouseover: true,
   mouseout: true,
   mouseupoutside: true,
-  click: true,
 };
 
 const defaultTF = new Transform();
@@ -132,6 +133,14 @@ export interface INodeOptions {
   mouseEnableChildren?: boolean;
   data?: Record<string, any>;
   parent?: Node;
+
+  onClick?: (e: MouseEvent) => void;
+  onMouseDown?: (e: MouseEvent) => void;
+  onMouseUp?: (e: MouseEvent) => void;
+  onMouseMove?: (e: MouseEvent) => void;
+  onMouseOver?: (e: MouseEvent) => void;
+  onMouseOut?: (e: MouseEvent) => void;
+  onMouseUpOutside?: (e: MouseEvent) => void;
 }
 
 /**
@@ -897,7 +906,12 @@ export abstract class Node {
     if (props) {
       const keys = Object.keys(props);
       for (const key of keys) {
-        if (key in this) (this as any)[key] = props[key];
+        if (key.startsWith("on") && typeof props[key] === "function") {
+          const eventName = key.charAt(2).toLowerCase() + key.slice(3);
+          this.on(eventName, props[key] as () => void, this);
+        } else if (key in this) {
+          (this as any)[key] = props[key];
+        }
       }
     }
     return this;

@@ -112,7 +112,12 @@ export class Timer {
    * @param caller 调用者
    * @param args 回调参数
    */
-  once<T extends (...args: any[]) => void>(delay: number, callback: T, caller?: unknown, ...args: Parameters<T>): void {
+  setTimeout<T extends (...args: any[]) => void>(
+    delay: number,
+    callback: T,
+    caller?: unknown,
+    ...args: Parameters<T>
+  ): void {
     this._add(delay, callback, caller, args, false, true);
   }
 
@@ -123,7 +128,7 @@ export class Timer {
    * @param caller 调用者
    * @param args 回调参数
    */
-  loop<T extends (...args: any[]) => void>(
+  setInterval<T extends (...args: any[]) => void>(
     interval: number,
     callback: T,
     caller?: unknown,
@@ -133,35 +138,13 @@ export class Timer {
   }
 
   /**
-   * 延迟指定帧数执行计时回调一次，重复注册会先清理之前的注册
-   * @param delay 延迟帧数
+   * 每帧执行回调，重复注册会先清理之前的注册
    * @param callback 回调函数
    * @param caller 调用者
    * @param args 回调参数
    */
-  frameOnce<T extends (...args: any[]) => void>(
-    delay: number,
-    callback: T,
-    caller?: unknown,
-    ...args: Parameters<T>
-  ): void {
-    this._add(delay, callback, caller, args, true, true);
-  }
-
-  /**
-   * 循环延迟指定帧数执行计时回调，重复注册会先清理之前的注册
-   * @param interval 帧间隔
-   * @param callback 回调函数
-   * @param caller 调用者
-   * @param args 回调参数
-   */
-  frameLoop<T extends (...args: any[]) => void>(
-    interval: number,
-    callback: T,
-    caller?: unknown,
-    ...args: Parameters<T>
-  ): void {
-    this._add(interval, callback, caller, args, true, false);
+  onFrame<T extends (...args: any[]) => void>(callback: T, caller?: unknown, ...args: Parameters<T>): void {
+    this._add(1, callback, caller, args, true, false);
   }
 
   /**
@@ -190,7 +173,7 @@ export class Timer {
     }
 
     // 禁止重复注册
-    this.clear(callback, caller);
+    this.clearTimer(callback, caller);
     const timer = new TimerHandler(callback, caller, once, args, delayNum, useFrame);
     timer.nextTime = (useFrame ? this.currentFrame : this.currentTime) + delayNum;
     this._timers.push(timer);
@@ -201,7 +184,7 @@ export class Timer {
    * @param callback 回调函数
    * @param caller 调用者
    */
-  clear(callback: (...args: any[]) => void, caller?: unknown): void {
+  clearTimer(callback: (...args: any[]) => void, caller?: unknown): void {
     for (const timer of this._timers) {
       if (timer.callback === callback && (!caller || timer.caller === caller)) {
         timer.destroy();

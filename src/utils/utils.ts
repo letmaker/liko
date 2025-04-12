@@ -60,7 +60,7 @@ export function wait(seconds: number): Promise<void> {
  */
 export function waitNextFrame(): Promise<void> {
   return new Promise<void>((resolve) => {
-    Timer.system.frameOnce(1, () => resolve());
+    Timer.callLater(() => resolve());
   });
 }
 

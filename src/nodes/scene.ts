@@ -98,7 +98,6 @@ export class Scene extends Node implements IScene {
     pp.currentTime = 0;
     pp.playing = false;
     pp.paused = false;
-    this.mouseEnableChildren = true;
 
     this.on(EventType.addToStage, this.play, this);
     this.on(EventType.removed, this.stop, this);
@@ -183,7 +182,7 @@ export class Scene extends Node implements IScene {
     if (!pp.playing) {
       pp.playing = true;
       pp.paused = false;
-      this.stage?.timer.frameLoop(1, this.update, this);
+      this.stage?.timer.onFrame(this.update, this);
       this.emit(EventType.played);
     }
   }
@@ -196,7 +195,7 @@ export class Scene extends Node implements IScene {
     if (!pp.playing || pp.paused) return;
 
     pp.paused = true;
-    this.stage?.timer.clear(this.update, this);
+    this.stage?.timer.clearTimer(this.update, this);
     this.emit(EventType.paused);
   }
 
@@ -208,7 +207,7 @@ export class Scene extends Node implements IScene {
     if (!pp.playing || !pp.paused) return;
 
     pp.paused = false;
-    this.stage?.timer.frameLoop(1, this.update, this);
+    this.stage?.timer.onFrame(this.update, this);
     this.emit(EventType.resumed);
   }
 
@@ -248,7 +247,7 @@ export class Scene extends Node implements IScene {
   stop(): void {
     if (this.pp.playing) {
       this.pp.playing = false;
-      this.stage?.timer.clear(this.update, this);
+      this.stage?.timer.clearTimer(this.update, this);
       this.emit(EventType.stopped);
     }
   }

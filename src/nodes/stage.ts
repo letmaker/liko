@@ -1,8 +1,10 @@
 import { App } from "../app";
 import type { KeyBoardManager } from "../events/keyboard-manager";
 import type { MouseManager } from "../events/mouse-manager";
+import type { Bounds } from "../math/bounds";
 import type { IPoint } from "../math/point";
 import type { Renderer } from "../render/renderer";
+import { NodeCache } from "../render/utils/node-cache";
 import { Store } from "../utils/store";
 import { Timer } from "../utils/timer";
 import { type INodeData, Node } from "./node";
@@ -86,5 +88,11 @@ export class Stage extends Node {
     }
     this.addChild(scene);
     return scene;
+  }
+
+  getLocalBounds(): Bounds {
+    const bounds = NodeCache.locBounds.get(this);
+    bounds.set(0, 0, this.pp.width, this.pp.height);
+    return bounds;
   }
 }

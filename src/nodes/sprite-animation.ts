@@ -131,7 +131,7 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
       this.playing = true;
       console.assert(this.stage !== undefined, "please add to stage first before play");
 
-      this.stage?.timer.loop(1 / this.frameRate, this._$update, this);
+      this.stage?.timer.setInterval(1 / this.frameRate, this._$update, this);
       this.emit(EventType.played);
     }
   }
@@ -142,7 +142,7 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
   stop() {
     if (this.playing) {
       this.playing = false;
-      this.stage?.timer.clear(this._$update, this);
+      this.stage?.timer.clearTimer(this._$update, this);
       this.emit(EventType.stopped);
     }
   }

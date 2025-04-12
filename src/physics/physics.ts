@@ -203,8 +203,8 @@ export class Physics {
   enable(value = true) {
     if (this._enabled !== value) {
       this._enabled = value;
-      if (value) this._timer?.frameLoop(1, this.update, this);
-      else this._timer?.clear(this.update, this);
+      if (value) this._timer?.onFrame(this.update, this);
+      else this._timer?.clearTimer(this.update, this);
     }
     return this;
   }
