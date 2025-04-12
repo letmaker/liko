@@ -1,4 +1,5 @@
 import type { IPoint } from "../math/point";
+import type { ICollision } from "../scripts/script";
 
 /** 物理刚体类型：静态、运动学或动态 */
 export type RigidType = "static" | "kinematic" | "dynamic";
@@ -88,4 +89,9 @@ export interface RigidBodyOptions {
   friction?: number;
   /** 弹性系数，范围0-1，默认为0 */
   restitution?: number;
+
+  /** 碰撞开始回调 */
+  onCollisionStart?: (e: ICollision) => void;
+  /** 碰撞结束回调 */
+  onCollisionEnd?: (e: ICollision) => void;
 }

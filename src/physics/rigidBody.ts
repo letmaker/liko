@@ -1,6 +1,10 @@
 import type { Fixture, Body } from "planck";
-import { type IPoint, ScriptBase, Point, RegScript, PI2 } from "../";
 import type { RigidType, IShape, RigidBodyOptions } from "./rigidBody.interface";
+import type { ICollision } from "../scripts/script";
+import { type IPoint, Point } from "../math/point";
+import { EventType, PI2 } from "../const";
+import { ScriptBase } from "../scripts/script-base";
+import { RegScript } from "../utils/decorators";
 
 /**
  * 物理刚体组件，实现物理属性描述和碰撞区域定义
@@ -26,6 +30,11 @@ export class RigidBody extends ScriptBase {
   friction = 0.2;
   /** 弹性系数，范围0-1，默认为0 */
   restitution = 0;
+
+  /** 碰撞开始回调 */
+  onCollisionStart?: (e: ICollision) => void;
+  /** 碰撞结束回调 */
+  onCollisionEnd?: (e: ICollision) => void;
 
   private _categoryAccepted?: string[] | undefined;
   /** 接受碰撞的分类列表，为空则与所有物体碰撞 */
@@ -151,6 +160,19 @@ export class RigidBody extends ScriptBase {
     body.setAngle(target.rotation);
     body.setActive(true);
     body.setUserData(this);
+
+    if (this.onCollisionStart || this.onCollisionEnd) {
+      this._registerCollisionEvent();
+    }
+  }
+
+  private _registerCollisionEvent() {
+    if (this.onCollisionStart) {
+      this.target.on(EventType.collisionStart, this.onCollisionStart, this);
+    }
+    if (this.onCollisionEnd) {
+      this.target.on(EventType.collisionEnd, this.onCollisionEnd, this);
+    }
   }
 
   /**
@@ -313,10 +335,11 @@ export class RigidBody extends ScriptBase {
 
   /**
    * 设置刚体旋转角度
-   * @param angle - 旋转角度（弧度）
+   * @param rotation - 旋转角度（弧度）
    */
-  setRotation(angle: number): void {
-    this._body.setAngle(angle);
+  setRotation(rotation: number): void {
+    this._body.setAngle(rotation);
+    this.target.rotation = rotation;
     if (this.rigidType !== "static") this._body.setAwake(true);
   }
 

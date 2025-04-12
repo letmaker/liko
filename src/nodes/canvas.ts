@@ -348,7 +348,9 @@ export class Canvas extends Node implements IRenderable {
     miterLimit?: number;
   }): this {
     if (options.width && options.width > this.pp.maxLineWidth) {
-      this.pp.maxLineWidth = options.width;
+      // TODO 这里需要优化
+      // this.pp.maxLineWidth = options.width;
+      this.pp.maxLineWidth = 0;
     }
     this.pp.cmd.push({
       type: "stroke",
@@ -363,6 +365,10 @@ export class Canvas extends Node implements IRenderable {
       ],
     });
     this.pp.changed = true;
+    if (options.width) {
+      // 这里需要考虑描边宽度
+      this.pp.bounds.pad(0.5 * options.width);
+    }
     return this;
   }
 
@@ -465,9 +471,9 @@ export class Canvas extends Node implements IRenderable {
   private _$addPoint(x: number, y: number) {
     const bounds = this.pp.bounds;
     if (x < bounds.minX) bounds.minX = x;
-    else if (x > bounds.maxX) bounds.maxX = x;
+    if (x > bounds.maxX) bounds.maxX = x;
     if (y < bounds.minY) bounds.minY = y;
-    else if (y > bounds.maxY) bounds.maxY = y;
+    if (y > bounds.maxY) bounds.maxY = y;
   }
 
   protected override _customLocalBounds(bounds: Bounds) {
