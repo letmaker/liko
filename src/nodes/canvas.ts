@@ -1,6 +1,7 @@
 import { App } from "../app";
 import { DirtyType, PI2 } from "../const";
 import { Bounds } from "../math/bounds";
+import type { IPoint } from "../math/point";
 import { TextureBuffer } from "../render/buffer/texture-buffer";
 import { Device } from "../render/device/device";
 import { SpriteObject } from "../render/render/sprite-object";
@@ -391,26 +392,25 @@ export class Canvas extends Node implements IRenderable {
   }
 
   private _$drawCanvas() {
-    const { changed, canvas, ctx, cmd, maxLineWidth } = this.pp;
+    const { changed, canvas, ctx, cmd, maxLineWidth, bounds } = this.pp;
     if (changed) {
       this.pp.changed = false;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (cmd.length) {
-        const bounds = this.getLocalBounds();
         const { width, height } = bounds;
         const scale = App.pixelRatio;
         const canvasWidth = Math.ceil((width + maxLineWidth) * scale);
         const canvasHeight = Math.ceil((height + maxLineWidth) * scale);
 
         // 重置画布大小
-        this._$resizeCanvas(canvasWidth, canvasHeight);
+        this._$resizeCanvas(bounds, canvasWidth, canvasHeight);
 
         ctx.reset();
-        ctx.resetTransform();
+        // ctx.resetTransform();
         ctx.scale(scale, scale);
         // 确保正确应用 offset
-        ctx.translate(maxLineWidth * 0.5, maxLineWidth * 0.5);
+        ctx.translate(-bounds.x + maxLineWidth * 0.5, -bounds.y + maxLineWidth * 0.5);
 
         for (const c of cmd) {
           if (c.type === "fill") {
@@ -426,26 +426,26 @@ export class Canvas extends Node implements IRenderable {
     }
   }
 
-  private _$resizeCanvas(canvasWidth: number, canvasHeight: number) {
+  private _$resizeCanvas(offset: IPoint, canvasWidth: number, canvasHeight: number) {
     const { canvas, texture, width, height } = this.pp;
+
+    const sheet = {
+      // 裁剪后的小图在图集上的位置和大小
+      frame: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
+      // 裁剪后的图，在原图片的位置和大小
+      spriteSourceSize: { x: offset.x * App.pixelRatio, y: offset.y * App.pixelRatio, w: canvasWidth, h: canvasHeight },
+      // 原图大小（包含空白）
+      sourceSize: { w: canvasWidth, h: canvasHeight },
+      rotated: false,
+      trimmed: true,
+    };
 
     if (canvasWidth > canvas.width || canvasHeight > canvas.height) {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
-      texture.set(new TextureBuffer(canvas));
+      texture.set(new TextureBuffer(canvas), undefined, sheet);
       this.onDirty(DirtyType.child);
     } else {
-      const sheet = {
-        // 裁剪后的小图在图集上的位置和大小
-        frame: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
-        // 裁剪后的图，在原图片的位置和大小
-        spriteSourceSize: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
-        // 原图大小（包含空白）
-        sourceSize: { w: canvasWidth, h: canvasHeight },
-        rotated: false,
-        trimmed: true,
-      };
-
       texture.set(texture.buffer, undefined, sheet);
       // 宽高不变，重新更新 Texture 的图片
       texture.buffer.dirty();
@@ -466,8 +466,9 @@ export class Canvas extends Node implements IRenderable {
   }
 
   protected override _customLocalBounds(bounds: Bounds) {
-    const b = this.pp.bounds;
-    bounds.addFrame(b.minX, b.minY, b.maxX, b.maxY);
+    const { bounds: b, maxLineWidth } = this.pp;
+    const offset = maxLineWidth * 0.5;
+    bounds.addFrame(b.minX + offset, b.minY + offset, b.maxX + offset, b.maxY + offset);
   }
 
   private _$dirty() {
