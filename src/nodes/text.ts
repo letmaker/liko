@@ -6,6 +6,7 @@ import { Device } from "../render/device/device";
 import { SpriteObject } from "../render/render/sprite-object";
 import { Texture } from "../resource/texture";
 import { RegNode } from "../utils/decorators";
+import { Timer } from "../utils/timer";
 import type { INodeOptions } from "./node";
 import { type INodePrivateProps, Node } from "./node";
 import type { IRenderable } from "./sprite";
@@ -75,8 +76,18 @@ export class Text extends Node implements IRenderable {
     if (pp.text !== value) {
       pp.text = value;
       pp.lines = pp.text.split("\n");
-      pp.changed = true;
+      this._$dirty();
     }
+  }
+
+  private _$dirty() {
+    if (this.pp.changed) return;
+
+    this.pp.changed = true;
+    this.onDirty(DirtyType.texture);
+    this.onDirty(DirtyType.transform);
+    this.onDirty(DirtyType.size);
+    Timer.callLater(this._$drawText, this);
   }
 
   /** 文本填充颜色 */
@@ -86,7 +97,7 @@ export class Text extends Node implements IRenderable {
   set fillColor(value) {
     if (this.pp.fillColor !== value) {
       this.pp.fillColor = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -97,7 +108,7 @@ export class Text extends Node implements IRenderable {
   set strokeColor(value) {
     if (this.pp.strokeColor !== value) {
       this.pp.strokeColor = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -108,7 +119,7 @@ export class Text extends Node implements IRenderable {
   set strokeWidth(value) {
     if (this.pp.strokeWidth !== value) {
       this.pp.strokeWidth = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -119,7 +130,7 @@ export class Text extends Node implements IRenderable {
   set fontFamily(value) {
     if (this.pp.fontFamily !== value) {
       this.pp.fontFamily = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -130,7 +141,7 @@ export class Text extends Node implements IRenderable {
   set fontSize(value) {
     if (this.pp.fontSize !== value) {
       this.pp.fontSize = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -141,7 +152,7 @@ export class Text extends Node implements IRenderable {
   set fontWeight(value) {
     if (this.pp.fontWeight !== value) {
       this.pp.fontWeight = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -152,7 +163,7 @@ export class Text extends Node implements IRenderable {
   set italic(value) {
     if (this.pp.italic !== value) {
       this.pp.italic = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -163,7 +174,7 @@ export class Text extends Node implements IRenderable {
   set lineHeight(value) {
     if (this.pp.lineHeight !== value) {
       this.pp.lineHeight = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -174,27 +185,27 @@ export class Text extends Node implements IRenderable {
   set align(value) {
     if (this.pp.align !== value) {
       this.pp.align = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
-  get width(): number {
+  override get width(): number {
     return super.width;
   }
-  set width(value: number) {
+  override set width(value: number) {
     if (this.pp.width !== value) {
       super.width = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
-  get height(): number {
+  override get height(): number {
     return super.height;
   }
-  set height(value: number) {
+  override set height(value: number) {
     if (this.pp.height !== value) {
       super.height = value;
-      this.pp.changed = true;
+      this._$dirty();
     }
   }
 
@@ -225,7 +236,7 @@ export class Text extends Node implements IRenderable {
     pp.lineHeight = 1;
     pp.textWidth = 0;
     pp.changed = false;
-    pp.texture = Texture.BLANK;
+    pp.texture = new Texture();
 
     this.setProps(options as Record<string, unknown>);
     // document.body.appendChild(pp.canvas);
@@ -236,28 +247,27 @@ export class Text extends Node implements IRenderable {
   }
 
   private _$resetStyle() {
-    const pp = this.pp;
-    const ctx = pp.ctx;
+    const { ctx, italic, fontWeight, fontSize, fontFamily, fillColor, align, strokeColor } = this.pp;
     ctx.textBaseline = "alphabetic";
-    ctx.font = `${pp.italic ? "italic " : ""}${pp.fontWeight} ${pp.fontSize}px ${pp.fontFamily}`;
-    ctx.fillStyle = pp.fillColor;
-    ctx.textAlign = pp.align;
-    ctx.strokeStyle = pp.strokeColor;
+    ctx.font = `${italic ? "italic " : ""}${fontWeight} ${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = fillColor;
+    ctx.textAlign = align;
+    ctx.strokeStyle = strokeColor;
   }
 
   private _$measure() {
-    const pp = this.pp;
+    const { lines, ctx, fontSize, lineHeight } = this.pp;
     this._$resetStyle();
 
     let maxWidth = 0;
-    for (const text of this.pp.lines) {
-      maxWidth = Math.max(Math.ceil(this.pp.ctx.measureText(text).width), maxWidth);
+    for (const text of lines) {
+      maxWidth = Math.max(Math.ceil(ctx.measureText(text).width), maxWidth);
     }
 
-    pp.textWidth = maxWidth;
-    pp.textHeight = pp.fontSize * pp.lineHeight * pp.lines.length;
+    this.pp.textWidth = maxWidth;
+    this.pp.textHeight = fontSize * lineHeight * lines.length;
 
-    const metrics = this.pp.ctx.measureText("|ÉqÅM");
+    const metrics = ctx.measureText("|ÉqÅM");
     return {
       /** 上升界到文本基线的距离 */
       ascent: metrics.actualBoundingBoxAscent,
@@ -270,62 +280,58 @@ export class Text extends Node implements IRenderable {
     bounds.addFrame(0, 0, this.textWidth, this.textHeight);
   }
 
-  getLocalBounds(): Bounds {
-    // 获取 bounds 之前，先绘制
+  override getLocalBounds(): Bounds {
+    // 获取 bounds 之前，先绘制，会调用度量文本
     if (this.pp.changed) this._$drawText();
     return super.getLocalBounds();
   }
 
-  getWorldBounds(): Bounds {
-    // 获取 bounds 之前，先绘制
-    if (this.pp.changed) this._$drawText();
-    return super.getWorldBounds();
-  }
-
   private _$drawText() {
-    const pp = this.pp;
-    if (pp.changed) {
-      pp.changed = false;
-      this.onDirty(DirtyType.texture);
-      pp.ctx.clearRect(0, 0, pp.canvas.width, pp.canvas.height);
+    const { changed, canvas, ctx, align, textWidth, strokeWidth, strokeColor, fillColor, lines, fontSize, lineHeight } =
+      this.pp;
+    if (changed) {
+      this.pp.changed = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 度量文本
       const metrics = this._$measure();
       const scale = App.pixelRatio;
+      const canvasWidth = Math.ceil(this.textWidth * scale);
+      const canvasHeight = Math.ceil(this.textHeight * scale);
 
-      // 根据大小，重置画布及 texture
-      this._$resizeCanvas(Math.ceil(this.textWidth * scale), Math.ceil(this.textHeight * scale));
+      // 重置画布大小
+      this._$resizeCanvas(canvasWidth, canvasHeight);
       // 重置了 canvas 后，会丢失样式，这里重新设置一次
       this._$resetStyle();
 
-      const ctx = pp.ctx;
-      const startX = pp.align === "left" ? 0 : pp.align === "right" ? pp.textWidth : pp.textWidth * 0.5;
-      const x = startX + pp.strokeWidth * 0.5 + this.padding;
+      const x = align === "left" ? 0 : align === "right" ? textWidth : textWidth * 0.5;
       // 行高
-      const lineHeight = pp.fontSize * pp.lineHeight;
+      const textLineHeight = fontSize * lineHeight;
       // 行间距和度量出来的字体高度之间的距离
-      const lineHeightPadding = (lineHeight - metrics.fontHeight) * 0.5;
+      const lineHeightPadding = (textLineHeight - metrics.fontHeight) * 0.5;
       ctx.resetTransform();
       ctx.scale(scale, scale);
+      // 确保正确应用 offset
+      ctx.translate(strokeWidth * 0.5 + this.padding, strokeWidth * 0.5 + this.padding);
 
-      if (pp.strokeWidth && pp.strokeColor) {
-        ctx.strokeStyle = pp.strokeColor;
-        ctx.lineWidth = pp.strokeWidth;
+      if (strokeWidth && strokeColor) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeWidth;
 
-        for (let i = 0; i < pp.lines.length; i++) {
-          const text = pp.lines[i];
+        for (let i = 0; i < lines.length; i++) {
+          const text = lines[i];
           // ascent = 上升边界到文本基线的距离
-          const y = i * lineHeight + lineHeightPadding + metrics.ascent + pp.strokeWidth * 0.5 + this.padding;
+          const y = i * textLineHeight + lineHeightPadding + metrics.ascent;
           ctx.strokeText(text, x, y);
         }
       }
 
-      if (pp.fillColor) {
-        ctx.fillStyle = pp.fillColor;
-        for (let i = 0; i < pp.lines.length; i++) {
-          const text = pp.lines[i];
+      if (fillColor) {
+        ctx.fillStyle = fillColor;
+        for (let i = 0; i < lines.length; i++) {
+          const text = lines[i];
           // ascent = 上升边界到文本基线的距离
-          const y = i * lineHeight + lineHeightPadding + metrics.ascent + pp.strokeWidth * 0.5 + this.padding;
+          const y = i * textLineHeight + lineHeightPadding + metrics.ascent;
           ctx.fillText(text, x, y);
         }
       }
@@ -333,28 +339,31 @@ export class Text extends Node implements IRenderable {
   }
 
   private _$resizeCanvas(canvasWidth: number, canvasHeight: number) {
-    const pp = this.pp;
-    const canvas = pp.canvas;
+    const { canvas, texture, width, height } = this.pp;
 
-    // 实际画布可能更大，所以需要用 sheet
-    const sheet = {
-      frame: { x: 0, y: 0, w: canvasWidth, h: canvasWidth },
-      spriteSourceSize: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
-      sourceSize: { w: canvasWidth, h: canvasHeight },
-      rotated: false,
-      trimmed: false,
-    };
-
-    // 根据画布大小，创建 Texture
-    if (canvasWidth > canvas.width || canvasHeight > canvas.height || pp.texture === Texture.BLANK) {
-      if (pp.texture === Texture.BLANK) pp.texture = new Texture();
+    if (canvasWidth > canvas.width || canvasHeight > canvas.height) {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
-      pp.texture.set(new TextureBuffer(canvas));
+      texture.set(new TextureBuffer(canvas));
+      this.onDirty(DirtyType.child);
     } else {
-      pp.texture.set(pp.texture.buffer, undefined, sheet);
+      // 实际画布可能更大，所以需要用 sheet
+      const sheet = {
+        frame: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
+        spriteSourceSize: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
+        sourceSize: { w: canvasWidth, h: canvasHeight },
+        rotated: false,
+        trimmed: true,
+      };
+
+      texture.set(texture.buffer, undefined, sheet);
       // 宽高不变，重新更新 Texture 的图片
-      pp.texture.buffer.dirty();
+      texture.buffer.dirty();
+    }
+
+    // 适应轴心点变化
+    if (width === -1 && height === -1) {
+      this.anchor = this.anchor;
     }
   }
 }

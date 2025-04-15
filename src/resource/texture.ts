@@ -1,7 +1,6 @@
 import { loader } from "../loader";
 import { Rectangle } from "../math/rectangle";
 import type { ITextureBuffer } from "../render/buffer/interface";
-import { RenderTargetBuffer } from "../render/buffer/render-target-buffer";
 import { groupD8 } from "../render/utils/groupD8";
 import { getUID } from "../utils/utils";
 
@@ -22,14 +21,6 @@ export interface ISheet {
  * 纹理 = source + uv
  */
 export class Texture {
-  private static _blank?: Texture;
-  static get BLANK() {
-    if (!Texture._blank) {
-      Texture._blank = new Texture().set(new RenderTargetBuffer(10, 10));
-    }
-    return Texture._blank;
-  }
-
   readonly uid = getUID();
   readonly uvs = { x0: 0, y0: 0, x1: 1, y1: 0, x2: 1, y2: 1, x3: 0, y3: 1 };
 

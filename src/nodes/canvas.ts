@@ -1,12 +1,12 @@
 import { App } from "../app";
 import { DirtyType, PI2 } from "../const";
 import { Bounds } from "../math/bounds";
-import { Point } from "../math/point";
 import { TextureBuffer } from "../render/buffer/texture-buffer";
 import { Device } from "../render/device/device";
 import { SpriteObject } from "../render/render/sprite-object";
 import { Texture } from "../resource/texture";
 import { RegNode } from "../utils/decorators";
+import { Timer } from "../utils/timer";
 import type { INodeOptions, INodePrivateProps } from "./node";
 import { Node } from "./node";
 import type { IRenderable } from "./sprite";
@@ -16,10 +16,9 @@ interface ICanvasPrivateProps extends INodePrivateProps {
   cmd: Array<{ type: string; params: any }>;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  offset: Point;
-  maxLineWidth: number;
   texture: Texture;
   changed: boolean;
+  maxLineWidth: number;
 }
 
 /**
@@ -38,10 +37,9 @@ export class Canvas extends Node implements IRenderable {
     pp.cmd = [];
     pp.canvas = Device.createCanvas(1, 1);
     pp.ctx = pp.canvas.getContext("2d") as CanvasRenderingContext2D;
-    pp.offset = new Point();
-    pp.maxLineWidth = 0;
-    pp.texture = Texture.BLANK;
+    pp.texture = new Texture();
     pp.changed = false;
+    pp.maxLineWidth = 0;
 
     // document.body.appendChild(pp.canvas);
   }
@@ -60,7 +58,8 @@ export class Canvas extends Node implements IRenderable {
     pp.cmd.length = 0;
     pp.bounds.reset();
     pp.ctx.clearRect(0, 0, pp.canvas.width, pp.canvas.height);
-    pp.changed = true;
+    pp.maxLineWidth = 0;
+    this._$dirty();
     return this;
   }
 
@@ -160,12 +159,13 @@ export class Canvas extends Node implements IRenderable {
     const height = dh ?? image.height;
     // biome-ignore lint/style/noArguments: <explanation>
     const { length } = arguments;
+    const { cmd } = this.pp;
     if (length === 3) {
-      this.pp.cmd.push({ type: "drawImage", params: [source, dx, dy] });
+      cmd.push({ type: "drawImage", params: [source, dx, dy] });
     } else if (length === 5) {
-      this.pp.cmd.push({ type: "drawImage", params: [source, dx, dy, dw, dh] });
+      cmd.push({ type: "drawImage", params: [source, dx, dy, dw, dh] });
     } else if (length === 9) {
-      this.pp.cmd.push({ type: "drawImage", params: [source, sx, sy, sw, sh, dx, dy, dw, dh] });
+      cmd.push({ type: "drawImage", params: [source, sx, sy, sw, sh, dx, dy, dw, dh] });
     } else {
       throw new Error("arguments length error");
     }
@@ -198,7 +198,7 @@ export class Canvas extends Node implements IRenderable {
       this._$addPoint(dx, dy);
       this._$addPoint(dx + width, dy + height);
 
-      this.pp.changed = true;
+      this._$dirty();
     };
 
     return this;
@@ -326,13 +326,14 @@ export class Canvas extends Node implements IRenderable {
    */
   fill(options: { color: string | CanvasGradient | CanvasPattern }): this {
     this.pp.cmd.push({ type: "fill", params: [options.color] });
-    this.pp.changed = true;
+    this._$dirty();
     return this;
   }
 
   private _$fill(color: string | CanvasGradient | CanvasPattern) {
-    this.pp.ctx.fillStyle = color;
-    this.pp.ctx.fill();
+    const { ctx } = this.pp;
+    ctx.fillStyle = color;
+    ctx.fill();
   }
 
   /**
@@ -347,11 +348,6 @@ export class Canvas extends Node implements IRenderable {
     dashOffset?: number;
     miterLimit?: number;
   }): this {
-    if (options.width && options.width > this.pp.maxLineWidth) {
-      // TODO 这里需要优化
-      // this.pp.maxLineWidth = options.width;
-      this.pp.maxLineWidth = 0;
-    }
     this.pp.cmd.push({
       type: "stroke",
       params: [
@@ -364,11 +360,12 @@ export class Canvas extends Node implements IRenderable {
         options.miterLimit,
       ],
     });
-    this.pp.changed = true;
+
     if (options.width) {
-      // 这里需要考虑描边宽度
-      this.pp.bounds.pad(0.5 * options.width);
+      this.pp.maxLineWidth = Math.max(this.pp.maxLineWidth, options.width);
     }
+
+    this._$dirty();
     return this;
   }
 
@@ -394,82 +391,74 @@ export class Canvas extends Node implements IRenderable {
   }
 
   private _$drawCanvas() {
-    const pp = this.pp;
-    if (pp.changed) {
-      pp.changed = false;
-      this.onDirty(DirtyType.texture);
-      if (pp.cmd.length) {
-        // 根据 bounds，重置画布大小
-        this._$resizeCanvas();
+    const { changed, canvas, ctx, cmd, maxLineWidth } = this.pp;
+    if (changed) {
+      this.pp.changed = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 开始绘制
-        // TODO 为啥必须用 reset
-        pp.ctx.reset();
-        pp.ctx.scale(App.pixelRatio, App.pixelRatio);
+      if (cmd.length) {
+        const bounds = this.getLocalBounds();
+        const { width, height } = bounds;
+        const scale = App.pixelRatio;
+        const canvasWidth = Math.ceil((width + maxLineWidth) * scale);
+        const canvasHeight = Math.ceil((height + maxLineWidth) * scale);
+
+        // 重置画布大小
+        this._$resizeCanvas(canvasWidth, canvasHeight);
+
+        ctx.reset();
+        ctx.resetTransform();
+        ctx.scale(scale, scale);
         // 确保正确应用 offset
-        pp.ctx.translate(-pp.offset.x, -pp.offset.y);
-        for (const cmd of pp.cmd) {
-          if (cmd.type === "fill") {
-            this._$fill.apply(this, cmd.params);
-          } else if (cmd.type === "stroke") {
-            this._$stroke.apply(this, cmd.params);
+        ctx.translate(maxLineWidth * 0.5, maxLineWidth * 0.5);
+
+        for (const c of cmd) {
+          if (c.type === "fill") {
+            this._$fill.apply(this, c.params);
+          } else if (c.type === "stroke") {
+            this._$stroke.apply(this, c.params);
           } else {
-            const fun = (CanvasRenderingContext2D.prototype as any)[cmd.type];
-            fun.apply(pp.ctx, cmd.params);
+            const fun = (CanvasRenderingContext2D.prototype as any)[c.type];
+            fun.apply(ctx, c.params);
           }
         }
       }
     }
   }
 
-  private _$resizeCanvas() {
-    const pp = this.pp;
+  private _$resizeCanvas(canvasWidth: number, canvasHeight: number) {
+    const { canvas, texture, width, height } = this.pp;
 
-    // 根据 bounds，重置画布大小
-    const bounds = this.getLocalBounds();
-    const { width, height } = bounds;
-    const scale = App.pixelRatio;
-
-    // 根据线宽，留出一部分余地
-    const linePadding = pp.maxLineWidth ? pp.maxLineWidth / 2 + 1 : 0;
-    // 修正 offset 计算，确保所有内容都在可视区域内
-    const offsetX = bounds.minX - linePadding;
-    const offsetY = bounds.minY - linePadding;
-    pp.offset.set(offsetX, offsetY);
-
-    const scaleWidth = width * scale;
-    const scaleHeight = height * scale;
-    // 根据pixelRatio计算出新的宽高
-    const canvasWidth = Math.ceil(scaleWidth + linePadding * 2 * scale);
-    const canvasHeight = Math.ceil(scaleHeight + linePadding * 2 * scale);
-
-    const sheet = {
-      // 裁剪后的小图在图集上的位置和大小
-      frame: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
-      // 裁剪后的图，在原图片的位置和大小
-      spriteSourceSize: { x: offsetX * scale, y: offsetY * scale, w: scaleWidth, h: scaleHeight },
-      // 原图大小（包含空白）
-      sourceSize: { w: scaleWidth, h: scaleHeight },
-      rotated: false,
-      trimmed: true,
-    };
-
-    // 根据画布大小，创建 Texture
-    const canvas = pp.canvas;
-    if (canvasWidth > canvas.width || canvasHeight > canvas.height || pp.texture === Texture.BLANK) {
-      if (pp.texture === Texture.BLANK) pp.texture = new Texture();
+    if (canvasWidth > canvas.width || canvasHeight > canvas.height) {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
-      pp.texture.set(new TextureBuffer(canvas), undefined, sheet);
+      texture.set(new TextureBuffer(canvas));
+      this.onDirty(DirtyType.child);
     } else {
-      pp.texture.set(pp.texture.buffer, undefined, sheet);
+      const sheet = {
+        // 裁剪后的小图在图集上的位置和大小
+        frame: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
+        // 裁剪后的图，在原图片的位置和大小
+        spriteSourceSize: { x: 0, y: 0, w: canvasWidth, h: canvasHeight },
+        // 原图大小（包含空白）
+        sourceSize: { w: canvasWidth, h: canvasHeight },
+        rotated: false,
+        trimmed: true,
+      };
+
+      texture.set(texture.buffer, undefined, sheet);
       // 宽高不变，重新更新 Texture 的图片
-      pp.texture.buffer.dirty();
+      texture.buffer.dirty();
+    }
+
+    // 适应轴心点变化
+    if (width === -1 && height === -1) {
+      this.anchor = this.anchor;
     }
   }
 
   private _$addPoint(x: number, y: number) {
-    const bounds = this.pp.bounds;
+    const { bounds } = this.pp;
     if (x < bounds.minX) bounds.minX = x;
     if (x > bounds.maxX) bounds.maxX = x;
     if (y < bounds.minY) bounds.minY = y;
@@ -481,15 +470,13 @@ export class Canvas extends Node implements IRenderable {
     bounds.addFrame(b.minX, b.minY, b.maxX, b.maxY);
   }
 
-  getLocalBounds(): Bounds {
-    // 获取 bounds 之前，先绘制
-    if (this.pp.changed) this._$drawCanvas();
-    return super.getLocalBounds();
-  }
+  private _$dirty() {
+    if (this.pp.changed) return;
 
-  getWorldBounds(): Bounds {
-    // 获取 bounds 之前，先绘制
-    if (this.pp.changed) this._$drawCanvas();
-    return super.getWorldBounds();
+    this.pp.changed = true;
+    this.onDirty(DirtyType.transform);
+    this.onDirty(DirtyType.texture);
+    this.onDirty(DirtyType.size);
+    Timer.callLater(this._$drawCanvas, this);
   }
 }

@@ -79,23 +79,24 @@ export class App {
       physics.init({ timer: this.stage.timer, ...params.physics });
     }
 
-    this.start();
+    // 开始渲染
+    this._frameHandle = requestAnimationFrame(this._renderHandler);
 
     return canvas;
   }
 
   /**
-   * 开始播放引擎
+   * 暂停引擎
    */
-  start() {
-    this._frameHandle = requestAnimationFrame(this._renderHandler);
+  pause() {
+    cancelAnimationFrame(this._frameHandle);
   }
 
   /**
-   * 停止播放引擎
+   * 恢复引擎
    */
-  stop() {
-    cancelAnimationFrame(this._frameHandle);
+  resume() {
+    this._frameHandle = requestAnimationFrame(this._renderHandler);
   }
 
   /**
@@ -103,12 +104,7 @@ export class App {
    */
   render(time: number) {
     // 先执行call later
-    if (Timer.callLaterList.length > 0) {
-      for (let i = 0; i < Timer.callLaterList.length; i++) {
-        Timer.callLaterList[i].run();
-      }
-      Timer.callLaterList.length = 0;
-    }
+    Timer.runAllCallLater();
     // 再执行渲染
     this.renderer.render(this.stage);
     // 再执行timer

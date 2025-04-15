@@ -256,7 +256,7 @@ export class Scene extends Node implements IScene {
    * 从数据创建场景
    * @param json - 场景数据
    */
-  fromJson(json: INodeData): void {
+  override fromJson(json: INodeData): void {
     this.json = json;
     super.fromJson(json);
   }

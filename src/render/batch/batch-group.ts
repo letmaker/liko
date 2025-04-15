@@ -40,7 +40,7 @@ export class BatchGroup {
       if (this.spriteCount > 0) {
         this._fat();
         this._batch();
-        this._upload();
+        this._uploadBuffer();
       }
     } else {
       this.update();
@@ -53,7 +53,7 @@ export class BatchGroup {
     if (count < 1 || this.nodes[0].pp.dirty === 0) return;
 
     this._update();
-    this._upload();
+    this._uploadBuffer();
 
     for (const batch of this.batches) {
       if (batch instanceof BatchGroup) {
@@ -71,20 +71,19 @@ export class BatchGroup {
       const node = this.nodes[i];
       i++;
 
-      const pp = node.pp;
-      const dirty = pp.dirty;
+      const { dirty, transform, localMatrix, worldMatrix, pos, parent, color, alpha } = node.pp;
       const tfDirty = dirty & DirtyType.transform;
       const colorDirty = dirty & DirtyType.color;
 
       // 更新 worldMatrix
       if (tfDirty) {
-        pp.transform.updateMatrix(pp.localMatrix, pp.worldMatrix, pp.pos, pp.parent!.pp.worldMatrix);
+        transform.updateMatrix(localMatrix, worldMatrix, pos, parent!.worldMatrix);
       }
 
       // 更新 worldAlpha
       if (colorDirty) {
-        if (pp.color === Color.Default) pp.color = new Color();
-        pp.color.changeAlpha(pp.alpha * pp.parent!.pp.color.alpha);
+        if (color === Color.Default) node.pp.color = new Color();
+        node.pp.color.changeAlpha(alpha * parent!.pp.color.alpha);
       }
 
       // TODO： texture的检查是否必须？
@@ -106,24 +105,24 @@ export class BatchGroup {
         }
       }
 
-      pp.dirty = 0;
+      node.pp.dirty = 0;
     }
   }
 
   private _collect(node: Node, worldMatrix: Matrix, worldAlpha: number) {
     const { pp, children } = node;
-    if (!pp.visible || pp.alpha < 0.001) return;
+    const { visible, alpha, dirty, transform, localMatrix, pos } = pp;
+    if (!visible || alpha < 0.001) return;
 
-    const dirty = pp.dirty;
     // 更新 worldMatrix
     if (dirty & DirtyType.transform) {
-      pp.transform.updateMatrix(pp.localMatrix, pp.worldMatrix, pp.pos, worldMatrix);
+      transform.updateMatrix(localMatrix, pp.worldMatrix, pos, worldMatrix);
     }
 
     // 更新 worldAlpha
     if (dirty & DirtyType.color) {
       if (pp.color === Color.Default) pp.color = new Color();
-      pp.color.changeAlpha(pp.alpha * worldAlpha);
+      pp.color.changeAlpha(alpha * worldAlpha);
     }
 
     this.nodes.push(node);
@@ -158,10 +157,10 @@ export class BatchGroup {
   }
 
   private _collectChild(node: Node, worldMatrix: Matrix, worldAlpha: number) {
-    const pp = node.pp;
-    if (pp.filters.length) {
+    const { filters } = node.pp;
+    if (filters.length) {
       // 把滤镜转换为普通的图片 TODO: 会不会很费内存，会破坏 render？
-      const target = FilterManager.instance.render(node, pp.filters);
+      const target = FilterManager.instance.render(node, filters);
       // 渲染滤镜后的图片
       this._collect(target, worldMatrix, worldAlpha);
     } else if (node.cache) {
@@ -228,7 +227,7 @@ export class BatchGroup {
     return batch;
   }
 
-  private _upload() {
+  private _uploadBuffer() {
     this.posBuffer.upload();
     this.colorBuffer.upload();
     this.uvBuffer.upload();

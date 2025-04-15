@@ -363,16 +363,13 @@ export abstract class Node {
     return this.pp.anchor;
   }
   set anchor(value: IPoint) {
-    const pp = this.pp;
-    pp.anchor.copyFrom(value);
+    this.pp.anchor.copyFrom(value);
 
     const { pivot } = this.getTransform();
-    if (pp.width !== -1) {
-      pivot.x = pp.width * value.x;
-    }
-    if (pp.height !== -1) {
-      pivot.y = pp.height * value.y;
-    }
+    const { width, height } = this.getLocalBounds();
+    pivot.x = width * value.x;
+    pivot.y = height * value.y;
+    this.onDirty(DirtyType.transform);
   }
 
   /** 节点叠加颜色 */
@@ -414,12 +411,12 @@ export abstract class Node {
 
   /** 本地矩阵（相对于 parent） */
   get localMatrix() {
-    const pp = this.pp;
+    const { dirty, transform, localMatrix, pos } = this.pp;
     // 矩阵发生变化时，才重新计算矩阵
-    if (pp.dirty & DirtyType.transform) {
-      return pp.transform.getMatrix(pp.localMatrix, pp.pos);
+    if (dirty & DirtyType.transform) {
+      return transform.getMatrix(localMatrix, pos);
     }
-    return pp.localMatrix;
+    return localMatrix;
   }
   set localMatrix(value) {
     const { pos, scale, rotation } = value.decompose(this.pp.transform);
@@ -430,13 +427,13 @@ export abstract class Node {
 
   /** 世界矩阵（相对于 stage） */
   get worldMatrix() {
-    const pp = this.pp;
+    const { dirty, worldMatrix } = this.pp;
     // 矩阵发生变化时，才重新计算世界矩阵
-    if (pp.dirty & DirtyType.transform) {
-      const parentWorldMatrix = this._$getParentWorldMatrix(this, pp.worldMatrix.identity());
+    if (dirty & DirtyType.transform) {
+      const parentWorldMatrix = this._$getParentWorldMatrix(this, worldMatrix.identity());
       parentWorldMatrix.append(this.localMatrix);
     }
-    return pp.worldMatrix;
+    return worldMatrix;
   }
 
   private _$getParentWorldMatrix(target: Node, parentTransform: Matrix) {
@@ -773,21 +770,25 @@ export abstract class Node {
    * @returns 返回本地边界值
    */
   getLocalBounds(): Bounds {
-    const pp = this.pp;
+    const { dirty, width, height } = this.pp;
     const hasBounds = NodeCache.locBounds.has(this);
     const bounds = NodeCache.locBounds.get(this);
+
     // 子节点和显示没有变化时，直接返回之前的结果
-    if (hasBounds && (pp.dirty & DirtyType.size) === 0 && (pp.dirty & DirtyType.child) === 0) return bounds;
+    if (hasBounds && (dirty & DirtyType.size) === 0 && (dirty & DirtyType.child) === 0) return bounds;
 
     bounds.reset();
+
     // 如果有宽高，直接返回
-    if (pp.width >= 0 && pp.height >= 0) {
-      bounds.addFrame(0, 0, pp.width, pp.height);
+    if (width >= 0 && height >= 0) {
+      bounds.addFrame(0, 0, width, height);
       return bounds;
     }
 
-    // 计算自己和子节点的 bounds
+    // 自定义 bounds
     this._customLocalBounds(bounds);
+
+    // 计算子节点的 bounds
     for (const child of this.children) {
       const { pos } = child;
       if (child.rotation) {
@@ -798,6 +799,8 @@ export abstract class Node {
         bounds.addFrame(pos.x, pos.y, pos.x + child.width, pos.y + child.height);
       }
     }
+
+    // 检查 bounds 是否有问题
     if (
       bounds.width <= 0 ||
       bounds.height <= 0 ||
@@ -958,6 +961,12 @@ export abstract class Node {
    */
   hitTest(point: IPoint) {
     const locPos = this.toLocalPoint(point, Point.TEMP);
+
+    const { width, height } = this.pp;
+    if (width >= 0 && height >= 0) {
+      return locPos.x >= 0 && locPos.y >= 0 && width >= locPos.x && height >= locPos.y;
+    }
+
     const bounds = this.getLocalBounds();
     return bounds.contains(locPos.x, locPos.y);
   }

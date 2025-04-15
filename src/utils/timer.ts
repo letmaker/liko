@@ -41,25 +41,35 @@ class TimerHandler extends Handler {
 export class Timer {
   /** 系统级Timer实例，业务代码应优先使用stage的timer，使用此实例需手动移除 */
   static readonly system: Timer = new Timer();
-  /** 延迟一帧执行的处理器列表 */
-  static readonly callLaterList: Array<TimerHandler> = [];
+
+  /** 延迟执行的处理器列表 */
+  private static readonly _callLaterList: Array<TimerHandler> = [];
 
   /**
-   * 延迟一帧执行，用于减少重复计算，每帧多次调用只执行一次
+   * 在渲染之前，延迟执行，用于减少重复计算，每帧多次调用只执行一次
    * @param callback 回调函数
    * @param caller 调用者
    * @param args 回调参数
    * @returns 是否添加成功（重复添加只有第一次成功）
    */
   static callLater<T extends (...args: any[]) => void>(callback: T, caller?: unknown, ...args: Parameters<T>): boolean {
-    for (const handler of Timer.callLaterList) {
+    for (const handler of Timer._callLaterList) {
       if (handler.callback === callback && handler.caller === caller) {
         return false;
       }
     }
     const handler = new TimerHandler(callback, caller, true, args);
-    Timer.callLaterList.push(handler);
+    Timer._callLaterList.push(handler);
     return true;
+  }
+
+  static runAllCallLater() {
+    if (Timer._callLaterList.length > 0) {
+      for (let i = 0; i < Timer._callLaterList.length; i++) {
+        Timer._callLaterList[i].run();
+      }
+      Timer._callLaterList.length = 0;
+    }
   }
 
   private _timers: TimerHandler[] = [];

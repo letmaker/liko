@@ -28,9 +28,10 @@ export class Stage extends Node {
     super();
     this.pp.stage = this;
     this.mouseEnable = true;
+    this.label = "Stage";
   }
 
-  destroy(): void {
+  override destroy(): void {
     if (!this.destroyed) {
       this.timer.destroy();
       this.store.destroy();
@@ -90,7 +91,7 @@ export class Stage extends Node {
     return scene;
   }
 
-  getLocalBounds(): Bounds {
+  override getLocalBounds(): Bounds {
     const bounds = NodeCache.locBounds.get(this);
     bounds.set(0, 0, this.pp.width, this.pp.height);
     return bounds;

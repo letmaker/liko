@@ -46,7 +46,7 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
     this._$renderFrame(this.pp.frame);
   }
 
-  destroy(): void {
+  override destroy(): void {
     this.stop();
     super.destroy();
   }
@@ -118,8 +118,9 @@ export class SpriteAnimation extends Node implements IRenderable, IAnimation {
   }
 
   protected override _customLocalBounds(bounds: Bounds) {
-    if (this.pp.texture) {
-      bounds.addFrame(0, 0, this.pp.texture.width, this.pp.texture.height);
+    const { texture } = this.pp;
+    if (texture) {
+      bounds.addFrame(0, 0, texture.width, texture.height);
     }
   }
 

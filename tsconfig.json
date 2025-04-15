@@ -17,6 +17,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+    "noImplicitOverride": true,
     /* 启用装饰器 */
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
