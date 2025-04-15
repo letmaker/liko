@@ -42,7 +42,7 @@ export class Canvas extends Node implements IRenderable {
     pp.changed = false;
     pp.maxLineWidth = 0;
 
-    // document.body.appendChild(pp.canvas);
+    document.body.appendChild(pp.canvas);
   }
 
   /** 渲染纹理 */
@@ -467,8 +467,7 @@ export class Canvas extends Node implements IRenderable {
 
   protected override _customLocalBounds(bounds: Bounds) {
     const { bounds: b, maxLineWidth } = this.pp;
-    const offset = maxLineWidth * 0.5;
-    bounds.addFrame(b.minX + offset, b.minY + offset, b.maxX + offset, b.maxY + offset);
+    bounds.addFrame(b.minX, b.minY, b.maxX + maxLineWidth, b.maxY + maxLineWidth);
   }
 
   private _$dirty() {
