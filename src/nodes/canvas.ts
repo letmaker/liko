@@ -2,6 +2,7 @@ import { App } from "../app";
 import { DirtyType, PI2 } from "../const";
 import { Bounds } from "../math/bounds";
 import type { IPoint } from "../math/point";
+import { RenderTargetBuffer } from "../render/buffer/render-target-buffer";
 import { TextureBuffer } from "../render/buffer/texture-buffer";
 import { Device } from "../render/device/device";
 import { SpriteObject } from "../render/render/sprite-object";
@@ -38,7 +39,7 @@ export class Canvas extends Node implements IRenderable {
     pp.cmd = [];
     pp.canvas = Device.createCanvas(1, 1);
     pp.ctx = pp.canvas.getContext("2d") as CanvasRenderingContext2D;
-    pp.texture = new Texture();
+    pp.texture = Texture.create(new RenderTargetBuffer(1, 1), "canvas");
     pp.changed = false;
     pp.maxLineWidth = 0;
 
