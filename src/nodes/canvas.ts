@@ -42,7 +42,7 @@ export class Canvas extends Node implements IRenderable {
     pp.changed = false;
     pp.maxLineWidth = 0;
 
-    document.body.appendChild(pp.canvas);
+    // document.body.appendChild(pp.canvas);
   }
 
   /** 渲染纹理 */
