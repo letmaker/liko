@@ -302,14 +302,10 @@ export class RigidBody extends ScriptBase {
    * @param y - y轴坐标
    */
   setPosition(x: number, y: number): void {
-    // 考虑 pivot 偏移
-    const adjustedX = x - this.target.pivot.x;
-    const adjustedY = y - this.target.pivot.y;
-
-    let worldPos = { x: adjustedX, y: adjustedY };
+    let worldPos = { x, y };
     // 如果父节不是场景，需要转换到场景坐标
     if (this.target.parent !== this.scene) {
-      worldPos = this.target.toWorldPoint(worldPos, worldPos, this.scene);
+      worldPos = this.target.parent!.toWorldPoint(worldPos, worldPos, this.scene);
     }
 
     this._body.setPosition(this._physics.toPhPos(worldPos));
