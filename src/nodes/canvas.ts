@@ -403,15 +403,16 @@ export class Canvas extends Node implements IRenderable {
         const scale = App.pixelRatio;
         const canvasWidth = Math.ceil((width + maxLineWidth) * scale);
         const canvasHeight = Math.ceil((height + maxLineWidth) * scale);
+        const offset = { x: bounds.x - maxLineWidth * 0.5, y: bounds.y - maxLineWidth * 0.5 };
 
         // 重置画布大小
-        this._$resizeCanvas(bounds, canvasWidth, canvasHeight);
+        this._$resizeCanvas(offset, canvasWidth, canvasHeight);
 
         ctx.reset();
         // ctx.resetTransform();
         ctx.scale(scale, scale);
         // 确保正确应用 offset
-        ctx.translate(-bounds.x + maxLineWidth * 0.5, -bounds.y + maxLineWidth * 0.5);
+        ctx.translate(-offset.x, -offset.y);
 
         for (const c of cmd) {
           if (c.type === "fill") {
@@ -468,7 +469,8 @@ export class Canvas extends Node implements IRenderable {
 
   protected override _customLocalBounds(bounds: Bounds) {
     const { bounds: b, maxLineWidth } = this.pp;
-    bounds.addFrame(b.minX, b.minY, b.maxX + maxLineWidth, b.maxY + maxLineWidth);
+    const offset = maxLineWidth * 0.5;
+    bounds.addFrame(b.minX - offset, b.minY - offset, b.maxX + offset, b.maxY + offset);
   }
 
   private _$dirty() {
