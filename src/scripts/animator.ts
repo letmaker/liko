@@ -109,7 +109,7 @@ export class Animator extends ScriptBase {
   /**
    * 组件唤醒时调用
    */
-  onAwake(): void {
+  override onAwake(): void {
     this.signal("animator.awake");
   }
 
@@ -117,7 +117,7 @@ export class Animator extends ScriptBase {
    * 每帧更新动画状态
    * @param delta - 帧间隔时间
    */
-  onUpdate(delta: number): void {
+  override onUpdate(delta: number): void {
     if (this._paused || this.currentTime > this.duration || this.duration === 0) return;
 
     this.currentTime += delta * this.timeScale;

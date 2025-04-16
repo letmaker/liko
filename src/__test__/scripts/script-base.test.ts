@@ -18,28 +18,28 @@ class TestScript extends ScriptBase {
 
   lastDelta = 0;
 
-  onCreate(): void {
+  override onCreate(): void {
     this.onCreateCalled = true;
   }
 
-  onAwake(): void {
+  override onAwake(): void {
     this.onAwakeCalled = true;
   }
 
-  onUpdate(delta: number): void {
+  override onUpdate(delta: number): void {
     this.onUpdateCalled = true;
     this.lastDelta = delta;
   }
 
-  onDestroy(): void {
+  override onDestroy(): void {
     this.onDestroyCalled = true;
   }
 
-  onEnable(): void {
+  override onEnable(): void {
     this.onEnableCalled = true;
   }
 
-  onDisable(): void {
+  override onDisable(): void {
     this.onDisableCalled = true;
   }
 }

@@ -61,6 +61,12 @@ export class Stage extends Node {
     this.renderer.resize(width, height);
   }
 
+  override getLocalBounds(): Bounds {
+    const bounds = NodeCache.locBounds.get(this);
+    bounds.set(0, 0, this.pp.width, this.pp.height);
+    return bounds;
+  }
+
   /**
    * 某个点是否在节点内部
    * @param point 节点位置
@@ -89,11 +95,5 @@ export class Stage extends Node {
     }
     this.addChild(scene);
     return scene;
-  }
-
-  override getLocalBounds(): Bounds {
-    const bounds = NodeCache.locBounds.get(this);
-    bounds.set(0, 0, this.pp.width, this.pp.height);
-    return bounds;
   }
 }

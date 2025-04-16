@@ -60,7 +60,7 @@ export class Store extends Dispatcher {
   /**
    * 销毁数据仓库
    */
-  destroy(): void {
+  override destroy(): void {
     super.destroy();
     this.clear();
   }

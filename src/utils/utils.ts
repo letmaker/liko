@@ -9,6 +9,53 @@ export function getUniqueID(): number {
   return id++;
 }
 
+const canvas = document.createElement("canvas");
+canvas.width = 1;
+canvas.height = 1;
+const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+/**
+ * 创建CanvasPattern
+ * @param img - 图像
+ * @returns CanvasPattern
+ */
+export function createPattern(img: CanvasImageSource, repetition: "no-repeat" | "repeat" | "repeat-x" | "repeat-y") {
+  return ctx.createPattern(img, repetition) as CanvasPattern;
+}
+
+/**
+ * 根据URL创建CanvasPattern
+ * @param url - 图像URL
+ * @returns CanvasPattern
+ */
+export function createPatternByUrl(url: string, repetition: "no-repeat" | "repeat" | "repeat-x" | "repeat-y") {
+  return new Promise<CanvasPattern>((resolve) => {
+    const img = new Image();
+    img.src = url;
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      resolve(ctx.createPattern(img, repetition) as CanvasPattern);
+    };
+  });
+}
+
+/**
+ * 创建CanvasGradient
+ * @param pos - 渐变位置
+ * @param colors - 渐变颜色 rate:0-1
+ * @returns CanvasGradient
+ */
+export function createLinearGradient(
+  pos: { startX: number; startY: number; endX: number; endY: number },
+  colors: { rate: number; color: string }[],
+) {
+  const grd = ctx.createLinearGradient(pos.startX, pos.startY, pos.endX, pos.endY);
+  for (const color of colors) {
+    grd.addColorStop(color.rate, color.color);
+  }
+  return grd;
+}
+
 /**
  * 生成全局唯一标识符
  * @param type - 标识符前缀

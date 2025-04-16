@@ -139,7 +139,7 @@ export class RigidBody extends ScriptBase {
    * 组件唤醒时初始化物理刚体
    * 设置刚体类型、添加形状、设置初始位置和角度
    */
-  onAwake(): void {
+  override onAwake(): void {
     const body = this._body;
     const target = this.target;
 
@@ -179,7 +179,7 @@ export class RigidBody extends ScriptBase {
    * 每帧更新物体位置和旋转
    * 同步物理引擎计算结果到游戏对象，并检测边界
    */
-  onUpdate(): void {
+  override onUpdate(): void {
     if (this.rigidType === "static") return;
     const target = this.target;
     const pos = this._body.getPosition();
@@ -207,21 +207,21 @@ export class RigidBody extends ScriptBase {
   /**
    * 组件启用时激活物理刚体
    */
-  onEnable(): void {
+  override onEnable(): void {
     this._body.setActive(true);
   }
 
   /**
    * 组件禁用时停用物理刚体
    */
-  onDisable(): void {
+  override onDisable(): void {
     this._body.setActive(false);
   }
 
   /**
    * 组件销毁时清理物理刚体
    */
-  onDestroy(): void {
+  override onDestroy(): void {
     this._physics.world.destroyBody(this._body);
   }
 

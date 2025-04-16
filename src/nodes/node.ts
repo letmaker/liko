@@ -806,10 +806,10 @@ export abstract class Node {
    * @returns 返回相对于世界或者 root 的边界值
    */
   getWorldBounds(root?: Node): Bounds {
-    const hasBounds = NodeCache.gloBounds.has(this);
+    // const hasBounds = NodeCache.gloBounds.has(this);
     const bounds = NodeCache.gloBounds.get(this);
     // 节点没有变化时，直接返回之前的结果
-    if (hasBounds && !this.pp.dirty) return bounds;
+    // if (hasBounds && !this.pp.dirty) return bounds;
 
     // 获取世界 bounds
     bounds.reset();
