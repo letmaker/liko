@@ -788,18 +788,6 @@ export abstract class Node {
     // 自定义 bounds
     this._customLocalBounds(bounds);
 
-    // 计算子节点的 bounds
-    for (const child of this.children) {
-      const { pos } = child;
-      if (child.rotation) {
-        bounds.addFrame(0, 0, child.width, child.height);
-        bounds.addFrame(0, child.height, child.width, 0);
-        bounds.applyMatrix(child.localMatrix);
-      } else {
-        bounds.addFrame(pos.x, pos.y, pos.x + child.width, pos.y + child.height);
-      }
-    }
-
     // 检查 bounds 是否有问题
     if (
       bounds.width <= 0 ||

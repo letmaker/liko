@@ -167,6 +167,7 @@ export class Text extends Node implements IRenderable {
     }
   }
 
+  // TODO 定义为像素比较好，还是百分比
   /** 行高，此属性为百分比，实际的行高=lineHeight*fontSize */
   get lineHeight() {
     return this.pp.lineHeight;
@@ -239,7 +240,7 @@ export class Text extends Node implements IRenderable {
     pp.texture = new Texture();
 
     this.setProps(options as Record<string, unknown>);
-    // document.body.appendChild(pp.canvas);
+    document.body.appendChild(pp.canvas);
   }
 
   setText(text: string) {
@@ -287,17 +288,17 @@ export class Text extends Node implements IRenderable {
   }
 
   private _$drawText() {
-    const { changed, canvas, ctx, align, textWidth, strokeWidth, strokeColor, fillColor, lines, fontSize, lineHeight } =
-      this.pp;
+    const { changed, canvas, ctx, align, strokeWidth, strokeColor, fillColor, lines, fontSize, lineHeight } = this.pp;
     if (changed) {
       this.pp.changed = false;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 度量文本
       const metrics = this._$measure();
+      const { textWidth, textHeight } = this;
       const scale = App.pixelRatio;
-      const canvasWidth = Math.ceil(this.textWidth * scale);
-      const canvasHeight = Math.ceil(this.textHeight * scale);
+      const canvasWidth = Math.ceil(textWidth * scale);
+      const canvasHeight = Math.ceil(textHeight * scale);
 
       // 重置画布大小
       this._$resizeCanvas(canvasWidth, canvasHeight);
