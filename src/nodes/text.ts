@@ -240,7 +240,7 @@ export class Text extends Node implements IRenderable {
     pp.texture = new Texture();
 
     this.setProps(options as Record<string, unknown>);
-    document.body.appendChild(pp.canvas);
+    // document.body.appendChild(pp.canvas);
   }
 
   setText(text: string) {
@@ -295,17 +295,17 @@ export class Text extends Node implements IRenderable {
 
       // 度量文本
       const metrics = this._$measure();
-      const { textWidth, textHeight } = this;
       const scale = App.pixelRatio;
-      const canvasWidth = Math.ceil(textWidth * scale);
-      const canvasHeight = Math.ceil(textHeight * scale);
+      const canvasWidth = Math.ceil(this.textWidth * scale);
+      const canvasHeight = Math.ceil(this.textHeight * scale);
 
       // 重置画布大小
       this._$resizeCanvas(canvasWidth, canvasHeight);
       // 重置了 canvas 后，会丢失样式，这里重新设置一次
       this._$resetStyle();
 
-      const x = align === "left" ? 0 : align === "right" ? textWidth : textWidth * 0.5;
+      // textWidth 要从 this.pp 中获取，因为度量文本会修改 this.pp.textWidth
+      const x = align === "left" ? 0 : align === "right" ? this.pp.textWidth : this.pp.textWidth * 0.5;
       // 行高
       const textLineHeight = fontSize * lineHeight;
       // 行间距和度量出来的字体高度之间的距离
