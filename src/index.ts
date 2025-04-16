@@ -13,6 +13,7 @@ export { Point, type IPoint } from "./math/point";
 export { Rectangle, type IRectangle } from "./math/rectangle";
 export { RotatingRect, type IRotatingRect } from "./math/rotating-rect";
 export { Texture } from "./resource/texture";
+export { TextureBuffer } from "./render/buffer/texture-buffer";
 export { Canvas } from "./nodes/canvas";
 export { Container } from "./nodes/container";
 export { Node, type INodeData, type IScriptData, type IFilterData } from "./nodes/node";
