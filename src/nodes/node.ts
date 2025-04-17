@@ -133,6 +133,7 @@ export interface INodeOptions {
   mouseEnableChildren?: boolean;
   data?: Record<string, any>;
   parent?: Node;
+  scripts?: ScriptBase[];
 
   onClick?: (e: MouseEvent) => void;
   onMouseDown?: (e: MouseEvent) => void;
@@ -257,6 +258,11 @@ export abstract class Node {
   /** 脚本列表，请勿直接修改此数组，但可以直接读取 */
   get scripts(): ScriptBase[] {
     return this.pp.scripts;
+  }
+  set scripts(value: ScriptBase[]) {
+    for (const script of value) {
+      this.addScript(script);
+    }
   }
 
   /** 自定义数据，比如 `node.data.speed = 1` */

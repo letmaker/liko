@@ -46,7 +46,7 @@ interface IScenePrivateProps extends INodePrivateProps {
 }
 
 interface ISceneOptions extends INodeOptions {
-  url: string;
+  url?: string;
 }
 
 /**

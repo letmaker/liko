@@ -11,6 +11,7 @@ import { RegScript } from "../utils/decorators";
  * 物理坐标系以场景根节点为基础进行计算。两个物体相撞条件：
  * 1. 任意一方为dynamic类型
  * 2. maskBit & categoryBit !== 0
+ * 注意：RigidBody为一个脚本，挂在的节点后，需要在场景中才能被激活
  */
 @RegScript("RigidBody")
 export class RigidBody extends ScriptBase {
@@ -196,12 +197,23 @@ export class RigidBody extends ScriptBase {
     if (this.target.parent !== this.scene) {
       pos2D = this.target.parent!.toLocalPoint(pos2D, pos2D, this.scene);
     }
-    target.pos.set(pos2D.x + target.pivot.x, pos2D.y + target.pivot.y);
 
     if (this.allowRotation) {
-      target.rotation = this._body.getAngle() % PI2;
+      const angle = this._body.getAngle();
+      target.rotation = angle % PI2;
     }
-    // console.log(pos.x, pos.y, this.target.pos.x, this.target.pos.y);
+
+    const pivotX = target.pivot.x * target.scale.x;
+    const pivotY = target.pivot.y * target.scale.y;
+    if (target.rotation === 0) {
+      target.pos.set(pos2D.x + pivotX, pos2D.y + pivotY);
+      return;
+    }
+
+    // 考虑旋转角度对 pivot 偏移的影响
+    const cos = Math.cos(target.rotation);
+    const sin = Math.sin(target.rotation);
+    target.pos.set(pos2D.x + (pivotX * cos - pivotY * sin), pos2D.y + (pivotX * sin + pivotY * cos));
   }
 
   /**
@@ -255,8 +267,8 @@ export class RigidBody extends ScriptBase {
     const toPhPos = physics.toPhPos.bind(physics);
 
     let fixture: Fixture | undefined = undefined;
-    const offsetX = toPh((shape.offset?.x ?? 0) + target.pivot.x);
-    const offsetY = toPh((shape.offset?.y ?? 0) + target.pivot.y);
+    const offsetX = toPh(shape.offset?.x ?? 0);
+    const offsetY = toPh(shape.offset?.y ?? 0);
     switch (shape.shapeType) {
       case "box": {
         const hw = toPh(shape.width ?? rect.width) / 2;
@@ -273,7 +285,7 @@ export class RigidBody extends ScriptBase {
         break;
       }
       case "chain": {
-        const vertices = shape.points.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
+        const vertices = shape.vertices.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
         // 检查顶点数量是否合法
         console.assert(vertices.length >= 2, "Chain shape must have at least 2 vertices");
         if (vertices.length < 2) return;
@@ -281,7 +293,7 @@ export class RigidBody extends ScriptBase {
         break;
       }
       case "polygon": {
-        const vertices = shape.points.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
+        const vertices = shape.vertices.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
         // 检查顶点数量是否合法
         console.assert(vertices.length >= 3 && vertices.length <= 8, "Polygon shape must have 3-8 vertices");
         if (vertices.length < 3 || vertices.length > 8) return;

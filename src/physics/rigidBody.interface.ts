@@ -43,12 +43,12 @@ export interface ICircleShape extends IBaseShape {
 
 export interface IChainShape extends IBaseShape {
   shapeType: "chain";
-  points: IPoint[];
+  vertices: IPoint[];
 }
 
 export interface IPolygonShape extends IBaseShape {
   shapeType: "polygon";
-  points: IPoint[];
+  vertices: IPoint[];
 }
 
 export type IShape = IBoxShape | ICircleShape | IChainShape | IPolygonShape;
