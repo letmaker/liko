@@ -3,6 +3,7 @@ import { loader } from "../loader";
 import type { Bounds } from "../math/bounds";
 import { SpriteObject } from "../render/render/sprite-object";
 import { Texture } from "../resource/texture";
+import type { ColorData } from "../utils/color";
 import { RegNode } from "../utils/decorators";
 import type { INodeOptions } from "./node";
 import { type INodePrivateProps, Node } from "./node";
@@ -21,6 +22,7 @@ interface ISpritePrivateProps extends INodePrivateProps {
 interface ISpriteOptions extends INodeOptions {
   url?: string;
   texture?: Texture;
+  tint?: ColorData;
 }
 
 /**
@@ -87,6 +89,7 @@ export class Sprite extends Node implements IRenderable {
       if (pp.height === -1) {
         this.height = texture.height;
       }
+      this.onDirty(DirtyType.size);
     }
     this.emit(EventType.loaded);
   }

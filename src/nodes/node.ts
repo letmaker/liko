@@ -1,6 +1,6 @@
 import { DEG_TO_RAD, DirtyType, EventType, RAD_TO_DEG } from "../const";
 import type { MouseEvent } from "../events/mouse-event";
-import type { Bounds } from "../math/bounds";
+import { Bounds } from "../math/bounds";
 import { Matrix } from "../math/matrix";
 import { ObservablePoint } from "../math/observable-point";
 import { type IPoint, Point } from "../math/point";
@@ -115,6 +115,7 @@ export interface INodePrivateProps {
   dirty: number;
   stage?: Stage;
   parent?: Node;
+  localBounds: Bounds;
 }
 
 export interface INodeOptions {
@@ -172,6 +173,7 @@ export abstract class Node {
     dirty: DirtyType.transform | DirtyType.size | DirtyType.texture | DirtyType.color,
     stage: undefined,
     parent: undefined,
+    localBounds: new Bounds(),
   };
 
   /** 是否启用节点，如果设置为 false，则节点不可用，并且脚本也不执行，相比 visible 只影响其显示 @default true */
@@ -460,6 +462,8 @@ export abstract class Node {
     const pp = this.pp;
     if ((pp.dirty & type) === 0) {
       pp.dirty |= type;
+      // console.log(this.label, "---dirty-----", type);
+
       if (type === DirtyType.transform || type === DirtyType.color) {
         // 子节点标脏
         pp.children.length && this._$dirtyChildren(type);
@@ -776,34 +780,32 @@ export abstract class Node {
    * @returns 返回本地边界值
    */
   getLocalBounds(): Bounds {
-    const { dirty, width, height } = this.pp;
-    const hasBounds = NodeCache.locBounds.has(this);
-    const bounds = NodeCache.locBounds.get(this);
+    const { dirty, width, height, localBounds } = this.pp;
 
     // 子节点和显示没有变化时，直接返回之前的结果
-    if (hasBounds && (dirty & DirtyType.size) === 0 && (dirty & DirtyType.child) === 0) return bounds;
+    if ((dirty & DirtyType.size) === 0 && (dirty & DirtyType.child) === 0) return localBounds;
 
-    bounds.reset();
+    localBounds.reset();
 
     // 如果有宽高，直接返回
     if (width >= 0 && height >= 0) {
-      bounds.addFrame(0, 0, width, height);
-      return bounds;
+      localBounds.addFrame(0, 0, width, height);
+      return localBounds;
     }
 
-    // 自定义 bounds
-    this._customLocalBounds(bounds);
+    // 自定义 localBounds
+    this._customLocalBounds(localBounds);
 
-    // 检查 bounds 是否有问题
+    // 检查 localBounds 是否有问题
     if (
-      bounds.width <= 0 ||
-      bounds.height <= 0 ||
-      bounds.width === Number.POSITIVE_INFINITY ||
-      bounds.height === Number.POSITIVE_INFINITY
+      localBounds.width <= 0 ||
+      localBounds.height <= 0 ||
+      localBounds.width === Number.POSITIVE_INFINITY ||
+      localBounds.height === Number.POSITIVE_INFINITY
     ) {
-      console.warn("bounds width <=0", this);
+      console.warn("localBounds width <=0", this);
     }
-    return bounds;
+    return localBounds;
   }
 
   /**

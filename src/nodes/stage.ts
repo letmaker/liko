@@ -4,7 +4,6 @@ import type { MouseManager } from "../events/mouse-manager";
 import type { Bounds } from "../math/bounds";
 import type { IPoint } from "../math/point";
 import type { Renderer } from "../render/renderer";
-import { NodeCache } from "../render/utils/node-cache";
 import { Store } from "../utils/store";
 import { Timer } from "../utils/timer";
 import { type INodeData, Node } from "./node";
@@ -62,9 +61,7 @@ export class Stage extends Node {
   }
 
   override getLocalBounds(): Bounds {
-    const bounds = NodeCache.locBounds.get(this);
-    bounds.set(0, 0, this.pp.width, this.pp.height);
-    return bounds;
+    return this.pp.localBounds.set(0, 0, this.pp.width, this.pp.height);
   }
 
   /**
@@ -73,8 +70,7 @@ export class Stage extends Node {
    * @returns 是否在节点内部
    */
   override hitTest(point: IPoint) {
-    const bounds = this.getLocalBounds();
-    return bounds.contains(point.x, point.y);
+    return this.getLocalBounds().contains(point.x, point.y);
   }
 
   async loadScene(url: string, destroyOther = false) {

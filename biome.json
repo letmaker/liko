@@ -7,13 +7,19 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
       "suspicious": {
         "noConsoleLog": "info",
         "noExplicitAny": "warn"
       },
       "style": {
         "useLiteralEnumMembers": "off",
-        "noNonNullAssertion": "warn"
+        "noNonNullAssertion": "warn",
+        "useImportType": "error",
+        "useConsistentArrayType": "error"
       }
     }
   },

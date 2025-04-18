@@ -1,10 +1,10 @@
-import type { Fixture, Body } from "planck";
-import type { RigidType, IShape, RigidBodyOptions } from "./rigidBody.interface";
-import type { ICollision } from "../scripts/script";
-import { type IPoint, Point } from "../math/point";
+import type { Body, Fixture } from "planck";
 import { EventType, PI2 } from "../const";
+import { type IPoint, Point } from "../math/point";
+import type { ICollision } from "../scripts/script";
 import { ScriptBase } from "../scripts/script-base";
 import { RegScript } from "../utils/decorators";
+import type { IShape, RigidBodyOptions, RigidType } from "./rigidBody.interface";
 
 /**
  * 物理刚体组件，实现物理属性描述和碰撞区域定义

@@ -1,13 +1,10 @@
 import { Bounds } from "../../math/bounds";
-import { Matrix } from "../../math/matrix";
 import { RotatingRect } from "../../math/rotating-rect";
 import type { Node } from "../../nodes/node";
 
 export class NodeCache<T> {
-  static locBounds = new NodeCache(Bounds);
   static gloBounds = new NodeCache(Bounds);
   static rotatingRect = new NodeCache(RotatingRect);
-  static matrix = new NodeCache(Matrix);
 
   private _cache: Map<any, any> = new Map();
   private _Class;

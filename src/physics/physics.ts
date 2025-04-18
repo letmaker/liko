@@ -1,6 +1,6 @@
 import * as planck from "planck";
+import { type IPoint, type Rectangle, Timer } from "../";
 import type { RigidBody } from "./rigidBody";
-import { type Rectangle, Timer, type IPoint } from "../";
 
 interface FixtureUserData {
   /** 允许穿透的边界方向 */

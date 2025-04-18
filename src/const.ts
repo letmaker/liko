@@ -18,7 +18,7 @@ export enum DirtyType {
   color = 8,
   /** 滤镜发生了变化 */
   filter = 16,
-  /** 添加删除节点节点 */
+  /** 添加删除子节点 */
   child = 32,
   /** 子节点变化导致了父节点变化 */
   parent = 64,

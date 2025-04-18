@@ -106,6 +106,7 @@ export class BatchGroup {
       }
 
       node.pp.dirty = 0;
+      // console.log(node.label, "---clear--- update dirty1");
     }
   }
 
@@ -138,7 +139,6 @@ export class BatchGroup {
         i++;
       }
     }
-    pp.dirty = 0;
   }
 
   private _add(node: IRenderable) {
@@ -197,7 +197,11 @@ export class BatchGroup {
     for (let i = 0; i < count; i++) {
       const node = this.nodes[i] as IRenderable;
       // 这个地方判断，是否会消耗性能，还能优化吗
-      if (!node.texture) continue;
+      if (!node.texture) {
+        node.pp.dirty = 0;
+        // console.log(node.label, "---clear--- collect dirty1");
+        continue;
+      }
       const renderObject = node.renderObject;
 
       let textureId = batch.add(node.texture);
@@ -216,6 +220,9 @@ export class BatchGroup {
       renderObject.packIndex(this.indexBuffer);
 
       indexCount += renderObject.indexSize;
+
+      node.pp.dirty = 0;
+      // console.log(node.label, "---clear--- collect dirty1");
     }
 
     batch.size = indexCount - batch.startIndex;

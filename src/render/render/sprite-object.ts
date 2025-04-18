@@ -1,7 +1,7 @@
-import type { IndexBuffer } from "../buffer/index-buffer";
-import type { VertexBuffer } from "../buffer/vertex-buffer";
 import type { IRenderable } from "../../nodes/sprite";
 import type { Batch } from "../batch/batch";
+import type { IndexBuffer } from "../buffer/index-buffer";
+import type { VertexBuffer } from "../buffer/vertex-buffer";
 import { useWebGpu } from "../device/device";
 
 export class SpriteObject {
@@ -28,6 +28,8 @@ export class SpriteObject {
     const wt = node.pp.worldMatrix;
     const sx = nodeWidth / width;
     const sy = nodeHeight / height;
+
+    // console.log("packVertex", node.label, width, height, nodeWidth, nodeHeight);
 
     const a = wt.a * sx;
     const b = wt.b * sx;
