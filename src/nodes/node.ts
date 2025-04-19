@@ -60,8 +60,6 @@ export interface IScriptData {
     script: string;
     label?: string;
     enabled?: boolean;
-    time?: number;
-    duration?: number;
     [key: string]: any;
   };
 }
@@ -231,8 +229,7 @@ export abstract class Node {
   /** 场景节点引用，只有被添加到场景后，此属性才有值（使用时尽量引用成局部变量，减少遍历获取） */
   get scene(): IScene | undefined {
     // TODO 这里看看是不是继续递归？还是类似 stage 一样，存储起来
-    if (this.pp.parent) return this.pp.parent.scene;
-    return undefined;
+    return this.pp.parent?.scene;
   }
 
   /** 父节点引用，只有被添加到父节点内，此属性才有值 */
@@ -477,10 +474,10 @@ export abstract class Node {
 
   // 子节点影响父节点
   private _$dirtyParent(type: DirtyType) {
-    const parent = this.parent;
-    if (parent && (parent.pp.dirty & type) === 0) {
+    let parent = this.parent;
+    while (parent && (parent.pp.dirty & type) === 0) {
       parent.pp.dirty |= type;
-      parent._$dirtyParent(type);
+      parent = parent.parent;
     }
   }
 
@@ -857,9 +854,9 @@ export abstract class Node {
    * @returns 返回此点的世界坐标
    */
   toWorldPoint<P extends IPoint = Point>(pos: IPoint, out?: P, root?: Node): P {
-    let p = this.worldMatrix.apply<P>(pos, out);
-    if (root && root !== this.stage) p = root.toLocalPoint(p, out);
-    return p;
+    const result = this.worldMatrix.apply<P>(pos, out);
+    if (root && root !== this.stage) root.toLocalPoint(result, result);
+    return result;
   }
 
   /**
@@ -870,8 +867,11 @@ export abstract class Node {
    * @returns 返回此点的本地坐标
    */
   toLocalPoint<P extends IPoint = Point>(pos: IPoint, out?: P, root?: Node): P {
-    const p = root ? root.toWorldPoint(pos, out) : pos;
-    return this.worldMatrix.applyInverse<P>(p, out);
+    if (root && root !== this.stage) {
+      const result = root.worldMatrix.apply<P>(pos, out);
+      return this.worldMatrix.applyInverse<P>(result, result);
+    }
+    return this.worldMatrix.applyInverse<P>(pos);
   }
 
   /**
