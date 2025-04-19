@@ -1,5 +1,6 @@
 import type { Matrix } from "../../math/matrix";
 import type { Node } from "../../nodes/node";
+import { Color, type ColorData } from "../../utils/color";
 import type { Batch } from "../batch/batch";
 import { BatchGroup } from "../batch/batch-group";
 import type { CameraBuffer } from "../buffer/camera-buffer";
@@ -27,7 +28,12 @@ export class WebGpuRender {
     return WebGpuRender._instance;
   }
 
-  constructor() {
+  private _color: { r: number; g: number; b: number; a: number };
+
+  constructor(bgColor?: ColorData) {
+    const color = new Color(bgColor);
+    this._color = { r: color.red, g: color.green, b: color.blue, a: color.alpha };
+
     WebGpuRender.addPipeline("batch", new WebGPUSpritePipeline());
   }
 
@@ -42,7 +48,7 @@ export class WebGpuRender {
         colorAttachments: [
           {
             view: texture.createView(),
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+            clearValue: this._color,
             loadOp: "clear",
             storeOp: "store",
           },

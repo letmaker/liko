@@ -1,4 +1,5 @@
 import { WebGpuRender } from "../render/webgpu-render";
+import type { RenderOptions } from "../renderer";
 
 export interface IBindResource {
   binding: number;
@@ -18,7 +19,7 @@ export class WebGPUDevice {
   /**
    * 初始化 gpu 设备
    */
-  async init(canvas: HTMLCanvasElement) {
+  async init(options: RenderOptions) {
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
       throw new Error("Failed to initialize webgpu adapter");
@@ -31,14 +32,14 @@ export class WebGPUDevice {
 
     this.format = navigator.gpu.getPreferredCanvasFormat();
 
-    const context = canvas.getContext("webgpu") as GPUCanvasContext;
+    const context = options.canvas.getContext("webgpu") as GPUCanvasContext;
     context.configure({
       device: this.device,
       format: navigator.gpu.getPreferredCanvasFormat(),
     });
 
     this.defaultSampler = this.createSampler("default");
-    return { context, gpuRender: new WebGpuRender() };
+    return { context, gpuRender: new WebGpuRender(options.bgColor) };
   }
 
   setViewport(width: number, height: number) {

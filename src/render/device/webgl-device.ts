@@ -1,6 +1,7 @@
 // @ts-nocheck  TODO: 待实现
 import { WebGLRender } from "../render/webgl-render";
 import type { WebGpuRender } from "../render/webgpu-render";
+import type { RenderOptions } from "../renderer";
 import type { IBindResource } from "./webgpu-device";
 
 export class GLBuffer {
@@ -47,8 +48,8 @@ export class WebGLDevice {
   /**
    * 初始化 WebGL 设备
    */
-  init(canvas: HTMLCanvasElement) {
-    this.gl = canvas.getContext("webgl2", {
+  init(options: RenderOptions) {
+    this.gl = options.canvas.getContext("webgl2", {
       antialias: false,
       alpha: false,
       depth: false,

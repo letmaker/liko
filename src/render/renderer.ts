@@ -1,10 +1,12 @@
-import type { WebGpuRender } from "./render/webgpu-render";
 import type { Node } from "../nodes/node";
-import { Device } from "./device/device";
+import type { ColorData } from "../utils/color";
 import { CameraBuffer } from "./buffer/camera-buffer";
+import { Device } from "./device/device";
+import type { WebGpuRender } from "./render/webgpu-render";
 
 export interface RenderOptions {
   canvas: HTMLCanvasElement;
+  bgColor?: ColorData;
 }
 
 /**
@@ -22,7 +24,7 @@ export class Renderer {
   }
 
   async init(options: RenderOptions) {
-    const { context, gpuRender } = await Device.init(options.canvas);
+    const { context, gpuRender } = await Device.init(options);
     this.context = context;
     this.gpuRender = gpuRender;
     this.camera = new CameraBuffer();
