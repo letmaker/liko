@@ -270,8 +270,7 @@ export abstract class Node {
     return this.pp.data;
   }
   set data(value: Record<string, any>) {
-    const newData = { ...value };
-    this.pp.data = newData;
+    this.pp.data = value;
   }
 
   /** 节点 id，是节点的唯一标识 */
@@ -909,7 +908,7 @@ export abstract class Node {
           const eventName = key.charAt(2).toLowerCase() + key.slice(3);
           this.on(eventName, props[key] as () => void, this);
         } else if (key in this) {
-          (this as any)[key] = props[key];
+          (this as Record<string, unknown>)[key] = props[key];
         }
       }
     }

@@ -94,7 +94,7 @@ export class Effect {
    * @param value - 属性值
    */
   setProp(key: string, value: any) {
-    if (key in this) (this as any)[key] = value;
+    if (key in this) (this as Record<string, unknown>)[key] = value;
   }
 
   /**

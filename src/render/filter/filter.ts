@@ -3,8 +3,8 @@ import type { Node } from "../../nodes/node";
 import type { Texture } from "../../resource/texture";
 import { getUID } from "../../utils/utils";
 import { CameraBuffer } from "../buffer/camera-buffer";
-import { WebGpuRender } from "../render/webgpu-render";
 import { RenderTarget } from "../render/render-target";
+import { WebGpuRender } from "../render/webgpu-render";
 import { FilterRender } from "./filter-render";
 import type { UniformGroup } from "./uniform-group";
 
@@ -73,7 +73,7 @@ export class Filter {
     if (props) {
       const keys = Object.keys(props);
       for (const key of keys) {
-        if (key in this) (this as any)[key] = props[key];
+        if (key in this) (this as Record<string, unknown>)[key] = props[key];
       }
     }
   }
