@@ -10,7 +10,7 @@ import { Timer } from "./utils/timer";
 const defaultOptions = {
   width: innerWidth,
   height: innerHeight,
-  bgColor: 0xff0000,
+  bgColor: 0x000000,
   pixelRatio: window.devicePixelRatio,
 };
 

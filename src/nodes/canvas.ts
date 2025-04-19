@@ -326,8 +326,8 @@ export class Canvas extends Node implements IRenderable {
   /**
    * 填充颜色
    */
-  fill(options: { color: string | CanvasGradient | CanvasPattern }): this {
-    this.pp.cmd.push({ type: "fill", params: [options.color] });
+  fill(options?: { color: string | CanvasGradient | CanvasPattern }): this {
+    this.pp.cmd.push({ type: "fill", params: [options?.color ?? "#FFD700"] });
     this._$dirty();
     return this;
   }
@@ -341,8 +341,8 @@ export class Canvas extends Node implements IRenderable {
   /**
    * 绘制描边线条
    */
-  stroke(options: {
-    color: string | CanvasGradient | CanvasPattern;
+  stroke(options?: {
+    color?: string | CanvasGradient | CanvasPattern;
     width?: number;
     cap?: CanvasLineCap;
     join?: CanvasLineJoin;
@@ -350,21 +350,15 @@ export class Canvas extends Node implements IRenderable {
     dashOffset?: number;
     miterLimit?: number;
   }): this {
+    const params = options ? { width: 1, color: "#FFD700", ...options } : { width: 1, color: "#FFD700" };
+    params.width = Math.max(params.width, 0.0001);
     this.pp.cmd.push({
       type: "stroke",
-      params: [
-        options.color,
-        options.width,
-        options.cap,
-        options.join,
-        options.dash,
-        options.dashOffset,
-        options.miterLimit,
-      ],
+      params: [params.color, params.width, params.cap, params.join, params.dash, params.dashOffset, params.miterLimit],
     });
 
-    if (options.width) {
-      this.pp.maxLineWidth = Math.max(this.pp.maxLineWidth, options.width);
+    if (params.width) {
+      this.pp.maxLineWidth = Math.max(this.pp.maxLineWidth, params.width);
     }
 
     this._$dirty();
@@ -373,7 +367,7 @@ export class Canvas extends Node implements IRenderable {
 
   private _$stroke(
     color: string | CanvasGradient | CanvasPattern,
-    width?: number,
+    width: number,
     cap?: CanvasLineCap,
     join?: CanvasLineJoin,
     dash?: number[],
@@ -429,6 +423,7 @@ export class Canvas extends Node implements IRenderable {
   }
 
   private _$resizeCanvas(offset: IPoint, canvasWidth: number, canvasHeight: number) {
+    console.assert(canvasWidth > 0 && canvasHeight > 0, "canvas width and height must be greater than 0");
     const { canvas, texture, width, height } = this.pp;
 
     const sheet = {
