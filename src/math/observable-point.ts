@@ -2,11 +2,11 @@ import { DirtyType } from "../const";
 import type { IPoint } from "./point";
 
 export interface Observer {
-  onDirty: (type: DirtyType) => void;
+  markDirty: (type: DirtyType) => void;
 }
 
 /**
- * 坐标位置发生变化时，会触发 onDirty 回调
+ * 坐标位置发生变化时，会触发 markDirty 回调
  */
 export class ObservablePoint {
   private readonly _observer: Observer;
@@ -16,7 +16,7 @@ export class ObservablePoint {
   /** @internal */
   _y = 0;
 
-  /** 设置 x 坐标，会触发 onDirty 更新 */
+  /** 设置 x 坐标，会触发 markDirty 更新 */
   get x(): number {
     return this._x;
   }
@@ -24,11 +24,11 @@ export class ObservablePoint {
   set x(value: number) {
     if (this._x !== value) {
       this._x = value;
-      this._observer.onDirty(DirtyType.transform);
+      this._observer.markDirty(DirtyType.transform);
     }
   }
 
-  /** 设置 y 坐标，会触发 onDirty 更新 */
+  /** 设置 y 坐标，会触发 markDirty 更新 */
   get y(): number {
     return this._y;
   }
@@ -36,7 +36,7 @@ export class ObservablePoint {
   set y(value: number) {
     if (this._y !== value) {
       this._y = value;
-      this._observer.onDirty(DirtyType.transform);
+      this._observer.markDirty(DirtyType.transform);
     }
   }
 
@@ -55,7 +55,7 @@ export class ObservablePoint {
     if (this._x !== x || this._y !== y) {
       this._x = x;
       this._y = y;
-      this._observer.onDirty(DirtyType.transform);
+      this._observer.markDirty(DirtyType.transform);
     }
     return this;
   }
@@ -68,7 +68,7 @@ export class ObservablePoint {
   add(dx: number, dy: number): this {
     this._x += dx;
     this._y += dy;
-    this._observer.onDirty(DirtyType.transform);
+    this._observer.markDirty(DirtyType.transform);
     return this;
   }
 
@@ -90,7 +90,7 @@ export class ObservablePoint {
     if (this._x !== point.x || this._y !== point.y) {
       this._x = point.x;
       this._y = point.y;
-      this._observer.onDirty(DirtyType.transform);
+      this._observer.markDirty(DirtyType.transform);
     }
     return this;
   }

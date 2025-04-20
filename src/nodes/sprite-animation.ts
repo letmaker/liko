@@ -58,7 +58,7 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
   set texture(value: Texture) {
     if (this.pp.texture !== value) {
       this.pp.texture = value;
-      this.onDirty(DirtyType.texture);
+      this.markDirty(DirtyType.texture);
     }
   }
 

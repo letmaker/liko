@@ -58,9 +58,9 @@ export class Sprite extends LikoNode implements IRenderable {
       const textureId = batch?.getTextureId(value) ?? batch?.add(this.texture);
       if (textureId && textureId > -1) {
         this.renderObject.textureId = textureId;
-        this.onDirty(DirtyType.texture);
+        this.markDirty(DirtyType.texture);
       } else {
-        this.onDirty(DirtyType.child);
+        this.markDirty(DirtyType.child);
       }
     }
   }
@@ -89,7 +89,7 @@ export class Sprite extends LikoNode implements IRenderable {
       if (pp.height === -1) {
         this.height = texture.height;
       }
-      this.onDirty(DirtyType.size);
+      this.markDirty(DirtyType.size);
     }
     this.emit(EventType.loaded);
   }

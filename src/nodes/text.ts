@@ -84,9 +84,9 @@ export class Text extends LikoNode implements IRenderable {
     if (this.pp.changed) return;
 
     this.pp.changed = true;
-    this.onDirty(DirtyType.texture);
-    this.onDirty(DirtyType.transform);
-    this.onDirty(DirtyType.size);
+    this.markDirty(DirtyType.texture);
+    this.markDirty(DirtyType.transform);
+    this.markDirty(DirtyType.size);
     Timer.callLater(this._$drawText, this);
   }
 
@@ -346,7 +346,7 @@ export class Text extends LikoNode implements IRenderable {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
       texture.set(new TextureBuffer(canvas));
-      this.onDirty(DirtyType.child);
+      this.markDirty(DirtyType.child);
     } else {
       // 实际画布可能更大，所以需要用 sheet
       const sheet = {

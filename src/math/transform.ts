@@ -4,7 +4,7 @@ import { ObservablePoint } from "./observable-point";
 import type { IPoint } from "./point";
 
 export interface ITransformOptions {
-  observer?: { onDirty: (type: number) => void };
+  observer?: { markDirty: (type: number) => void };
 }
 
 /**
@@ -19,7 +19,7 @@ export class Transform {
   /** 对象的轴心点 */
   pivot: ObservablePoint = new ObservablePoint(this, 0, 0);
 
-  private _observer?: { onDirty: (type: DirtyType) => void };
+  private _observer?: { markDirty: (type: DirtyType) => void };
   private _rotation = 0;
   private _cx = 1;
   private _sx = 0;
@@ -36,7 +36,7 @@ export class Transform {
       this._cx = Math.cos(value);
       this._sx = Math.sin(value);
 
-      this.onDirty();
+      this.markDirty();
     }
   }
 
@@ -90,7 +90,7 @@ export class Transform {
   /**
    * 当缩放值、轴心点、倾斜值、旋转值发生变化后，会调用此回调
    */
-  onDirty(): void {
-    this._observer?.onDirty(DirtyType.transform);
+  markDirty(): void {
+    this._observer?.markDirty(DirtyType.transform);
   }
 }

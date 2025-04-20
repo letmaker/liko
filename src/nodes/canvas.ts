@@ -441,7 +441,7 @@ export class Canvas extends LikoNode implements IRenderable {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
       texture.set(new TextureBuffer(canvas), undefined, sheet);
-      this.onDirty(DirtyType.child);
+      this.markDirty(DirtyType.child);
     } else {
       texture.set(texture.buffer, undefined, sheet);
       // 宽高不变，重新更新 Texture 的图片
@@ -472,9 +472,9 @@ export class Canvas extends LikoNode implements IRenderable {
     if (this.pp.changed) return;
 
     this.pp.changed = true;
-    this.onDirty(DirtyType.transform);
-    this.onDirty(DirtyType.texture);
-    this.onDirty(DirtyType.size);
+    this.markDirty(DirtyType.transform);
+    this.markDirty(DirtyType.texture);
+    this.markDirty(DirtyType.size);
     Timer.callLater(this._$drawCanvas, this);
   }
 }

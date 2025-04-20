@@ -319,7 +319,7 @@ export abstract class LikoNode {
   set visible(value) {
     if (this.pp.visible !== value) {
       this.pp.visible = value;
-      this.onDirty(DirtyType.child);
+      this.markDirty(DirtyType.child);
     }
   }
 
@@ -334,7 +334,7 @@ export abstract class LikoNode {
       pp.width = value;
       this.transform.pivot.x = value * pp.anchor.x;
       this.emit(EventType.resize);
-      this.onDirty(DirtyType.size);
+      this.markDirty(DirtyType.size);
     }
   }
 
@@ -349,7 +349,7 @@ export abstract class LikoNode {
       pp.height = value;
       this.transform.pivot.y = value * pp.anchor.y;
       this.emit(EventType.resize);
-      this.onDirty(DirtyType.size);
+      this.markDirty(DirtyType.size);
     }
   }
 
@@ -401,7 +401,7 @@ export abstract class LikoNode {
     const { width, height } = this.getLocalBounds();
     pivot.x = width * value.x;
     pivot.y = height * value.y;
-    this.onDirty(DirtyType.transform);
+    this.markDirty(DirtyType.transform);
   }
 
   /** 节点叠加颜色 */
@@ -413,7 +413,7 @@ export abstract class LikoNode {
     if (pp.color.value !== value) {
       if (pp.color === Color.Default) pp.color = new Color(value);
       pp.color.value = value;
-      this.onDirty(DirtyType.color);
+      this.markDirty(DirtyType.color);
     }
   }
 
@@ -429,7 +429,7 @@ export abstract class LikoNode {
   set alpha(value: number) {
     if (this.pp.alpha !== value) {
       this.pp.alpha = value;
-      this.onDirty(DirtyType.color);
+      this.markDirty(DirtyType.color);
     }
   }
 
@@ -482,7 +482,7 @@ export abstract class LikoNode {
   /**
    * 当节点发生变化后，调用此函数标记为脏状态
    */
-  onDirty(type: DirtyType) {
+  markDirty(type: DirtyType) {
     const pp = this.pp;
     if ((pp.dirty & type) === 0) {
       pp.dirty |= type;
@@ -531,7 +531,7 @@ export abstract class LikoNode {
     else pp.children.push(child);
     if (pp.stage) this._$addToStage(child, pp.stage);
     child.emit(EventType.added, this);
-    this.onDirty(DirtyType.child);
+    this.markDirty(DirtyType.child);
     return child;
   }
 
@@ -566,7 +566,7 @@ export abstract class LikoNode {
     const currentIndex = child.getIndexInParent();
     children.splice(currentIndex, 1);
     children.splice(index, 0, child);
-    this.onDirty(DirtyType.child);
+    this.markDirty(DirtyType.child);
   }
 
   /**
@@ -607,7 +607,7 @@ export abstract class LikoNode {
         child.pp.stage = undefined;
         this.pp.children.splice(index, 1);
         child.emit(EventType.removed, this);
-        this.onDirty(DirtyType.child);
+        this.markDirty(DirtyType.child);
       }
     }
     return child;
@@ -631,7 +631,7 @@ export abstract class LikoNode {
         child.emit(EventType.removed, this);
       }
       children.length = 0;
-      this.onDirty(DirtyType.child);
+      this.markDirty(DirtyType.child);
     }
   }
 
@@ -645,7 +645,7 @@ export abstract class LikoNode {
         children[i].destroy();
       }
       children.length = 0;
-      this.onDirty(DirtyType.child);
+      this.markDirty(DirtyType.child);
     }
   }
 
@@ -657,7 +657,7 @@ export abstract class LikoNode {
   addFilter<T extends Filter>(filter: T): T {
     if (this.pp.filters === defaultFilters) this.pp.filters = [];
     this.pp.filters.push(filter);
-    this.onDirty(DirtyType.filter);
+    this.markDirty(DirtyType.filter);
     return filter;
   }
 
@@ -668,7 +668,7 @@ export abstract class LikoNode {
    */
   updateFilter<T extends Filter>(filter: T): T {
     filter._dirty = true;
-    this.onDirty(DirtyType.filter);
+    this.markDirty(DirtyType.filter);
     return filter;
   }
 
@@ -699,7 +699,7 @@ export abstract class LikoNode {
       const index = this.pp.filters.indexOf(filter);
       if (index !== -1) {
         this.pp.filters.splice(index, 1);
-        this.onDirty(DirtyType.filter);
+        this.markDirty(DirtyType.filter);
       }
     }
     return filter;
@@ -715,7 +715,7 @@ export abstract class LikoNode {
         filters[i].destroy();
       }
       filters.length = 0;
-      this.onDirty(DirtyType.filter);
+      this.markDirty(DirtyType.filter);
     }
   }
 
