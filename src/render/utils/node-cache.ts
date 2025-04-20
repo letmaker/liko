@@ -1,6 +1,6 @@
 import { Bounds } from "../../math/bounds";
 import { RotatingRect } from "../../math/rotating-rect";
-import type { Node } from "../../nodes/node";
+import type { LikoNode } from "../../nodes/node";
 
 export class NodeCache<T> {
   static gloBounds = new NodeCache(Bounds);
@@ -13,7 +13,7 @@ export class NodeCache<T> {
     this._Class = Class;
   }
 
-  get(key: Node): T {
+  get(key: LikoNode): T {
     let res = this._cache.get(key);
     if (res === undefined) {
       res = new this._Class();
@@ -22,7 +22,7 @@ export class NodeCache<T> {
     return res;
   }
 
-  has(key: Node): boolean {
+  has(key: LikoNode): boolean {
     return this._cache.has(key);
   }
 }

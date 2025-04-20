@@ -1,13 +1,13 @@
-import type { Node } from "../nodes/node";
+import type { LikoNode } from "../nodes/node";
 
 // biome-ignore format:
 /** 鼠标事件类型 */
-export type MouseEventType = "click" | "mousedown" | "mouseup" | "mousemove" | "mouseover" | "mouseout" | "mouseupoutside";
+export type PointerEventType = "click" | "pointerdown" | "pointerup" | "pointermove" | "pointerover" | "pointerout" | "pointerupoutside";
 
 /**
- * 鼠标事件，出于性能考虑，鼠标事件节点是复用的，每个类型（比如 mouseup，click 等）共用一个鼠标事件节点
+ * 鼠标事件，出于性能考虑，鼠标事件节点是复用的，每个类型（比如 pointerup，click 等）共用一个鼠标事件节点
  * 及时读取不受影响，如果需要延迟读取鼠标事件内容，请 clone 他 */
-export class MouseEvent {
+export class LikoPointerEvent {
   /** 是否调用过 stopPropagation */
   propagationStopped = false;
   /** 是否调用过 preventDefault */
@@ -15,11 +15,11 @@ export class MouseEvent {
   /** 原始的鼠标事件 */
   nativeEvent!: PointerEvent;
   /** 鼠标事件目标节点 */
-  target!: Node;
+  target!: LikoNode;
   /** 鼠标事件冒泡到的当前节点 */
-  currentTarget!: Node;
+  currentTarget!: LikoNode;
   /** 相对于 stage 的鼠标位置 */
-  mouse = { x: 0, y: 0 };
+  pointer = { x: 0, y: 0 };
   /** 两次间隔鼠标移动差值 */
   movement = { x: 0, y: 0 };
   /** 是否同时按了 alt 键盘 */
@@ -33,12 +33,12 @@ export class MouseEvent {
   /** 代表按下的鼠标按键，0-鼠标左键，1-鼠标中键，2-鼠标右键 */
   button = 0;
   /** 鼠标事件冒泡路径 */
-  path: Node[] = [];
+  path: LikoNode[] = [];
 
   /**
    * @param type 鼠标事件类型
    */
-  constructor(public type: MouseEventType) {}
+  constructor(public type: PointerEventType) {}
 
   /**
    * 阻止鼠标默认行为，如果是 up 时调用，则会阻止 click 事件的派发
@@ -59,12 +59,12 @@ export class MouseEvent {
   /**
    * clone 别的鼠标事件数据到本鼠标事件
    */
-  cloneFrom(event: MouseEvent): this {
+  cloneFrom(event: LikoPointerEvent): this {
     this.type = event.type;
     this.nativeEvent = event.nativeEvent;
     this.target = event.target;
     this.currentTarget = event.currentTarget;
-    this.mouse = event.mouse;
+    this.pointer = event.pointer;
     this.movement = event.movement;
     this.altKey = event.altKey;
     this.ctrlKey = event.ctrlKey;
@@ -78,6 +78,6 @@ export class MouseEvent {
    * clone 当前鼠标事件
    */
   clone() {
-    return new MouseEvent(this.type).cloneFrom(this);
+    return new LikoPointerEvent(this.type).cloneFrom(this);
   }
 }

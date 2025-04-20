@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ScriptBase } from "../../scripts/script-base";
-import type { Node } from "../../nodes/node";
-import type { Stage } from "../../nodes/stage";
-import type { IScene } from "../../nodes/scene";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EventType } from "../../const";
+import type { LikoNode } from "../../nodes/node";
+import type { IScene } from "../../nodes/scene";
+import type { Stage } from "../../nodes/stage";
+import { ScriptBase } from "../../scripts/script-base";
 
 // 创建一个具体的 ScriptBase 子类用于测试
 class TestScript extends ScriptBase {
@@ -46,7 +46,7 @@ class TestScript extends ScriptBase {
 
 describe("ScriptBase", () => {
   let script: TestScript;
-  let node: Node;
+  let node: LikoNode;
   let mockStage: Stage;
   let mockScene: IScene;
 
@@ -67,7 +67,7 @@ describe("ScriptBase", () => {
       stage: mockStage,
       scene: mockScene,
       offAll: vi.fn(),
-    } as unknown as Node;
+    } as unknown as LikoNode;
 
     script = new TestScript();
   });

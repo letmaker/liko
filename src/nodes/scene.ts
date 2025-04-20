@@ -4,9 +4,9 @@ import { RegNode } from "../utils/decorators";
 import { createNodeInstance } from "../utils/register";
 import { cloneJson, getUID } from "../utils/utils";
 import type { INodeData, INodeOptions, INodePrivateProps } from "./node";
-import { Node } from "./node";
+import { LikoNode } from "./node";
 
-export interface IAnimation extends Node {
+export interface IAnimation extends LikoNode {
   /** 播放动画 */
   play: () => void;
   /** 停止动画 */
@@ -25,7 +25,7 @@ export interface IScene extends IAnimation {
   /** 是否暂停 */
   paused: boolean;
   /** 克隆场景中的节点 */
-  clone<T extends Node>(options: { id?: string; label?: string }): T | undefined;
+  clone<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined;
   /** 暂停播放 */
   pause: () => void;
   /** 恢复播放 */
@@ -54,7 +54,7 @@ interface ISceneOptions extends INodeOptions {
  * 所有动画、脚本、动效均由所在的场景统一驱动
  */
 @RegNode("Scene")
-export class Scene extends Node implements IScene {
+export class Scene extends LikoNode implements IScene {
   declare pp: IScenePrivateProps;
   /** 场景数据，用于实现节点克隆 */
   json?: INodeData;
@@ -224,7 +224,7 @@ export class Scene extends Node implements IScene {
     this._$updateScripts(this, scaleDelta);
   }
 
-  private _$updateScripts(node: Node, delta: number) {
+  private _$updateScripts(node: LikoNode, delta: number) {
     if (node.enabled) {
       const { scripts } = node;
       if (scripts.length) {
@@ -264,7 +264,7 @@ export class Scene extends Node implements IScene {
   /**
    * 克隆场景中某个节点
    */
-  clone<T extends Node>(options: { id?: string; label?: string }): T | undefined {
+  clone<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined {
     const data = this._$findNodeData(options, this.json);
     if (data) {
       // 深度克隆数据

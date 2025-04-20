@@ -1,15 +1,15 @@
 import { App } from "../app";
 import type { KeyBoardManager } from "../events/keyboard-manager";
-import type { MouseManager } from "../events/mouse-manager";
+import type { PointerManager } from "../events/pointer-manager";
 import type { Bounds } from "../math/bounds";
 import type { IPoint } from "../math/point";
 import type { Renderer } from "../render/renderer";
 import { Store } from "../utils/store";
 import { Timer } from "../utils/timer";
-import { type INodeData, Node } from "./node";
+import { type INodeData, LikoNode } from "./node";
 import { Scene } from "./scene";
 
-export class Stage extends Node {
+export class Stage extends LikoNode {
   /** 场景时间轴，可以用来做加速及减速 */
   timer = new Timer();
   /** 全局数据仓库 */
@@ -21,12 +21,12 @@ export class Stage extends Node {
   /** 键盘管理器 */
   keyboard!: KeyBoardManager;
   /** 鼠标管理器 */
-  mouse!: MouseManager;
+  pointer!: PointerManager;
 
   constructor() {
     super();
     this.pp.stage = this;
-    this.mouseEnable = true;
+    this.pointerEnabled = true;
     this.label = "Stage";
   }
 
@@ -36,7 +36,7 @@ export class Stage extends Node {
       this.store.destroy();
       this.renderer.destroy();
       this.keyboard.destroy();
-      this.mouse.destroy();
+      this.pointer.destroy();
       super.destroy();
     }
   }

@@ -1,5 +1,5 @@
 import type { Matrix } from "../../math/matrix";
-import type { Node } from "../../nodes/node";
+import type { LikoNode } from "../../nodes/node";
 import { Color, type ColorData } from "../../utils/color";
 import type { Batch } from "../batch/batch";
 import { BatchGroup } from "../batch/batch-group";
@@ -39,7 +39,7 @@ export class WebGpuRender {
 
   batchGroup = new BatchGroup();
 
-  render(root: Node, worldMatrix: Matrix, camera: CameraBuffer, texture: GPUTexture) {
+  render(root: LikoNode, worldMatrix: Matrix, camera: CameraBuffer, texture: GPUTexture) {
     const { device } = Device as unknown as WebGPUDevice;
     const batchGroup = this.batchGroup.collect(root, worldMatrix, camera);
     if (batchGroup.batches.length) {

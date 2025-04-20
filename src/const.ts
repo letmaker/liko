@@ -41,17 +41,17 @@ export enum EventType {
   transform = "transform",
 
   /** 鼠标按下时，由 node 派发 */
-  mousedown = "mousedown",
+  pointerdown = "pointerdown",
   /** 鼠标抬起时，由 node 派发 */
-  mouseup = "mouseup",
+  pointerup = "pointerup",
   /** 鼠标移动时，由 node 派发 */
-  mousemove = "mousemove",
+  pointermove = "pointermove",
   /** 鼠标经过时，由 node 派发 */
-  mouseover = "mouseover",
+  pointerover = "pointerover",
   /** 鼠标移出时，由 node 派发 */
-  mouseout = "mouseout",
+  pointerout = "pointerout",
   /** 鼠标在 canvas 外面被抬起时，由 node 派发 */
-  mouseupoutside = "mouseupoutside",
+  pointerupoutside = "pointerupoutside",
   /** 鼠标点击时，由 node 派发 */
   click = "click",
   /** 信号触发时，由 node 派发 */

@@ -1,5 +1,5 @@
 import { EventType } from "../const";
-import type { MouseEvent } from "../events/mouse-event";
+import type { LikoPointerEvent } from "../events/pointer-event";
 import type { RigidBody } from "../physics/rigidBody";
 import { ScriptBase } from "./script-base";
 
@@ -33,14 +33,14 @@ export class Script extends ScriptBase {
       if (this.onClick !== prototype.onClick) {
         target.on(EventType.click, this.onClick, this);
       }
-      if (this.onMouseDown !== prototype.onMouseDown) {
-        target.on(EventType.mousedown, this.onMouseDown, this);
+      if (this.onPointerDown !== prototype.onPointerDown) {
+        target.on(EventType.pointerdown, this.onPointerDown, this);
       }
-      if (this.onMouseUp !== prototype.onMouseUp) {
-        target.on(EventType.mouseup, this.onMouseUp, this);
+      if (this.onPointerUp !== prototype.onPointerUp) {
+        target.on(EventType.pointerup, this.onPointerUp, this);
       }
-      if (this.onMouseMove !== prototype.onMouseMove) {
-        target.on(EventType.mousemove, this.onMouseMove, this);
+      if (this.onPointerMove !== prototype.onPointerMove) {
+        target.on(EventType.pointermove, this.onPointerMove, this);
       }
 
       // 物理事件
@@ -62,14 +62,14 @@ export class Script extends ScriptBase {
         if (this.onStageClick !== prototype.onStageClick) {
           stage.on(EventType.click, this.onStageClick, this);
         }
-        if (this.onStageMouseDown !== prototype.onStageMouseDown) {
-          stage.on(EventType.mousedown, this.onStageMouseDown, this);
+        if (this.onStagePointerDown !== prototype.onStagePointerDown) {
+          stage.on(EventType.pointerdown, this.onStagePointerDown, this);
         }
-        if (this.onStageMouseUp !== prototype.onStageMouseUp) {
-          stage.on(EventType.mouseup, this.onStageMouseUp, this);
+        if (this.onStagePointerUp !== prototype.onStagePointerUp) {
+          stage.on(EventType.pointerup, this.onStagePointerUp, this);
         }
-        if (this.onStageMouseMove !== prototype.onStageMouseMove) {
-          stage.on(EventType.mousemove, this.onStageMouseMove, this);
+        if (this.onStagePointerMove !== prototype.onStagePointerMove) {
+          stage.on(EventType.pointermove, this.onStagePointerMove, this);
         }
 
         // 键盘事件
@@ -88,28 +88,28 @@ export class Script extends ScriptBase {
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onClick(e: MouseEvent): void {}
+  onClick(e: LikoPointerEvent): void {}
 
   /**
    * 目标在鼠标按下时触发
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onMouseDown(e: MouseEvent): void {}
+  onPointerDown(e: LikoPointerEvent): void {}
 
   /**
    * 目标在鼠标抬起时触发
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onMouseUp(e: MouseEvent): void {}
+  onPointerUp(e: LikoPointerEvent): void {}
 
   /**
    * 目标在鼠标移动时触发
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onMouseMove(e: MouseEvent): void {}
+  onPointerMove(e: LikoPointerEvent): void {}
 
   /**
    * 物理碰撞开始时触发
@@ -136,28 +136,28 @@ export class Script extends ScriptBase {
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onStageClick(e: MouseEvent): void {}
+  onStageClick(e: LikoPointerEvent): void {}
 
   /**
    * 目标在鼠标按下时触发
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onStageMouseDown(e: MouseEvent): void {}
+  onStagePointerDown(e: LikoPointerEvent): void {}
 
   /**
    * 目标在鼠标抬起时触发
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onStageMouseUp(e: MouseEvent): void {}
+  onStagePointerUp(e: LikoPointerEvent): void {}
 
   /**
    * 目标在鼠标移动时触发
    * @param e 鼠标事件对象
    */
   // @ts-expect-error
-  onStageMouseMove(e: MouseEvent): void {}
+  onStagePointerMove(e: LikoPointerEvent): void {}
 
   /**
    * 键盘按下时触发

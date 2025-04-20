@@ -7,14 +7,15 @@
     "arrowright",
     "arrowup",
     "inited",
-    "mouseupoutside",
+    "pointerupoutside",
     "Renderable",
     "rigidbody",
     "rrggbb",
     "webgl",
     "wgsl",
     "xrrggbb",
-    "yoyo"
+    "yoyo",
+    "liko"
   ],
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "biomejs.biome",

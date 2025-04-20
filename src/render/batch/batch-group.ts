@@ -1,6 +1,6 @@
 import { DirtyType } from "../../const";
 import type { Matrix } from "../../math/matrix";
-import type { Node } from "../../nodes/node";
+import type { LikoNode } from "../../nodes/node";
 import type { IRenderable, Sprite } from "../../nodes/sprite";
 import { Color } from "../../utils/color";
 import type { CameraBuffer } from "../buffer/camera-buffer";
@@ -16,7 +16,7 @@ export type BatchData = Batch | BatchGroup;
 export class BatchGroup {
   camera!: CameraBuffer;
   batches: BatchData[] = [];
-  nodes: Node[] = [];
+  nodes: LikoNode[] = [];
 
   posBuffer = new VertexBuffer("pos");
   colorBuffer = new VertexBuffer("color");
@@ -31,7 +31,7 @@ export class BatchGroup {
   updateCount = 0;
   resetCount = 0;
 
-  collect(root: Node, worldMatrix: Matrix, camera: CameraBuffer) {
+  collect(root: LikoNode, worldMatrix: Matrix, camera: CameraBuffer) {
     if (root.pp.dirty === 0) return this;
     if (root.pp.dirty & DirtyType.child) {
       this.reset();
@@ -110,7 +110,7 @@ export class BatchGroup {
     }
   }
 
-  private _collect(node: Node, worldMatrix: Matrix, worldAlpha: number) {
+  private _collect(node: LikoNode, worldMatrix: Matrix, worldAlpha: number) {
     const { pp, children } = node;
     const { visible, alpha, dirty, transform, localMatrix, pos } = pp;
     if (!visible || alpha < 0.001) return;
@@ -156,14 +156,14 @@ export class BatchGroup {
     this.indexSize += renderObject.indexSize;
   }
 
-  private _collectChild(node: Node, worldMatrix: Matrix, worldAlpha: number) {
+  private _collectChild(node: LikoNode, worldMatrix: Matrix, worldAlpha: number) {
     const { filters } = node.pp;
     if (filters.length) {
       // 把滤镜转换为普通的图片 TODO: 会不会很费内存，会破坏 render？
       const target = FilterManager.instance.render(node, filters);
       // 渲染滤镜后的图片
       this._collect(target, worldMatrix, worldAlpha);
-    } else if (node.cache) {
+    } else if (node.cacheEnabled) {
       const batchGroup = getBatchGroupFromCache(node);
       batchGroup.collect(node, worldMatrix, this.camera);
       this.batches.push(batchGroup);

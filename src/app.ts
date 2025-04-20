@@ -1,7 +1,7 @@
 import { KeyBoardManager } from "./events/keyboard-manager";
-import { MouseManager } from "./events/mouse-manager";
+import { PointerManager } from "./events/pointer-manager";
 import { Stage } from "./nodes/stage";
-import { createPhysics, type PhysicsOptions } from "./physics";
+import { type PhysicsOptions, createPhysics } from "./physics";
 import { Device, initDevice } from "./render/device/device";
 import { Renderer } from "./render/renderer";
 import type { ColorData } from "./utils/color";
@@ -54,7 +54,7 @@ export class App {
     this.stage.canvas = canvas;
     this.stage.renderer = this.renderer;
     this.stage.keyboard = new KeyBoardManager(this.stage);
-    this.stage.mouse = new MouseManager(this.stage);
+    this.stage.pointer = new PointerManager(this.stage);
 
     if (!canvas.parentNode) {
       const container = params.container ? document.getElementById(params.container) : document.body;

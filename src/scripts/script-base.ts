@@ -1,7 +1,7 @@
-import type { IScene } from "../nodes/scene";
-import type { Node } from "../nodes/node";
-import type { Stage } from "../nodes/stage";
 import { EventType } from "../const";
+import type { LikoNode } from "../nodes/node";
+import type { IScene } from "../nodes/scene";
+import type { Stage } from "../nodes/stage";
 
 /**
  * 节点扩展脚本，扩展 node 的功能
@@ -40,15 +40,15 @@ export abstract class ScriptBase {
     }
   }
 
-  private _$target?: Node;
+  private _$target?: LikoNode;
   /** 脚本目标对象，设置 target 后回调 onCreate */
-  get target(): Node {
+  get target(): LikoNode {
     if (!this._$target) {
       console.warn("Script target is not set");
     }
-    return this._$target as Node;
+    return this._$target as LikoNode;
   }
-  set target(value: Node) {
+  set target(value: LikoNode) {
     if (value !== this._$target) {
       this._$target = value;
       if (value) {

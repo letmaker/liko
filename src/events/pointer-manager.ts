@@ -1,17 +1,17 @@
 import { App } from "../app";
 import type { IPoint } from "../math/point";
-import type { Node } from "../nodes/node";
+import type { LikoNode } from "../nodes/node";
 import type { Stage } from "../nodes/stage";
-import { MouseEvent } from "./mouse-event";
+import { LikoPointerEvent } from "./pointer-event";
 
 const eventMap = {
-  down: new MouseEvent("mousedown"),
-  up: new MouseEvent("mouseup"),
-  move: new MouseEvent("mousemove"),
-  over: new MouseEvent("mouseover"),
-  out: new MouseEvent("mouseout"),
-  upOutside: new MouseEvent("mouseupoutside"),
-  click: new MouseEvent("click"),
+  down: new LikoPointerEvent("pointerdown"),
+  up: new LikoPointerEvent("pointerup"),
+  move: new LikoPointerEvent("pointermove"),
+  over: new LikoPointerEvent("pointerover"),
+  out: new LikoPointerEvent("pointerout"),
+  upOutside: new LikoPointerEvent("pointerupoutside"),
+  click: new LikoPointerEvent("click"),
 };
 
 type EventType = keyof typeof eventMap;
@@ -19,12 +19,12 @@ type EventType = keyof typeof eventMap;
 /**
  * 鼠标事件管理器
  */
-export class MouseManager {
+export class PointerManager {
   private _downHandler = this._onPointerDown.bind(this);
   private _moveHandler = this._onPointerMove.bind(this);
   private _upHandler = this._onPointerUp.bind(this);
   /** 最后 over 的节点 */
-  private _lastOver: Node | undefined;
+  private _lastOver: LikoNode | undefined;
 
   private _canvas: HTMLCanvasElement;
 
@@ -44,7 +44,7 @@ export class MouseManager {
 
   private _onPointerDown(e: PointerEvent): void {
     const downEvent = this._convertEvent(e, "down");
-    this.hitTest(this.root, downEvent.mouse, downEvent.path);
+    this.hitTest(this.root, downEvent.pointer, downEvent.path);
     this._emitEvent(downEvent);
   }
 
@@ -54,7 +54,7 @@ export class MouseManager {
 
     // 判断是否在 canvas 外部
     if (e.target === this._canvas) {
-      this.hitTest(this.root, upEvent.mouse, upEvent.path);
+      this.hitTest(this.root, upEvent.pointer, upEvent.path);
       this._emitEvent(upEvent);
 
       // 如果没有被preventDefault，则触发 click 事件
@@ -80,37 +80,37 @@ export class MouseManager {
   private _onPointerMove(e: PointerEvent): void {
     // 处理鼠标移动事件
     const moveEvent = this._convertEvent(e, "move");
-    this.hitTest(this.root, moveEvent.mouse, moveEvent.path);
+    this.hitTest(this.root, moveEvent.pointer, moveEvent.path);
     if (moveEvent.path.length < 1) return;
     this._emitEvent(moveEvent);
 
     // over out
-    const mouseTarget = moveEvent.path[0];
+    const pointerTarget = moveEvent.path[0];
     const overEvent = this._cloneEvent(moveEvent, "over");
     const outEvent = this._cloneEvent(moveEvent, "out");
-    if (this._lastOver !== mouseTarget) {
+    if (this._lastOver !== pointerTarget) {
       if (this._lastOver) {
         this._getPathByTarget(this._lastOver, outEvent.path);
         this._emitEvent(outEvent);
       }
-      if (mouseTarget !== this.root) {
-        this._getPathByTarget(mouseTarget, overEvent.path);
+      if (pointerTarget !== this.root) {
+        this._getPathByTarget(pointerTarget, overEvent.path);
         this._emitEvent(overEvent);
-        this._lastOver = mouseTarget;
+        this._lastOver = pointerTarget;
       } else {
         this._lastOver = undefined;
       }
     }
   }
 
-  private _getPathByTarget(target: Node, path: Node[]) {
-    if (target.mouseEnable) path.push(target);
+  private _getPathByTarget(target: LikoNode, path: LikoNode[]) {
+    if (target.pointerEnabled) path.push(target);
     if (target.parent) {
       this._getPathByTarget(target.parent, path);
     }
   }
 
-  private _cloneEvent(event: MouseEvent, type: EventType) {
+  private _cloneEvent(event: LikoPointerEvent, type: EventType) {
     const newEvent = eventMap[type];
     const newType = newEvent.type;
     newEvent.cloneFrom(event);
@@ -122,10 +122,10 @@ export class MouseManager {
   }
 
   /** 转换原始鼠标事件为引擎的鼠标事件 */
-  private _convertEvent(e: PointerEvent, type: EventType): MouseEvent {
+  private _convertEvent(e: PointerEvent, type: EventType): LikoPointerEvent {
     const event = eventMap[type];
     event.nativeEvent = e;
-    event.mouse = this._convertPoint(e.clientX, e.clientY, event.mouse);
+    event.pointer = this._convertPoint(e.clientX, e.clientY, event.pointer);
     event.movement.x = e.movementX;
     event.movement.y = e.movementY;
     event.altKey = e.altKey;
@@ -156,36 +156,36 @@ export class MouseManager {
   /**
    * 对目标节点进行鼠标碰撞测试
    * @param target 碰撞的目标节点
-   * @param mouse 鼠标位置
+   * @param pointer 鼠标位置
    * @param out 输出数组
    * @returns 返回命中的节点列表
    */
-  hitTest(target: Node, mouse: IPoint, out: Node[]): Node[] {
+  hitTest(target: LikoNode, pointer: IPoint, out: LikoNode[]): LikoNode[] {
     // 节点可见，并且节点接受鼠标事件，才进行碰撞判断
-    if ((!target.mouseEnable && !target.mouseEnableChildren) || !target.visible) return out;
+    if ((!target.pointerEnabled && !target.pointerEnabledForChildren) || !target.visible) return out;
 
     // 从上往下，命中子节点，命中后冒泡到父节点
-    if (target.mouseEnableChildren && target.children.length) {
+    if (target.pointerEnabledForChildren && target.children.length) {
       for (let i = target.children.length - 1; i > -1; i--) {
         const child = target.children[i];
-        const list = this.hitTest(child, mouse, out);
+        const list = this.hitTest(child, pointer, out);
         if (list.length) {
           // 把父节点加到冒泡列表
-          if (target.mouseEnable) list.push(target);
+          if (target.pointerEnabled) list.push(target);
           return list;
         }
       }
     }
 
     // 判断当前节点是否命中
-    if (target.mouseEnable && target.hitTest(mouse)) {
+    if (target.pointerEnabled && target.hitTest(pointer)) {
       out.push(target);
     }
     return out;
   }
 
   /** 冒泡派发鼠标事件 */
-  private _emitEvent(event: MouseEvent) {
+  private _emitEvent(event: LikoPointerEvent) {
     if (event.path.length) {
       event.target = event.path[0];
       for (const target of event.path) {

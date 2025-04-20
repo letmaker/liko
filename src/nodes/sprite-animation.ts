@@ -4,9 +4,9 @@ import type { Bounds } from "../math/bounds";
 import { SpriteObject } from "../render/render/sprite-object";
 import type { Texture } from "../resource/texture";
 import { RegNode } from "../utils/decorators";
-import type { IAnimation } from "./scene";
 import type { INodeOptions } from "./node";
-import { type INodePrivateProps, Node } from "./node";
+import { type INodePrivateProps, LikoNode } from "./node";
+import type { IAnimation } from "./scene";
 import type { IRenderable } from "./sprite";
 
 interface ISpriteAnimationPrivateProps extends INodePrivateProps {
@@ -25,7 +25,7 @@ interface ISpriteAnimationOptions extends INodeOptions {
  * 精灵动画
  */
 @RegNode("SpriteAnimation")
-export class SpriteAnimation extends Node implements IRenderable, IAnimation {
+export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation {
   declare pp: ISpriteAnimationPrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
 

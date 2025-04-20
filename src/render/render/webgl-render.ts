@@ -1,6 +1,6 @@
 // @ts-nocheck TODO: 待实现
 import type { Matrix } from "../../math/matrix";
-import type { Node } from "../../nodes/node";
+import type { LikoNode } from "../../nodes/node";
 import type { Batch } from "../batch/batch";
 import { BatchGroup } from "../batch/batch-group";
 import type { CameraBuffer } from "../buffer/camera-buffer";
@@ -33,7 +33,7 @@ export class WebGLRender {
 
   batchGroup = new BatchGroup();
 
-  render(root: Node, worldMatrix: Matrix, texture: GPUTexture, camera: CameraBuffer) {
+  render(root: LikoNode, worldMatrix: Matrix, texture: GPUTexture, camera: CameraBuffer) {
     // 使用黑色清除画布
     Device.gl.clearColor(0.0, 0.0, 0.0, 1.0);
     const batchGroup = this.batchGroup.collect(root, worldMatrix, camera);

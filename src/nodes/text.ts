@@ -8,7 +8,7 @@ import { Texture } from "../resource/texture";
 import { RegNode } from "../utils/decorators";
 import { Timer } from "../utils/timer";
 import type { INodeOptions } from "./node";
-import { type INodePrivateProps, Node } from "./node";
+import { type INodePrivateProps, LikoNode } from "./node";
 import type { IRenderable } from "./sprite";
 
 // biome-ignore format:
@@ -54,7 +54,7 @@ interface ITextOptions extends INodeOptions {
  * 文本
  */
 @RegNode("Text")
-export class Text extends Node implements IRenderable {
+export class Text extends LikoNode implements IRenderable {
   declare pp: ITextPrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
 

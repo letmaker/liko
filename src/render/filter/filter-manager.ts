@@ -1,4 +1,4 @@
-import type { Node } from "../../nodes/node";
+import type { LikoNode } from "../../nodes/node";
 import type { Filter } from "./filter";
 
 export class FilterManager {
@@ -8,7 +8,7 @@ export class FilterManager {
     return FilterManager._instance;
   }
 
-  render(root: Node, filters: Filter[]) {
+  render(root: LikoNode, filters: Filter[]) {
     const rootDirty = root.pp.dirty;
 
     // 渲染节点
@@ -24,7 +24,8 @@ export class FilterManager {
       }
     }
 
-    outputTarget.pp.transform = root.getTransform();
+    // TODO 这里需要直接调用 transform 吗，没法复用吗
+    outputTarget.pp.transform = root.transform;
     outputTarget.pos = root.pos;
     outputTarget.width = root.width;
     outputTarget.height = root.height;

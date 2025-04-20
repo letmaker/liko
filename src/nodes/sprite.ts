@@ -6,10 +6,10 @@ import { Texture } from "../resource/texture";
 import type { ColorData } from "../utils/color";
 import { RegNode } from "../utils/decorators";
 import type { INodeOptions } from "./node";
-import { type INodePrivateProps, Node } from "./node";
+import { type INodePrivateProps, LikoNode } from "./node";
 
 /** 实现 IRenderable 接口，就可以渲染出图片 */
-export interface IRenderable extends Node {
+export interface IRenderable extends LikoNode {
   renderObject: SpriteObject;
   texture: Texture;
 }
@@ -29,7 +29,7 @@ interface ISpriteOptions extends INodeOptions {
  * 精灵类，以图片为渲染对象
  */
 @RegNode("Sprite")
-export class Sprite extends Node implements IRenderable {
+export class Sprite extends LikoNode implements IRenderable {
   declare pp: ISpritePrivateProps;
   /** 渲染对象 */
   renderObject: SpriteObject = new SpriteObject(this);

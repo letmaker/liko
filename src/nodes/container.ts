@@ -1,12 +1,12 @@
 import type { Bounds } from "../math/bounds";
 import { RegNode } from "../utils/decorators";
-import { Node } from "./node";
+import { LikoNode } from "./node";
 
 /**
  * 容器类
  */
 @RegNode("Container")
-export class Container extends Node {
+export class Container extends LikoNode {
   override hitTest() {
     return false;
   }

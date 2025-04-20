@@ -1,4 +1,4 @@
-import type { Node } from "../nodes/node";
+import type { LikoNode } from "../nodes/node";
 import type { ColorData } from "../utils/color";
 import { CameraBuffer } from "./buffer/camera-buffer";
 import { Device } from "./device/device";
@@ -30,7 +30,7 @@ export class Renderer {
     this.camera = new CameraBuffer();
   }
 
-  render(root: Node) {
+  render(root: LikoNode) {
     if (root.pp.dirty === 0) return;
     this.gpuRender.render(root, root.worldMatrix, this.camera, this.context.getCurrentTexture());
   }

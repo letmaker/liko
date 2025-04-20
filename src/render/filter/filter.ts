@@ -1,5 +1,5 @@
 import { Matrix } from "../../math/matrix";
-import type { Node } from "../../nodes/node";
+import type { LikoNode } from "../../nodes/node";
 import type { Texture } from "../../resource/texture";
 import { getUID } from "../../utils/utils";
 import { CameraBuffer } from "../buffer/camera-buffer";
@@ -41,7 +41,7 @@ export class Filter {
     this.filterRender.destroy();
   }
 
-  renderNode(root: Node) {
+  renderNode(root: LikoNode) {
     this._inputTarget ??= new RenderTarget();
 
     if (root.pp.dirty) {

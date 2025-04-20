@@ -10,7 +10,7 @@ import { Texture } from "../resource/texture";
 import { RegNode } from "../utils/decorators";
 import { Timer } from "../utils/timer";
 import type { INodeOptions, INodePrivateProps } from "./node";
-import { Node } from "./node";
+import { LikoNode } from "./node";
 import type { IRenderable } from "./sprite";
 
 interface ICanvasPrivateProps extends INodePrivateProps {
@@ -27,7 +27,7 @@ interface ICanvasPrivateProps extends INodePrivateProps {
  * Canvas 矢量图
  */
 @RegNode("Canvas")
-export class Canvas extends Node implements IRenderable {
+export class Canvas extends LikoNode implements IRenderable {
   declare pp: ICanvasPrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
 
