@@ -64,7 +64,7 @@ export class Animator extends ScriptBase {
 
     this._effectList.length = 0;
     for (const item of value) {
-      const target = this.target.getChild({ id: item.targetID, deep: true });
+      const target = this.target.findChild({ id: item.targetID, deep: true });
       if (target) {
         const effect = new Effect();
         effect.target = target;

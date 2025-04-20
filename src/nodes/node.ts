@@ -377,10 +377,10 @@ export abstract class Node {
   }
 
   /** 节点叠加颜色 */
-  get tint(): ColorData {
+  get tintColor(): ColorData {
     return this.pp.color.value;
   }
-  set tint(value: ColorData) {
+  set tintColor(value: ColorData) {
     const pp = this.pp;
     if (pp.color.value !== value) {
       if (pp.color === Color.Default) pp.color = new Color(value);
@@ -521,7 +521,7 @@ export abstract class Node {
    * 找到自己在父节点的索引顺序
    * @returns 返回自己在父节点的索引顺序
    */
-  getIndexOrder(): number {
+  getIndexInParent(): number {
     if (this.parent) return this.parent.children.indexOf(this);
     return -1;
   }
@@ -536,7 +536,7 @@ export abstract class Node {
     if (index < 0 || index >= children.length) {
       throw new Error(`The index ${index} is out of bounds`);
     }
-    const currentIndex = child.getIndexOrder();
+    const currentIndex = child.getIndexInParent();
     children.splice(currentIndex, 1);
     children.splice(index, 0, child);
     this.onDirty(DirtyType.child);
@@ -546,7 +546,7 @@ export abstract class Node {
    * 根据筛选器获得子节点实例，获取后尽量缓存，不要频繁获取
    * @returns 返回查找到的子节点
    */
-  getChild<T extends Node>(options: { id?: string; label?: string; Class?: typeof Node; deep?: boolean }):
+  findChild<T extends Node>(options: { id?: string; label?: string; Class?: typeof Node; deep?: boolean }):
     | T
     | undefined {
     const { id, label, Class, deep } = options;
@@ -559,7 +559,7 @@ export abstract class Node {
     }
     if (deep) {
       for (let i = 0, len = children.length; i < len; i++) {
-        const child = children[i].getChild(options);
+        const child = children[i].findChild(options);
         if (child) return child as T;
       }
     }
@@ -648,7 +648,7 @@ export abstract class Node {
    * 根据筛选器获取滤镜实例，获取后尽量缓存，不要频繁获取
    * @returns 返回匹配的滤镜实例
    */
-  getFilter<T extends Filter>(options: { id?: string; label?: string; Class?: typeof Filter }): T | undefined {
+  findFilter<T extends Filter>(options: { id?: string; label?: string; Class?: typeof Filter }): T | undefined {
     const { id, label, Class } = options;
     const { filters } = this.pp;
     for (let i = 0, len = filters.length; i < len; i++) {
@@ -707,7 +707,7 @@ export abstract class Node {
    * 根据筛选器获取脚本实例，获取后尽量缓存，不要频繁获取
    * @returns 返回匹配的脚本实例
    */
-  getScript<T extends ScriptBase>(options: { id?: string; label?: string; Class?: typeof ScriptBase }): T | undefined {
+  findScript<T extends ScriptBase>(options: { id?: string; label?: string; Class?: typeof ScriptBase }): T | undefined {
     const { id, label, Class } = options;
     const { scripts } = this.pp;
 
