@@ -156,7 +156,7 @@ export class RigidBody extends ScriptBase {
     }
 
     const tempPoint = Point.TEMP.set(0, 0);
-    const worldPoint = target.toWorldPoint(tempPoint, tempPoint, this.scene);
+    const worldPoint = target.localToWorld(tempPoint, tempPoint, this.scene);
     body.setPosition(this._physics.toPhPos(worldPoint));
     body.setAngle(target.rotation);
     body.setActive(true);
@@ -195,7 +195,7 @@ export class RigidBody extends ScriptBase {
     }
 
     if (this.target.parent !== this.scene) {
-      pos2D = this.target.parent!.toLocalPoint(pos2D, pos2D, this.scene);
+      pos2D = this.target.parent!.worldToLocal(pos2D, pos2D, this.scene);
     }
 
     if (this.allowRotation) {
@@ -317,7 +317,7 @@ export class RigidBody extends ScriptBase {
     let worldPos = { x, y };
     // 如果父节不是场景，需要转换到场景坐标
     if (this.target.parent !== this.scene) {
-      worldPos = this.target.parent!.toWorldPoint(worldPos, worldPos, this.scene);
+      worldPos = this.target.parent!.localToWorld(worldPos, worldPos, this.scene);
     }
 
     this._body.setPosition(this._physics.toPhPos(worldPos));

@@ -319,7 +319,7 @@ export class Canvas extends LikoNode implements IRenderable {
    */
   isPointInPath(pos: { x: number; y: number }) {
     // TODO:需要考虑 pixelRatio
-    const p = this.toLocalPoint(pos);
+    const p = this.worldToLocal(pos);
     return this.pp.ctx.isPointInPath(p.x, p.y);
   }
 

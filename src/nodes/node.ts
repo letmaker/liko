@@ -855,7 +855,7 @@ export abstract class LikoNode {
 
     // 转换为相对于 root 坐标系
     if (root && root !== this.stage) {
-      const p1 = root.toLocalPoint(bounds);
+      const p1 = root.worldToLocal(bounds);
       const scale = root.getWorldScale();
       bounds.set(p1.x, p1.y, p1.x + bounds.width / scale.x, p1.y + bounds.height / scale.y);
     }
@@ -871,7 +871,7 @@ export abstract class LikoNode {
    */
   getWorldRotatingRect(root?: LikoNode): RotatingRect {
     const rRect = NodeCache.rotatingRect.get(this);
-    this.toWorldPoint(Point.TEMP.set(0, 0), rRect);
+    this.localToWorld(Point.TEMP.set(0, 0), rRect);
     const scale = this.getWorldScale(root, Point.TEMP);
     rRect.width = this.width * scale.x;
     rRect.height = this.height * scale.y;
@@ -886,9 +886,9 @@ export abstract class LikoNode {
    * @param root - 根节点，默认为 stage
    * @returns 返回此点的世界坐标
    */
-  toWorldPoint<P extends IPoint = Point>(pos: IPoint, out?: P, root?: LikoNode): P {
+  localToWorld<P extends IPoint = Point>(pos: IPoint, out?: P, root?: LikoNode): P {
     const result = this.worldMatrix.apply<P>(pos, out);
-    if (root && root !== this.stage) root.toLocalPoint(result, result);
+    if (root && root !== this.stage) root.worldToLocal(result, result);
     return result;
   }
 
@@ -899,7 +899,7 @@ export abstract class LikoNode {
    * @param root - 根节点，默认为 stage
    * @returns 返回此点的本地坐标
    */
-  toLocalPoint<P extends IPoint = Point>(pos: IPoint, out?: P, root?: LikoNode): P {
+  worldToLocal<P extends IPoint = Point>(pos: IPoint, out?: P, root?: LikoNode): P {
     if (root && root !== this.stage) {
       const result = root.worldMatrix.apply<P>(pos, out);
       return this.worldMatrix.applyInverse<P>(result, result);
@@ -990,7 +990,7 @@ export abstract class LikoNode {
    * @returns 是否在节点内部
    */
   hitTest(point: IPoint) {
-    const locPos = this.toLocalPoint(point, Point.TEMP);
+    const locPos = this.worldToLocal(point, Point.TEMP);
 
     const { width, height } = this.pp;
     if (width >= 0 && height >= 0) {
