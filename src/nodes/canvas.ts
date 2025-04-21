@@ -13,6 +13,9 @@ import type { INodeOptions, INodePrivateProps } from "./node";
 import { LikoNode } from "./node";
 import type { IRenderable } from "./sprite";
 
+type ColorData = string | CanvasGradient | CanvasPattern;
+type ImageSource = HTMLImageElement | HTMLCanvasElement | Texture;
+
 interface ICanvasPrivateProps extends INodePrivateProps {
   bounds: Bounds;
   cmd: Array<{ type: string; params: any }>;
@@ -24,7 +27,7 @@ interface ICanvasPrivateProps extends INodePrivateProps {
 }
 
 /**
- * Canvas 矢量图
+ * Canvas 矢量图形绘制类
  */
 @RegNode("Canvas")
 export class Canvas extends LikoNode implements IRenderable {
@@ -46,14 +49,15 @@ export class Canvas extends LikoNode implements IRenderable {
     // document.body.appendChild(pp.canvas);
   }
 
-  /** 渲染纹理 */
+  /** 渲染纹理对象 */
   get texture(): Texture {
     if (this.pp.changed) this._$drawCanvas();
     return this.pp.texture;
   }
 
   /**
-   * 清理绘制
+   * 清理所有绘制命令和画布内容
+   * @returns 当前实例，支持链式调用
    */
   clear(): this {
     const pp = this.pp;
@@ -66,11 +70,12 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制一个矩形
-   * @param x 起点的 x 坐标
-   * @param y 起点的 y 坐标
-   * @param width 宽度
-   * @param height 高度
+   * 绘制矩形路径
+   * @param x - 左上角的 x 坐标
+   * @param y - 左上角的 y 坐标
+   * @param width - 矩形宽度
+   * @param height - 矩形高度
+   * @returns 当前实例，支持链式调用
    */
   rect(x: number, y: number, width: number, height: number): this {
     console.assert(width >= 0 && height >= 0);
@@ -81,12 +86,13 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制圆角矩形
-   * @param x 起点的 x 坐标
-   * @param y 起点的 y 坐标
-   * @param width 宽度
-   * @param height 高度
-   * @param radii 圆角
+   * 绘制圆角矩形路径
+   * @param x - 左上角的 x 坐标
+   * @param y - 左上角的 y 坐标
+   * @param width - 矩形宽度
+   * @param height - 矩形高度
+   * @param radii - 圆角半径，可以是单个数值或多个值
+   * @returns 当前实例，支持链式调用
    */
   roundRect(
     x: number,
@@ -102,114 +108,74 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制一个圆形，通过设置 startAngle 和 endAngle，还可以绘制圆弧
-   * @param x 圆心的 x 坐标
-   * @param y 圆心的 y 坐标
-   * @param radius 半径
+   * 绘制圆形路径
+   * @param centerX - 圆心的 x 坐标
+   * @param centerY - 圆心的 y 坐标
+   * @param radius - 圆的半径
+   * @returns 当前实例，支持链式调用
    */
-  circle(x: number, y: number, radius: number): this {
-    this.pp.cmd.push({ type: "arc", params: [x, y, radius, 0, PI2] });
-    this._$addPoint(x - radius, y - radius);
-    this._$addPoint(x + radius, y + radius);
+  circle(centerX: number, centerY: number, radius: number): this {
+    this.pp.cmd.push({ type: "arc", params: [centerX, centerY, radius, 0, PI2] });
+    this._$addPoint(centerX - radius, centerY - radius);
+    this._$addPoint(centerX + radius, centerY + radius);
     return this;
   }
 
   /**
-   * 绘制一个椭圆，通过设置 startAngle 和 endAngle，还可以绘制圆弧
-   * @param x 椭圆圆心的 x 坐标
-   * @param y 椭圆圆心的 y 坐标
-   * @param radiusX 椭圆水平半径
-   * @param radiusY 椭圆垂直半径
-   * @param startAngle 开始的弧度
-   * @param endAngle 结束的弧度
+   * 绘制椭圆路径或圆弧，通过设置 startAngle 和 endAngle，还可以绘制圆弧
+   * @param centerX - 椭圆圆心的 x 坐标
+   * @param centerY - 椭圆圆心的 y 坐标
+   * @param radiusX - 椭圆水平半径
+   * @param radiusY - 椭圆垂直半径
+   * @param startAngle - 开始角度（弧度）
+   * @param endAngle - 结束角度（弧度）
+   * @returns 当前实例，支持链式调用
    */
-  ellipse(x: number, y: number, radiusX: number, radiusY: number, startAngle = 0, endAngle = PI2): this {
+  ellipse(centerX: number, centerY: number, radiusX: number, radiusY: number, startAngle = 0, endAngle = PI2): this {
     this.pp.cmd.push({
       type: "ellipse",
-      params: [x, y, radiusX, radiusY, 0, startAngle, endAngle],
+      params: [centerX, centerY, radiusX, radiusY, 0, startAngle, endAngle],
     });
-    this._$addPoint(x - radiusX, y - radiusY);
-    this._$addPoint(x + radiusX, y + radiusY);
+    this._$addPoint(centerX - radiusX, centerY - radiusY);
+    this._$addPoint(centerX + radiusX, centerY + radiusY);
     return this;
   }
 
   /**
-   * 绘制图片、canvas 或者 Texture
-   * @param image  图片、canvas 或者 Texture
-   * @param dx 绘制到的目标 x 轴位置
-   * @param dy 绘制到的目标 y 轴位置
-   * @param dw 绘制到的目标宽度
-   * @param dh 绘制到的目标高度
-   * @param sx 相对原图的 x 轴偏移，实现绘制一部分
-   * @param sy 相对原图的 y 轴偏移，实现绘制一部分
-   * @param sw 相对原图的宽度，实现绘制一部分
-   * @param sh 相对原图的高度，实现绘制一部分
+   * 绘制线段路径
+   * @param startX - 起点的 x 坐标
+   * @param startY - 起点的 y 坐标
+   * @param endX - 终点的 x 坐标
+   * @param endY - 终点的 y 坐标
+   * @returns 当前实例，支持链式调用
    */
-  image(
-    image: HTMLImageElement | HTMLCanvasElement | Texture,
-    dx: number,
-    dy: number,
-    dw?: number,
-    dh?: number,
-    sx?: number,
-    sy?: number,
-    sw?: number,
-    sh?: number,
-  ): this {
-    const source = image instanceof Texture ? (image.buffer as TextureBuffer).bitmap : image;
-    const width = dw ?? image.width;
-    const height = dh ?? image.height;
-    // biome-ignore lint/style/noArguments: <explanation>
-    const { length } = arguments;
-    const { cmd } = this.pp;
-    if (length === 3) {
-      cmd.push({ type: "drawImage", params: [source, dx, dy] });
-    } else if (length === 5) {
-      cmd.push({ type: "drawImage", params: [source, dx, dy, dw, dh] });
-    } else if (length === 9) {
-      cmd.push({ type: "drawImage", params: [source, sx, sy, sw, sh, dx, dy, dw, dh] });
-    } else {
-      throw new Error("arguments length error");
+  line(startX: number, startY: number, endX: number, endY: number): this {
+    this.moveTo(startX, startY);
+    this.lineTo(endX, endY);
+    return this;
+  }
+
+  /**
+   * 绘制多边形路径
+   * @param points - 多边形顶点坐标数组
+   * @returns 当前实例，支持链式调用
+   */
+  polygon(points: IPoint[]): this {
+    for (let i = 0; i < points.length; i++) {
+      if (i === 0) {
+        this.moveTo(points[i].x, points[i].y);
+      } else {
+        this.lineTo(points[i].x, points[i].y);
+      }
     }
-
-    this._$addPoint(dx, dy);
-    this._$addPoint(dx + width, dy + height);
-
     return this;
   }
 
   /**
-   * 绘制 svg
-   * @param svgStr svg 字符串
-   * @param dx 绘制到的目标 x 轴位置
-   * @param dy 绘制到的目标 y 轴位置
-   * @param scale 缩放值
-   */
-  svg(svgStr: string, dx = 0, dy = 0, scale = 1): this {
-    const blob = new Blob([svgStr], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-    img.src = url;
-    img.onerror = () => {
-      throw new Error('svg内容错误，检查是否包含 xmlns="http://www.w3.org/2000/svg" 的定义');
-    };
-    img.onload = () => {
-      const width = img.width * scale;
-      const height = img.height * scale;
-      this.pp.cmd.push({ type: "drawImage", params: [img, dx, dy, width, height] });
-      this._$addPoint(dx, dy);
-      this._$addPoint(dx + width, dy + height);
-
-      this._$dirty();
-    };
-
-    return this;
-  }
-
-  /**
-   * 移动绘制起点到某点
-   * @param x 绘制起点 x 坐标
-   * @param y 绘制起点 y 坐标
+   * 移动绘制起点到指定位置
+   * @param x - 目标点的 x 坐标
+   * @param y - 目标点的 y 坐标
+   * @returns 当前实例，支持链式调用
    */
   moveTo(x: number, y: number): this {
     this.pp.cmd.push({ type: "moveTo", params: [x, y] });
@@ -218,9 +184,10 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制线段到某点
-   * @param x 线段终点 x 坐标
-   * @param y 线段终点 y 坐标
+   * 从当前位置绘制线段到指定位置
+   * @param x - 目标点的 x 坐标
+   * @param y - 目标点的 y 坐标
+   * @returns 当前实例，支持链式调用
    */
   lineTo(x: number, y: number): this {
     this.pp.cmd.push({ type: "lineTo", params: [x, y] });
@@ -229,12 +196,13 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制圆弧
-   * @param x 圆弧圆心的 x 坐标
-   * @param y 圆弧圆心的 y 坐标
-   * @param radius 圆弧半径
-   * @param startAngle 开始的弧度
-   * @param endAngle 结束的弧度
+   * 绘制圆弧路径
+   * @param x - 圆弧圆心的 x 坐标
+   * @param y - 圆弧圆心的 y 坐标
+   * @param radius - 圆弧半径
+   * @param startAngle - 开始角度（弧度）
+   * @param endAngle - 结束角度（弧度）
+   * @returns 当前实例，支持链式调用
    */
   arc(x: number, y: number, radius: number, startAngle: number, endAngle: number): this {
     this.pp.cmd.push({ type: "arc", params: [x, y, radius, startAngle, endAngle] });
@@ -244,12 +212,13 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 根据两个控制点，绘制圆弧
-   * @param x1 控制点1的 x 坐标
-   * @param y1 控制点1的 y 坐标
-   * @param x2 控制点2的 x 坐标
-   * @param y2 控制点2的 y 坐标
-   * @param radius 圆弧半径
+   * 根据两个控制点绘制圆弧路径
+   * @param x1 - 控制点1的 x 坐标
+   * @param y1 - 控制点1的 y 坐标
+   * @param x2 - 控制点2的 x 坐标
+   * @param y2 - 控制点2的 y 坐标
+   * @param radius - 圆弧半径
+   * @returns 当前实例，支持链式调用
    */
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): this {
     this.pp.cmd.push({ type: "arcTo", params: [x1, y1, x2, y2, radius] });
@@ -259,13 +228,14 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制二次贝塞尔曲线，起点是当前路径最后落点，cpx 和 cpy 是控制点，x，y 是终点
-   * @param cpx 控制点 x 坐标
-   * @param cpy 控制点 y 坐标
-   * @param x 终点 x 坐标
-   * @param y 终点 y 坐标
+   * 绘制二次贝塞尔曲线路径，起点是当前路径最后落点，cpx 和 cpy 是控制点，x，y 是终点
+   * @param cpx - 控制点的 x 坐标
+   * @param cpy - 控制点的 y 坐标
+   * @param x - 终点的 x 坐标
+   * @param y - 终点的 y 坐标
+   * @returns 当前实例，支持链式调用
    */
-  quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): this {
+  quadCurveTo(cpx: number, cpy: number, x: number, y: number): this {
     this.pp.cmd.push({ type: "quadraticCurveTo", params: [cpx, cpy, x, y] });
     this._$addPoint(x, y);
     this._$addPoint(cpx, cpy);
@@ -273,24 +243,26 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制三次贝塞尔曲线，起点是当前路径最后落点，有两个控制点，x，y 是终点
-   * @param cp1x 控制点1的 x 坐标
-   * @param cp1y 控制点1的 y 坐标
-   * @param cp2x 控制点2的 x 坐标
-   * @param cp2y 控制点2的 y 坐标
-   * @param x 终点 x 坐标
-   * @param y 终点 y 坐标
+   * 绘制三次贝塞尔曲线路径，起点是当前路径最后落点，有两个控制点，x，y 是终点
+   * @param cp1x - 控制点1的 x 坐标
+   * @param cp1y - 控制点1的 y 坐标
+   * @param cp2x - 控制点2的 x 坐标
+   * @param cp2y - 控制点2的 y 坐标
+   * @param x - 终点的 x 坐标
+   * @param y - 终点的 y 坐标
+   * @returns 当前实例，支持链式调用
    */
   bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): this {
     this.pp.cmd.push({ type: "bezierCurveTo", params: [cp1x, cp1y, cp2x, cp2y, x, y] });
     this._$addPoint(x, y);
-    this._$addPoint(cp2x, cp2y);
+    this._$addPoint(cp1x, cp1y);
     this._$addPoint(cp2x, cp2y);
     return this;
   }
 
   /**
-   * 开始路径绘制，自定义闭环路径绘制的时候，需要调用 beginPath和 closePath
+   * 开始一个新的路径，绘制闭环路径绘制的时候，需要调用 beginPath和 closePath
+   * @returns 当前实例，支持链式调用
    */
   beginPath(): this {
     this.pp.cmd.push({ type: "beginPath", params: [] });
@@ -298,7 +270,8 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 闭合路径绘制，自定义闭环路径绘制的时候，需要调用 beginPath和 closePath
+   * 闭合当前路径
+   * @returns 当前实例，支持链式调用
    */
   closePath(): this {
     this.pp.cmd.push({ type: "closePath", params: [] });
@@ -306,43 +279,133 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 裁剪
-   * @param path 裁剪路径
+   * 创建裁剪区域
+   * @param path - 可选的 Path2D 对象
    */
   clip(path?: Path2D) {
     this.pp.cmd.push({ type: "clip", params: path ? [path] : [] });
   }
 
   /**
-   * 判断某点是否在适量图形内部
-   * @param pos 世界坐标
+   * 绘制完整图像
+   * @param image - 图片、canvas 或 Texture 对象
+   * @param x - 目标 x 坐标
+   * @param y - 目标 y 坐标
+   * @returns 当前实例，支持链式调用
    */
-  isPointInPath(pos: { x: number; y: number }) {
-    // TODO:需要考虑 pixelRatio
-    const p = this.worldToLocal(pos);
-    return this.pp.ctx.isPointInPath(p.x, p.y);
+  drawImage(image: ImageSource, x: number, y: number): this;
+  /**
+   * 绘制缩放后的图像
+   * @param image - 图片、canvas 或 Texture 对象
+   * @param x - 目标 x 坐标
+   * @param y - 目标 y 坐标
+   * @param width - 目标宽度
+   * @param height - 目标高度
+   * @returns 当前实例，支持链式调用
+   */
+  drawImage(image: ImageSource, x: number, y: number, width: number, height: number): this;
+  /**
+   * 绘制图像的指定部分到指定位置
+   * @param image - 图片、canvas 或 Texture 对象
+   * @param x - 目标 x 坐标
+   * @param y - 目标 y 坐标
+   * @param destWidth - 目标宽度
+   * @param destHeight - 目标高度
+   * @param sourceX - 源图像裁剪的 x 坐标
+   * @param sourceY - 源图像裁剪的 y 坐标
+   * @param sourceWidth - 源图像裁剪的宽度
+   * @param sourceHeight - 源图像裁剪的高度
+   * @returns 当前实例，支持链式调用
+   */
+  drawImage(
+    image: ImageSource,
+    x: number,
+    y: number,
+    destWidth?: number,
+    destHeight?: number,
+    sourceX?: number,
+    sourceY?: number,
+    sourceWidth?: number,
+    sourceHeight?: number,
+  ): this {
+    const source = image instanceof Texture ? (image.buffer as TextureBuffer).bitmap : image;
+    const width = destWidth ?? image.width;
+    const height = destHeight ?? image.height;
+    // biome-ignore lint/style/noArguments: <explanation>
+    const { length } = arguments;
+    const { cmd } = this.pp;
+    if (length === 3) {
+      cmd.push({ type: "drawImage", params: [source, x, y] });
+    } else if (length === 5) {
+      cmd.push({ type: "drawImage", params: [source, x, y, destWidth, destHeight] });
+    } else if (length === 9) {
+      cmd.push({
+        type: "drawImage",
+        params: [source, sourceX, sourceY, sourceWidth, sourceHeight, x, y, destWidth, destHeight],
+      });
+    } else {
+      throw new Error("arguments length error");
+    }
+
+    this._$addPoint(x, y);
+    this._$addPoint(x + width, y + height);
+
+    return this;
   }
 
   /**
-   * 填充颜色
+   * 绘制 SVG 图像
+   * @param svgStr - SVG 字符串
+   * @param destX - 目标 x 坐标
+   * @param destY - 目标 y 坐标
+   * @param scale - 缩放比例
+   * @returns 当前实例，支持链式调用
    */
-  fill(options?: { color: string | CanvasGradient | CanvasPattern }): this {
+  drawSvg(svgStr: string, destX = 0, destY = 0, scale = 1): this {
+    const blob = new Blob([svgStr], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.src = url;
+    img.onerror = () => {
+      throw new Error('SVG 内容错误，检查是否包含 xmlns="http://www.w3.org/2000/svg" 的定义');
+    };
+    img.onload = () => {
+      const width = img.width * scale;
+      const height = img.height * scale;
+      this.pp.cmd.push({ type: "drawImage", params: [img, destX, destY, width, height] });
+      this._$addPoint(destX, destY);
+      this._$addPoint(destX + width, destY + height);
+
+      this._$dirty();
+    };
+
+    return this;
+  }
+
+  /**
+   * 填充当前路径
+   * @param options - 填充选项
+   * @returns 当前实例，支持链式调用
+   */
+  fill(options?: { color: ColorData }): this {
     this.pp.cmd.push({ type: "fill", params: [options?.color ?? "#FFD700"] });
     this._$dirty();
     return this;
   }
 
-  private _$fill(color: string | CanvasGradient | CanvasPattern) {
+  private _$fill(color: ColorData) {
     const { ctx } = this.pp;
     ctx.fillStyle = color;
     ctx.fill();
   }
 
   /**
-   * 绘制描边线条
+   * 绘制当前路径的描边
+   * @param options - 描边选项
+   * @returns 当前实例，支持链式调用
    */
   stroke(options?: {
-    color?: string | CanvasGradient | CanvasPattern;
+    color?: ColorData;
     width?: number;
     cap?: CanvasLineCap;
     join?: CanvasLineJoin;
@@ -366,7 +429,7 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   private _$stroke(
-    color: string | CanvasGradient | CanvasPattern,
+    color: ColorData,
     width: number,
     cap?: CanvasLineCap,
     join?: CanvasLineJoin,
@@ -476,5 +539,84 @@ export class Canvas extends LikoNode implements IRenderable {
     this.markDirty(DirtyType.texture);
     this.markDirty(DirtyType.size);
     Timer.callLater(this._$drawCanvas, this);
+  }
+
+  /**
+   * 判断某点是否在矢量图形内部
+   * @param pos - 世界坐标点
+   * @returns 点是否在路径内
+   */
+  isPointInPath(pos: { x: number; y: number }) {
+    // TODO: 需要考虑 pixelRatio
+    const p = this.worldToLocal(pos);
+    return this.pp.ctx.isPointInPath(p.x, p.y);
+  }
+
+  /**
+   * 创建重复图案
+   * @param img - 源图像
+   * @param repetition - 重复方式
+   * @returns 创建的图案对象
+   */
+  createPattern(img: CanvasImageSource, repetition: "no-repeat" | "repeat" | "repeat-x" | "repeat-y") {
+    return this.pp.ctx.createPattern(img, repetition) as CanvasPattern;
+  }
+
+  /**
+   * 从 URL 创建重复图案
+   * @param url - 图像 URL
+   * @param repetition - 重复方式
+   * @returns Promise，解析为创建的图案对象
+   */
+  createPatternFromUrl(url: string, repetition: "no-repeat" | "repeat" | "repeat-x" | "repeat-y") {
+    return new Promise<CanvasPattern>((resolve) => {
+      const img = new Image();
+      img.src = url;
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        resolve(this.pp.ctx.createPattern(img, repetition) as CanvasPattern);
+      };
+    });
+  }
+
+  /**
+   * 创建线性渐变
+   * @param pos - 渐变位置配置
+   * @param colorStops - 颜色停止点数组
+   * @returns 创建的渐变对象
+   */
+  createLinearGradient(
+    pos: { startX: number; startY: number; endX: number; endY: number },
+    colorStops: { offset: number; color: string }[],
+  ) {
+    const grd = this.pp.ctx.createLinearGradient(pos.startX, pos.startY, pos.endX, pos.endY);
+    for (const color of colorStops) {
+      grd.addColorStop(color.offset, color.color);
+    }
+    return grd;
+  }
+
+  /**
+   * 创建径向渐变
+   * @param pos - 渐变位置配置
+   * @param colorStops - 颜色停止点数组
+   * @returns 创建的渐变对象
+   */
+  createRadialGradient(
+    pos: { startX: number; startY: number; startRadius: number; endX: number; endY: number; endRadius: number },
+    colorStops: { offset: number; color: string }[],
+  ) {
+    const grd = this.pp.ctx.createRadialGradient(
+      pos.startX,
+      pos.startY,
+      pos.startRadius,
+      pos.endX,
+      pos.endY,
+      pos.endRadius,
+    );
+    for (const color of colorStops) {
+      grd.addColorStop(color.offset, color.color);
+    }
+    return grd;
   }
 }
