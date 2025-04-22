@@ -13,7 +13,9 @@ import type { INodeOptions, INodePrivateProps } from "./node";
 import { LikoNode } from "./node";
 import type { IRenderable } from "./sprite";
 
+/** 颜色数据类型，可以是字符串、Canvas 渐变或 Canvas 图案 */
 type ColorData = string | CanvasGradient | CanvasPattern;
+/** 图像源类型，可以是 HTML 图像元素、HTML Canvas 元素或纹理 */
 type ImageSource = HTMLImageElement | HTMLCanvasElement | Texture;
 
 interface ICanvasPrivateProps extends INodePrivateProps {
@@ -24,6 +26,7 @@ interface ICanvasPrivateProps extends INodePrivateProps {
   texture: Texture;
   changed: boolean;
   maxLineWidth: number;
+  clipped: boolean;
 }
 
 /**
@@ -45,11 +48,12 @@ export class Canvas extends LikoNode implements IRenderable {
     pp.texture = Texture.create(new RenderTargetBuffer(1, 1), "canvas");
     pp.changed = false;
     pp.maxLineWidth = 0;
+    pp.clipped = false;
 
     // document.body.appendChild(pp.canvas);
   }
 
-  /** 渲染纹理对象 */
+  /** 获取渲染纹理对象 */
   get texture(): Texture {
     if (this.pp.changed) this._$drawCanvas();
     return this.pp.texture;
@@ -65,6 +69,7 @@ export class Canvas extends LikoNode implements IRenderable {
     pp.bounds.reset();
     pp.ctx.clearRect(0, 0, pp.canvas.width, pp.canvas.height);
     pp.maxLineWidth = 0;
+    pp.clipped = false;
     this._$dirty();
     return this;
   }
@@ -122,7 +127,8 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制椭圆路径或圆弧，通过设置 startAngle 和 endAngle，还可以绘制圆弧
+   * 绘制椭圆路径或圆弧
+   * 通过设置 startAngle 和 endAngle，还可以绘制圆弧
    * @param centerX - 椭圆圆心的 x 坐标
    * @param centerY - 椭圆圆心的 y 坐标
    * @param radiusX - 椭圆水平半径
@@ -161,6 +167,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   polygon(points: IPoint[]): this {
+    this.beginPath();
     for (let i = 0; i < points.length; i++) {
       if (i === 0) {
         this.moveTo(points[i].x, points[i].y);
@@ -168,6 +175,7 @@ export class Canvas extends LikoNode implements IRenderable {
         this.lineTo(points[i].x, points[i].y);
       }
     }
+    this.closePath();
     return this;
   }
 
@@ -213,10 +221,10 @@ export class Canvas extends LikoNode implements IRenderable {
 
   /**
    * 根据两个控制点绘制圆弧路径
-   * @param x1 - 控制点1的 x 坐标
-   * @param y1 - 控制点1的 y 坐标
-   * @param x2 - 控制点2的 x 坐标
-   * @param y2 - 控制点2的 y 坐标
+   * @param x1 - 控制点 1 的 x 坐标
+   * @param y1 - 控制点 1 的 y 坐标
+   * @param x2 - 控制点 2 的 x 坐标
+   * @param y2 - 控制点 2 的 y 坐标
    * @param radius - 圆弧半径
    * @returns 当前实例，支持链式调用
    */
@@ -228,14 +236,15 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制二次贝塞尔曲线路径，起点是当前路径最后落点，cpx 和 cpy 是控制点，x，y 是终点
+   * 绘制二次贝塞尔曲线路径
+   * 起点是当前路径最后落点，cpx 和 cpy 是控制点，x 和 y 是终点
    * @param cpx - 控制点的 x 坐标
    * @param cpy - 控制点的 y 坐标
    * @param x - 终点的 x 坐标
    * @param y - 终点的 y 坐标
    * @returns 当前实例，支持链式调用
    */
-  quadCurveTo(cpx: number, cpy: number, x: number, y: number): this {
+  quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): this {
     this.pp.cmd.push({ type: "quadraticCurveTo", params: [cpx, cpy, x, y] });
     this._$addPoint(x, y);
     this._$addPoint(cpx, cpy);
@@ -243,11 +252,12 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制三次贝塞尔曲线路径，起点是当前路径最后落点，有两个控制点，x，y 是终点
-   * @param cp1x - 控制点1的 x 坐标
-   * @param cp1y - 控制点1的 y 坐标
-   * @param cp2x - 控制点2的 x 坐标
-   * @param cp2y - 控制点2的 y 坐标
+   * 绘制三次贝塞尔曲线路径
+   * 起点是当前路径最后落点，有两个控制点，x 和 y 是终点
+   * @param cp1x - 控制点 1 的 x 坐标
+   * @param cp1y - 控制点 1 的 y 坐标
+   * @param cp2x - 控制点 2 的 x 坐标
+   * @param cp2y - 控制点 2 的 y 坐标
    * @param x - 终点的 x 坐标
    * @param y - 终点的 y 坐标
    * @returns 当前实例，支持链式调用
@@ -261,7 +271,8 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 开始一个新的路径，绘制闭环路径绘制的时候，需要调用 beginPath和 closePath
+   * 开始一个新的路径
+   * 绘制闭环路径绘制的时候，需要调用 beginPath 和 closePath
    * @returns 当前实例，支持链式调用
    */
   beginPath(): this {
@@ -284,6 +295,7 @@ export class Canvas extends LikoNode implements IRenderable {
    */
   clip(path?: Path2D) {
     this.pp.cmd.push({ type: "clip", params: path ? [path] : [] });
+    this.pp.clipped = true;
   }
 
   /**
@@ -518,6 +530,8 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   private _$addPoint(x: number, y: number) {
+    if (this.pp.clipped) return;
+
     const { bounds } = this.pp;
     if (x < bounds.minX) bounds.minX = x;
     if (x > bounds.maxX) bounds.maxX = x;
