@@ -633,4 +633,10 @@ export class Canvas extends LikoNode implements IRenderable {
     }
     return grd;
   }
+
+  override destroy(): void {
+    this.pp.cmd.length = 0;
+    this.pp.texture?.destroy();
+    super.destroy();
+  }
 }
