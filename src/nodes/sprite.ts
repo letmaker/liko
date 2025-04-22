@@ -22,16 +22,17 @@ interface ISpritePrivateProps extends INodePrivateProps {
 interface ISpriteOptions extends INodeOptions {
   url?: string;
   texture?: Texture;
-  tint?: ColorData;
+  tintColor?: ColorData;
 }
 
 /**
- * 精灵类，以图片为渲染对象
+ * 精灵类，使用图片作为渲染对象
+ * 提供图像显示、纹理管理等功能
  */
 @RegNode("Sprite")
 export class Sprite extends LikoNode implements IRenderable {
   declare pp: ISpritePrivateProps;
-  /** 渲染对象 */
+  /** 用于渲染精灵的渲染对象 */
   renderObject: SpriteObject = new SpriteObject(this);
 
   constructor(options?: Texture | ISpriteOptions) {
@@ -44,7 +45,7 @@ export class Sprite extends LikoNode implements IRenderable {
     }
   }
 
-  /** 渲染纹理 */
+  /** 精灵使用的纹理对象 */
   get texture(): Texture {
     return this.pp.texture;
   }
@@ -65,7 +66,7 @@ export class Sprite extends LikoNode implements IRenderable {
     }
   }
 
-  /** 精灵的图片地址 */
+  /** 精灵加载的图片 URL */
   get url(): string {
     return this.pp.url;
   }
@@ -73,7 +74,10 @@ export class Sprite extends LikoNode implements IRenderable {
     this.load(value);
   }
 
-  /** 加载图片 */
+  /**
+   * 从指定 URL 加载图片纹理
+   * @param url - 图片资源的 URL 地址
+   */
   async load(url: string) {
     const pp = this.pp;
     if (pp.url !== url) {
@@ -94,7 +98,11 @@ export class Sprite extends LikoNode implements IRenderable {
     this.emit(EventType.loaded);
   }
 
-  /** 在不设置宽高的情况下，优先使用 texture 作为 localBounds 边界 */
+  /**
+   * 自定义本地边界计算
+   * 在未设置宽高时，使用纹理尺寸作为本地边界
+   * @param bounds - 边界对象
+   */
   protected override _customLocalBounds(bounds: Bounds) {
     const texture = this.pp.texture;
     if (texture) {
