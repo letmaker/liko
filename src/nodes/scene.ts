@@ -119,17 +119,17 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 加载场景
    * @param url - 场景资源路径
-   * @param loadAllAssets - 是否预加载场景内的所有资源，默认为true
+   * @param preloadAllAssets - 是否预加载场景内的所有资源，默认为true
    */
-  async load(url: string, loadAllAssets = true) {
+  async load(url: string, preloadAllAssets = true) {
     if (this.pp.url !== url) {
       this.pp.url = url;
       try {
         const json = await loader.load<INodeData>(url);
         if (!json) return;
 
-        if (loadAllAssets) {
-          await this.loadAllAssets(json);
+        if (preloadAllAssets) {
+          await this.preloadAllAssets(json);
         }
         this.fromJson(json);
         this.emit(EventType.loaded);
@@ -146,7 +146,7 @@ export class Scene extends LikoNode implements IScene {
    * 加载场景内的所有资源
    * @param json - 场景数据
    */
-  async loadAllAssets(json: INodeData) {
+  async preloadAllAssets(json: INodeData) {
     const res: string[] = [];
     this._$collectAsset(json, res);
     const total = res.length;
@@ -256,7 +256,7 @@ export class Scene extends LikoNode implements IScene {
    * 从数据创建场景
    * @param json - 场景数据
    */
-  override fromJson(json: INodeData): void {
+  override fromJson(json: INodeData) {
     this.json = json;
     super.fromJson(json);
   }

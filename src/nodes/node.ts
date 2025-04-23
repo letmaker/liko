@@ -106,7 +106,7 @@ export interface INodePrivateProps {
   filters: Filter[];
   scripts: ScriptBase[];
   transform: Transform;
-  color: Color;
+  tintColor: Color;
   alpha: number;
   localMatrix: Matrix;
   worldMatrix: Matrix;
@@ -187,7 +187,7 @@ export abstract class LikoNode {
     filters: defaultFilters,
     scripts: defaultScripts,
     transform: defaultTF,
-    color: Color.Default,
+    tintColor: Color.Default,
     alpha: 1,
     localMatrix: new Matrix(),
     worldMatrix: new Matrix(),
@@ -410,13 +410,13 @@ export abstract class LikoNode {
 
   /** 节点叠加颜色，用于调整节点的颜色 */
   get tintColor(): ColorData {
-    return this.pp.color.value;
+    return this.pp.tintColor.value;
   }
   set tintColor(value: ColorData) {
     const pp = this.pp;
-    if (pp.color.value !== value) {
-      if (pp.color === Color.Default) pp.color = new Color(value);
-      pp.color.value = value;
+    if (pp.tintColor.value !== value) {
+      if (pp.tintColor === Color.Default) pp.tintColor = new Color(value);
+      pp.tintColor.value = value;
       this.markDirty(DirtyType.color);
     }
   }
@@ -434,7 +434,7 @@ export abstract class LikoNode {
 
   /** 节点世界透明度，考虑了父节点透明度的最终透明度 */
   get worldAlpha(): number {
-    return this.pp.color.alpha;
+    return this.pp.tintColor.alpha;
   }
 
   /** 节点变换对象，管理位置、旋转、缩放等变换属性 */

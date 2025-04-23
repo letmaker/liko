@@ -84,7 +84,7 @@ export class SpriteObject {
     const { colorStart } = this;
     const { node } = this;
     const { u32Data } = vertexBuffer;
-    const color = node.pp.color.argb;
+    const color = node.pp.tintColor.argb;
 
     // color
     u32Data[colorStart] = color;

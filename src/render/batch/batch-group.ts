@@ -71,7 +71,7 @@ export class BatchGroup {
       const node = this.nodes[i];
       i++;
 
-      const { dirty, transform, localMatrix, worldMatrix, pos, parent, color, alpha } = node.pp;
+      const { dirty, transform, localMatrix, worldMatrix, pos, parent, tintColor, alpha } = node.pp;
       const tfDirty = dirty & DirtyType.transform;
       const colorDirty = dirty & DirtyType.color;
 
@@ -82,8 +82,8 @@ export class BatchGroup {
 
       // 更新 worldAlpha
       if (colorDirty) {
-        if (color === Color.Default) node.pp.color = new Color();
-        node.pp.color.changeAlpha(alpha * parent!.pp.color.alpha);
+        if (tintColor === Color.Default) node.pp.tintColor = new Color();
+        node.pp.tintColor.changeAlpha(alpha * parent!.pp.tintColor.alpha);
       }
 
       // TODO： texture的检查是否必须？
@@ -122,8 +122,8 @@ export class BatchGroup {
 
     // 更新 worldAlpha
     if (dirty & DirtyType.color) {
-      if (pp.color === Color.Default) pp.color = new Color();
-      pp.color.changeAlpha(alpha * worldAlpha);
+      if (pp.tintColor === Color.Default) pp.tintColor = new Color();
+      pp.tintColor.changeAlpha(alpha * worldAlpha);
     }
 
     this.nodes.push(node);
@@ -135,7 +135,7 @@ export class BatchGroup {
     if (count) {
       let i = 0;
       while (i < count) {
-        this._collectChild(children[i], pp.worldMatrix, pp.color.alpha);
+        this._collectChild(children[i], pp.worldMatrix, pp.tintColor.alpha);
         i++;
       }
     }
