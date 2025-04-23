@@ -259,7 +259,7 @@ export class Text extends LikoNode implements IRenderable {
   private _$resetStyle() {
     const { ctx, fontStyle, fontWeight, fontSize, fontFamily, textColor, textAlign, textStrokeColor } = this.pp;
     ctx.textBaseline = "alphabetic";
-    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+    ctx.font = `${fontStyle ? `${fontStyle} ` : ""}${fontWeight} ${fontSize}px ${fontFamily}`;
     ctx.fillStyle = textColor;
     ctx.textAlign = textAlign;
     ctx.strokeStyle = textStrokeColor;

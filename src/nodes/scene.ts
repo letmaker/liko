@@ -25,7 +25,7 @@ export interface IScene extends IAnimation {
   /** 是否暂停 */
   paused: boolean;
   /** 克隆场景中的节点 */
-  clone<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined;
+  cloneNode<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined;
   /** 暂停播放 */
   pause: () => void;
   /** 恢复播放 */
@@ -47,6 +47,12 @@ interface IScenePrivateProps extends INodePrivateProps {
 
 interface ISceneOptions extends INodeOptions {
   url?: string;
+  onPlayed?: () => void;
+  onStopped?: () => void;
+  onPaused?: () => void;
+  onResumed?: () => void;
+  onLoaded?: () => void;
+  onProgress?: (progress: number) => void;
 }
 
 /**
@@ -119,26 +125,27 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 加载场景
    * @param url - 场景资源路径
-   * @param preloadAllAssets - 是否预加载场景内的所有资源，默认为true
+   * @param preloadAssets - 是否预加载场景内的所有资源，默认为true
    */
-  async load(url: string, preloadAllAssets = true) {
-    if (this.pp.url !== url) {
-      this.pp.url = url;
-      try {
-        const json = await loader.load<INodeData>(url);
-        if (!json) return;
-
-        if (preloadAllAssets) {
-          await this.preloadAllAssets(json);
-        }
-        this.fromJson(json);
-        this.emit(EventType.loaded);
-      } catch (error) {
-        this.emit(EventType.error, error);
-        throw error;
-      }
-    } else {
+  async load(url: string, preloadAssets = true) {
+    if (this.pp.url === url && this.json) {
       this.emit(EventType.loaded);
+      return;
+    }
+
+    this.pp.url = url;
+    try {
+      const json = await loader.load<INodeData>(url);
+      if (!json) return;
+
+      if (preloadAssets) {
+        await this.preloadAssets(json);
+      }
+      this.fromJson(json);
+      this.emit(EventType.loaded);
+    } catch (error) {
+      this.emit(EventType.error, error);
+      throw error;
     }
   }
 
@@ -146,7 +153,7 @@ export class Scene extends LikoNode implements IScene {
    * 加载场景内的所有资源
    * @param json - 场景数据
    */
-  async preloadAllAssets(json: INodeData) {
+  async preloadAssets(json: INodeData) {
     const res: string[] = [];
     this._$collectAsset(json, res);
     const total = res.length;
@@ -184,6 +191,17 @@ export class Scene extends LikoNode implements IScene {
       pp.paused = false;
       this.stage?.timer.onFrame(this.update, this);
       this.emit(EventType.played);
+    }
+  }
+
+  /**
+   * 停止播放
+   */
+  stop(): void {
+    if (this.pp.playing) {
+      this.pp.playing = false;
+      this.stage?.timer.clearTimer(this.update, this);
+      this.emit(EventType.stopped);
     }
   }
 
@@ -242,17 +260,6 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 停止播放
-   */
-  stop(): void {
-    if (this.pp.playing) {
-      this.pp.playing = false;
-      this.stage?.timer.clearTimer(this.update, this);
-      this.emit(EventType.stopped);
-    }
-  }
-
-  /**
    * 从数据创建场景
    * @param json - 场景数据
    */
@@ -264,7 +271,7 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 克隆场景中某个节点
    */
-  clone<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined {
+  cloneNode<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined {
     const data = this._$findNodeData(options, this.json);
     if (data) {
       // 深度克隆数据

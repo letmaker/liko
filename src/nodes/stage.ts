@@ -85,9 +85,9 @@ export class Stage extends LikoNode {
    * @param options.preloadAllAssets 是否预加载所有资源
    * @returns 加载完成的场景实例
    */
-  async loadScene(url: string, options?: { destroyOther: boolean; preloadAllAssets: boolean }) {
+  async loadScene(url: string, options?: { destroyOther: boolean; preloadAssets: boolean }) {
     const scene = new Scene();
-    await scene.load(url, options?.preloadAllAssets);
+    await scene.load(url, options?.preloadAssets);
     if (options?.destroyOther) {
       this.destroyChildren();
     }
@@ -103,10 +103,10 @@ export class Stage extends LikoNode {
    * @param options.preloadAllAssets 是否预加载所有资源
    * @returns 创建的场景实例
    */
-  async createScene(json: INodeData, options?: { destroyOther: boolean; preloadAllAssets: boolean }) {
+  async createScene(json: INodeData, options?: { destroyOther: boolean; preloadAssets: boolean }) {
     const scene = new Scene();
-    if (options?.preloadAllAssets) {
-      await scene.preloadAllAssets(json);
+    if (options?.preloadAssets) {
+      await scene.preloadAssets(json);
     }
     scene.fromJson(json);
     if (options?.destroyOther) {
