@@ -19,6 +19,9 @@ interface ISpriteAnimationOptions extends INodeOptions {
   url?: string;
   frameRate?: number;
   textures?: Texture[];
+  onPlayed?: () => void;
+  onStopped?: () => void;
+  onLoaded?: () => void;
 }
 
 /**

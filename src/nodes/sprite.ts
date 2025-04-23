@@ -23,6 +23,7 @@ interface ISpriteOptions extends INodeOptions {
   url?: string;
   texture?: Texture;
   tintColor?: ColorData;
+  onLoaded?: () => void;
 }
 
 /**
