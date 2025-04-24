@@ -50,23 +50,23 @@ interface ITextOptions extends INodeOptions {
 }
 
 /**
- * 文本
+ * 文本渲染节点
  */
 @RegNode("Text")
 export class Text extends LikoNode implements IRenderable {
   declare pp: ITextPrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
 
-  /** 文本边距，防止一些情况绘制不全 */
+  /** 文本边距，防止文本在某些情况下绘制不完整 */
   padding = 4;
 
-  /** 渲染纹理 */
+  /** 获取渲染纹理 */
   get texture(): Texture {
     if (this.pp.changed) this._$drawText();
     return this.pp.texture;
   }
 
-  /** 文本内容 */
+  /** 获取或设置文本内容 */
   get text() {
     return this.pp.text;
   }
@@ -89,7 +89,7 @@ export class Text extends LikoNode implements IRenderable {
     Timer.callLater(this._$drawText, this);
   }
 
-  /** 文本颜色 */
+  /** 获取或设置文本颜色 */
   get textColor() {
     return this.pp.textColor;
   }
@@ -100,7 +100,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 描边颜色 */
+  /** 获取或设置文本描边颜色 */
   get textStrokeColor() {
     return this.pp.textStrokeColor;
   }
@@ -111,7 +111,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 描边宽度 */
+  /** 获取或设置文本描边宽度 */
   get textStrokeWidth() {
     return this.pp.textStrokeWidth;
   }
@@ -122,7 +122,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 字体 */
+  /** 获取或设置字体名称 */
   get fontFamily() {
     return this.pp.fontFamily;
   }
@@ -133,7 +133,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 字体大小 */
+  /** 获取或设置字体大小 */
   get fontSize() {
     return this.pp.fontSize;
   }
@@ -144,7 +144,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 字体粗细 */
+  /** 获取或设置字体粗细 */
   get fontWeight() {
     return this.pp.fontWeight;
   }
@@ -155,7 +155,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 字体样式 */
+  /** 获取或设置字体样式 */
   get fontStyle() {
     return this.pp.fontStyle;
   }
@@ -166,10 +166,10 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  // TODO: 需要决定lineHeight的单位是像素还是百分比，目前使用百分比但考虑改为像素更直观
-  /** 行高，此属性为百分比，实际的行高=lineHeight*fontSize */
+  /** 获取或设置行高，单位为像素，一般最好大于字号 */
   get lineHeight() {
-    return this.pp.lineHeight;
+    const { lineHeight, fontSize } = this.pp;
+    return lineHeight > 0 ? lineHeight : fontSize;
   }
   set lineHeight(value) {
     if (this.pp.lineHeight !== value) {
@@ -178,7 +178,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 水平对齐 */
+  /** 获取或设置文本水平对齐方式 */
   get textAlign() {
     return this.pp.textAlign;
   }
@@ -209,16 +209,20 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 文本实际长度 */
+  /** 获取文本实际宽度（包含描边和内边距） */
   get textWidth() {
     return this.pp.measureWidth + this.pp.textStrokeWidth + this.padding * 2;
   }
 
-  /** 文本实际高度 */
+  /** 获取文本实际高度（包含描边和内边距） */
   get textHeight() {
     return this.pp.measureHeight + this.pp.textStrokeWidth + this.padding * 2;
   }
 
+  /**
+   * 创建文本节点
+   * @param options - 文本节点配置选项
+   */
   constructor(options?: ITextOptions) {
     super();
 
@@ -234,7 +238,7 @@ export class Text extends LikoNode implements IRenderable {
     pp.fontSize = 12;
     pp.fontWeight = "normal";
     pp.textAlign = "left";
-    pp.lineHeight = 1;
+    pp.lineHeight = 0;
     pp.measureWidth = 0;
     pp.measureHeight = 0;
     pp.changed = false;
@@ -245,13 +249,17 @@ export class Text extends LikoNode implements IRenderable {
   }
 
   /**
-   * 释放资源
+   * 释放文本节点占用的资源
    */
   override destroy() {
     this.pp.texture.destroy();
     super.destroy();
   }
 
+  /**
+   * 设置文本内容
+   * @param text - 要设置的文本内容
+   */
   setText(text: string) {
     this.text = text;
   }
@@ -266,7 +274,7 @@ export class Text extends LikoNode implements IRenderable {
   }
 
   private _$measure() {
-    const { lines, ctx, fontSize, lineHeight } = this.pp;
+    const { lines, ctx } = this.pp;
     this._$resetStyle();
 
     let maxWidth = 0;
@@ -275,21 +283,29 @@ export class Text extends LikoNode implements IRenderable {
     }
 
     this.pp.measureWidth = maxWidth;
-    this.pp.measureHeight = fontSize * lineHeight * lines.length;
+    this.pp.measureHeight = this.lineHeight * lines.length;
 
     const metrics = ctx.measureText("|ÉqÅM");
     return {
       /** 上升界到文本基线的距离 */
       ascent: metrics.actualBoundingBoxAscent,
-      /** 字体高度=上升界到文本基线的距离+下降边界到文本基线的距离 */
+      /** 字体高度 = 上升界到文本基线的距离 + 下降边界到文本基线的距离 */
       fontHeight: metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent,
     };
   }
 
+  /**
+   * 自定义本地边界计算
+   * @param bounds - 边界对象
+   */
   protected override _customLocalBounds(bounds: Bounds) {
     bounds.addFrame(0, 0, this.textWidth, this.textHeight);
   }
 
+  /**
+   * 获取文本节点的本地边界
+   * @returns 本地边界对象
+   */
   override getLocalBounds(): Bounds {
     // 获取 bounds 之前，先绘制，会调用度量文本
     if (this.pp.changed) this._$drawText();
@@ -297,18 +313,7 @@ export class Text extends LikoNode implements IRenderable {
   }
 
   private _$drawText() {
-    const {
-      changed,
-      canvas,
-      ctx,
-      textAlign,
-      textStrokeWidth,
-      textStrokeColor,
-      textColor,
-      lines,
-      fontSize,
-      lineHeight,
-    } = this.pp;
+    const { changed, canvas, ctx, textAlign, textStrokeWidth, textStrokeColor, textColor, lines } = this.pp;
     if (changed) {
       this.pp.changed = false;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -324,17 +329,18 @@ export class Text extends LikoNode implements IRenderable {
       // 重置了 canvas 后，会丢失样式，这里重新设置一次
       this._$resetStyle();
 
-      // textWidth 要从 this.pp 中获取，因为度量文本会修改 this.pp.textWidth
+      // 根据对齐方式计算 x 坐标
       const x = textAlign === "left" ? 0 : textAlign === "right" ? this.pp.measureWidth : this.pp.measureWidth * 0.5;
-      // 行高
-      const textLineHeight = fontSize * lineHeight;
-      // 行间距和度量出来的字体高度之间的距离
+      // 计算行高
+      const textLineHeight = this.lineHeight;
+      // 计算行间距和度量出来的字体高度之间的距离
       const lineHeightPadding = (textLineHeight - metrics.fontHeight) * 0.5;
       ctx.resetTransform();
       ctx.scale(scale, scale);
-      // 确保正确应用 offset
+      // 应用偏移量确保文本正确显示
       ctx.translate(textStrokeWidth * 0.5 + this.padding, textStrokeWidth * 0.5 + this.padding);
 
+      // 绘制描边
       if (textStrokeWidth && textStrokeColor) {
         ctx.strokeStyle = textStrokeColor;
         ctx.lineWidth = textStrokeWidth;
@@ -347,6 +353,7 @@ export class Text extends LikoNode implements IRenderable {
         }
       }
 
+      // 绘制文本填充
       if (textColor) {
         ctx.fillStyle = textColor;
         for (let i = 0; i < lines.length; i++) {

@@ -148,20 +148,6 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制线段路径
-   * @param startX - 起点的 x 坐标
-   * @param startY - 起点的 y 坐标
-   * @param endX - 终点的 x 坐标
-   * @param endY - 终点的 y 坐标
-   * @returns 当前实例，支持链式调用
-   */
-  line(startX: number, startY: number, endX: number, endY: number): this {
-    this.moveTo(startX, startY);
-    this.lineTo(endX, endY);
-    return this;
-  }
-
-  /**
    * 绘制多边形路径
    * @param points - 多边形顶点坐标数组
    * @returns 当前实例，支持链式调用

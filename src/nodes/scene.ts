@@ -33,9 +33,9 @@ export interface IScene extends IAnimation {
   /**
    * 加载场景
    * @param url - 场景资源路径
-   * @param loadAllAssets - 是否预加载场景内的所有资源
+   * @param preloadAssets - 是否预加载场景内的所有资源
    */
-  load: (url: string, loadAllAssets?: boolean) => Promise<void>;
+  load: (url: string, preloadAssets?: boolean) => Promise<void>;
 }
 
 interface IScenePrivateProps extends INodePrivateProps {
@@ -46,12 +46,19 @@ interface IScenePrivateProps extends INodePrivateProps {
 }
 
 interface ISceneOptions extends INodeOptions {
+  /** 场景资源路径 */
   url?: string;
+  /** 场景播放时的回调 */
   onPlayed?: () => void;
+  /** 场景停止时的回调 */
   onStopped?: () => void;
+  /** 场景暂停时的回调 */
   onPaused?: () => void;
+  /** 场景恢复播放时的回调 */
   onResumed?: () => void;
+  /** 场景加载完成时的回调 */
   onLoaded?: () => void;
+  /** 场景加载进度回调 */
   onProgress?: (progress: number) => void;
 }
 
@@ -125,7 +132,7 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 加载场景
    * @param url - 场景资源路径
-   * @param preloadAssets - 是否预加载场景内的所有资源，默认为true
+   * @param preloadAssets - 是否预加载场景内的所有资源，默认为 true
    */
   async load(url: string, preloadAssets = true) {
     if (this.pp.url === url && this.json) {
@@ -231,6 +238,7 @@ export class Scene extends LikoNode implements IScene {
 
   /**
    * 更新场景及脚本
+   * @param delta - 距离上一帧的时间间隔，可选参数
    */
   update(delta?: number): void {
     const stage = this.stage;
@@ -270,6 +278,8 @@ export class Scene extends LikoNode implements IScene {
 
   /**
    * 克隆场景中某个节点
+   * @param options - 克隆选项，可以通过 id 或 label 指定要克隆的节点
+   * @returns 克隆的节点实例，如果未找到节点则返回 undefined
    */
   cloneNode<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined {
     const data = this._$findNodeData(options, this.json);

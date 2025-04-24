@@ -35,8 +35,8 @@ export class Stage extends LikoNode {
 
   /**
    * 重设舞台大小
-   * @param width 舞台宽度（逻辑像素）
-   * @param height 舞台高度（逻辑像素）
+   * @param width - 舞台宽度（逻辑像素）
+   * @param height - 舞台高度（逻辑像素）
    */
   resize(width: number, height: number) {
     const newWidth = Math.round(width);
@@ -70,7 +70,7 @@ export class Stage extends LikoNode {
 
   /**
    * 检测指定点是否在舞台范围内
-   * @param point 要检测的点坐标
+   * @param point - 要检测的点坐标
    * @returns 如果点在舞台内返回 true，否则返回 false
    */
   override hitTest(point: IPoint) {
@@ -79,10 +79,10 @@ export class Stage extends LikoNode {
 
   /**
    * 从指定 URL 加载场景
-   * @param url 场景资源的 URL
-   * @param options 加载选项
-   * @param options.destroyOther 是否销毁其他场景
-   * @param options.preloadAllAssets 是否预加载所有资源
+   * @param url - 场景资源的 URL
+   * @param options - 加载选项
+   * @param options.destroyOther - 是否销毁其他场景
+   * @param options.preloadAssets - 是否预加载所有资源
    * @returns 加载完成的场景实例
    */
   async loadScene(url: string, options?: { destroyOther: boolean; preloadAssets: boolean }) {
@@ -97,10 +97,10 @@ export class Stage extends LikoNode {
 
   /**
    * 从 JSON 数据创建场景
-   * @param json 场景的 JSON 数据
-   * @param options 创建选项
-   * @param options.destroyOther 是否销毁其他场景
-   * @param options.preloadAllAssets 是否预加载所有资源
+   * @param json - 场景的 JSON 数据
+   * @param options - 创建选项
+   * @param options.destroyOther - 是否销毁其他场景
+   * @param options.preloadAssets - 是否预加载所有资源
    * @returns 创建的场景实例
    */
   async createScene(json: INodeData, options?: { destroyOther: boolean; preloadAssets: boolean }) {
