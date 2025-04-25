@@ -19,7 +19,7 @@ export { Container } from "./nodes/container";
 export { LikoNode, type INodeData, type IScriptData, type IFilterData } from "./nodes/node";
 export { Scene } from "./nodes/scene";
 export { Sprite } from "./nodes/sprite";
-export { SpriteAnimation } from "./nodes/sprite-animation";
+export { AnimatedSprite } from "./nodes/animated-sprite";
 export { Stage } from "./nodes/stage";
 export { Text } from "./nodes/text";
 export { ScriptBase } from "./scripts/script-base";

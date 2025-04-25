@@ -9,52 +9,48 @@ import { type INodePrivateProps, LikoNode } from "./node";
 import type { IAnimation } from "./scene";
 import type { IRenderable } from "./sprite";
 
-interface ISpriteAnimationPrivateProps extends INodePrivateProps {
+interface IAnimatedSpritePrivateProps extends INodePrivateProps {
   url: string;
-  frame: number;
+  currentFrame: number;
   texture: Texture;
 }
 
-interface ISpriteAnimationOptions extends INodeOptions {
+interface IAnimatedSpriteOptions extends INodeOptions {
   url?: string;
   frameRate?: number;
   textures?: Texture[];
   onPlayed?: () => void;
   onStopped?: () => void;
   onLoaded?: () => void;
+  onEnded?: () => void;
 }
 
 /**
- * 精灵动画
+ * 精灵动画类
  */
-@RegNode("SpriteAnimation")
-export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation {
-  declare pp: ISpriteAnimationPrivateProps;
+@RegNode("AnimatedSprite")
+export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation {
+  declare pp: IAnimatedSpritePrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
 
-  /** 精灵动画纹理集合 */
+  /** 精灵动画的纹理集合 */
   textures: Texture[] = [];
-  /** 是否在播放 */
-  playing = false;
-  /** 动画帧率 */
+  /** 标识动画是否正在播放 */
+  isPlaying = false;
+  /** 动画的播放帧率 */
   frameRate = 30;
 
-  constructor(options?: ISpriteAnimationOptions) {
+  constructor(options?: IAnimatedSpriteOptions) {
     super();
 
     this.pp.url = "";
-    this.pp.frame = 0;
+    this.pp.currentFrame = 0;
 
     this.setProps(options as Record<string, unknown>);
-    this._$renderFrame(this.pp.frame);
+    this._$renderFrame(this.pp.currentFrame);
   }
 
-  override destroy(): void {
-    this.stop();
-    super.destroy();
-  }
-
-  /** 当前纹理 */
+  /** 当前显示的纹理对象 */
   get texture(): Texture {
     return this.pp.texture;
   }
@@ -65,18 +61,18 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
     }
   }
 
-  /** 动画持续时长 */
+  /** 动画的总持续时间（秒） */
   get duration(): number {
     return this.textures.length / this.frameRate;
   }
 
-  /** 当前帧 */
-  get frame() {
-    return this.pp.frame;
+  /** 当前显示的动画帧索引 */
+  get currentFrame() {
+    return this.pp.currentFrame;
   }
-  set frame(value) {
-    if (this.pp.frame !== value) {
-      this.pp.frame = value;
+  set currentFrame(value: number) {
+    if (this.pp.currentFrame !== value) {
+      this.pp.currentFrame = value;
       this._$renderFrame(value);
     }
   }
@@ -86,7 +82,7 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
       let index = frame;
       if (index >= this.textures.length) {
         index = 0;
-        this.pp.frame = 0;
+        this.pp.currentFrame = 0;
       }
       this.texture = this.textures[index];
       if (index === this.textures.length - 1) {
@@ -95,7 +91,7 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
     }
   }
 
-  /** 动画地址 */
+  /** 动画资源的 URL 地址 */
   get url(): string {
     return this.pp.url;
   }
@@ -104,7 +100,8 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
   }
 
   /**
-   * 加载动画
+   * 从指定 URL 加载动画资源
+   * @param url - 动画资源的 URL 地址
    */
   async load(url: string) {
     if (this.pp.url !== url) {
@@ -115,11 +112,16 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
       console.assert(textures.length > 0);
 
       this.textures = textures;
-      this._$renderFrame(this.pp.frame);
+      this._$renderFrame(this.pp.currentFrame);
     }
     this.emit(EventType.loaded);
   }
 
+  /**
+   * 自定义本地边界计算
+   * 使用当前纹理的尺寸作为边界
+   * @param bounds - 边界对象
+   */
   protected override _customLocalBounds(bounds: Bounds) {
     const { texture } = this.pp;
     if (texture) {
@@ -128,11 +130,12 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
   }
 
   /**
-   * 播放动画
+   * 开始播放动画
+   * 如果动画已经在播放中，则不会重复开始
    */
   play() {
-    if (!this.playing) {
-      this.playing = true;
+    if (!this.isPlaying) {
+      this.isPlaying = true;
       console.assert(this.stage !== undefined, "please add to stage first before play");
 
       this.stage?.timer.setInterval(1 / this.frameRate, this._$update, this);
@@ -141,24 +144,35 @@ export class SpriteAnimation extends LikoNode implements IRenderable, IAnimation
   }
 
   /**
-   * 停止播放
+   * 停止播放动画
+   * 如果动画已经停止，则不会执行任何操作
    */
   stop() {
-    if (this.playing) {
-      this.playing = false;
+    if (this.isPlaying) {
+      this.isPlaying = false;
       this.stage?.timer.clearTimer(this._$update, this);
       this.emit(EventType.stopped);
     }
   }
 
   private _$update() {
-    this.frame++;
+    this.currentFrame++;
   }
 
   /**
-   * 播放到某个时间点
+   * 跳转到动画的指定时间点
+   * @param time - 目标时间点（秒）
    */
-  goto(time: number) {
-    this.frame = Math.round((time / this.duration) * this.textures.length);
+  gotoTime(time: number) {
+    this.currentFrame = Math.round((time / this.duration) * this.textures.length);
+  }
+
+  /**
+   * 销毁精灵动画实例
+   * 在销毁前会停止动画播放
+   */
+  override destroy(): void {
+    this.stop();
+    super.destroy();
   }
 }

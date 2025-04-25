@@ -15,7 +15,7 @@ Liko can be used for game development, H5 applications, and interactive scenario
 ## Capabilities
 - 2D rendering
 - Sprite rendering
-- SpriteAnimation rendering
+- AnimatedSprite rendering
 - Text rendering
 - Canvas rendering
 - Built-in physics engine

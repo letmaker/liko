@@ -15,7 +15,7 @@ Liko 可用于游戏开发、H5应用程序和互动交互场景等。
 ## 功能
 - 2D 渲染
 - Sprite 渲染
-- SpriteAnimation 渲染
+- AnimatedSprite 渲染
 - Text 渲染
 - Canvas 渲染
 - 内置物理引擎

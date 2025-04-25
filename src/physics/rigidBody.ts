@@ -1,10 +1,12 @@
-import type { Body, Fixture } from "planck";
+import type { Body } from "planck";
 import { EventType, PI2 } from "../const";
 import { type IPoint, Point } from "../math/point";
 import type { ICollision } from "../scripts/script";
 import { ScriptBase } from "../scripts/script-base";
 import { RegScript } from "../utils/decorators";
-import type { IShape, RigidBodyOptions, RigidType } from "./rigidBody.interface";
+import { addJoint } from "./joint";
+import type { IJoint, IShape, RigidBodyOptions, RigidType } from "./rigidBody.interface";
+import { addShape } from "./shape";
 
 /**
  * 物理刚体组件，实现物理属性描述和碰撞区域定义
@@ -15,14 +17,19 @@ import type { IShape, RigidBodyOptions, RigidType } from "./rigidBody.interface"
  */
 @RegScript("RigidBody")
 export class RigidBody extends ScriptBase {
-  private _physics = window.physics;
-  private _body: Body;
   private _tempPos2D: IPoint = { x: 0, y: 0 };
+
+  /** @private */
+  physics = window.physics;
+  /** @private */
+  body: Body;
 
   /** 物理类型，static(静态)、kinematic(运动学)或dynamic(动态)，至少一个物体为dynamic才能产生碰撞 */
   rigidType: RigidType = "static";
   /** 物理形状列表，描述碰撞区域，为空则默认使用与节点同大小的矩形 */
   shapes: IShape[] = [];
+  /** 关节列表，描述刚体之间的连接关系 */
+  joints: IJoint[] = [];
   /** 物理分类，用于碰撞检测 */
   category = "";
   /** 是否为传感器，传感器只检测碰撞但不产生物理反馈 */
@@ -52,85 +59,85 @@ export class RigidBody extends ScriptBase {
 
   /** 角速度，物体旋转速度，单位为弧度/秒 */
   get angularVelocity(): number {
-    return this._body.getAngularVelocity();
+    return this.body.getAngularVelocity();
   }
   set angularVelocity(value: number) {
-    this._body.setAngularVelocity(value);
+    this.body.setAngularVelocity(value);
   }
 
   /** 角阻尼系数，影响物体旋转的减速率，值越大减速越快 */
   get angularDamping(): number {
-    return this._body.getAngularDamping();
+    return this.body.getAngularDamping();
   }
   set angularDamping(value: number) {
-    this._body.setAngularDamping(value);
+    this.body.setAngularDamping(value);
   }
 
   /** 重力缩放系数，默认为1，可设为负值使物体上浮 */
   get gravityScale(): number {
-    return this._body.getGravityScale();
+    return this.body.getGravityScale();
   }
   set gravityScale(value: number) {
-    this._body.setGravityScale(value);
+    this.body.setGravityScale(value);
   }
 
   /** 线性速度，物体当前运动速度向量 */
   get linearVelocity(): IPoint {
-    return this._body.getLinearVelocity();
+    return this.body.getLinearVelocity();
   }
   set linearVelocity(value: IPoint) {
-    this._body.setLinearVelocity(value);
+    this.body.setLinearVelocity(value);
   }
 
   /** 线性阻尼系数，影响物体线性运动的减速率，值越大减速越快 */
   get linearDamping(): number {
-    return this._body.getLinearDamping();
+    return this.body.getLinearDamping();
   }
   set linearDamping(value: number) {
-    this._body.setLinearDamping(value);
+    this.body.setLinearDamping(value);
   }
 
   /** 是否为子弹，高速物体设为true可减少穿透问题，但会增加性能开销 */
   get bullet(): boolean {
-    return this._body.isBullet();
+    return this.body.isBullet();
   }
   set bullet(value: boolean) {
-    this._body.setBullet(value);
+    this.body.setBullet(value);
   }
 
   /** 是否允许旋转，设为false则物体保持固定方向 */
   get allowRotation(): boolean {
-    return !this._body.isFixedRotation();
+    return !this.body.isFixedRotation();
   }
   set allowRotation(value: boolean) {
-    this._body.setFixedRotation(!value);
+    this.body.setFixedRotation(!value);
   }
 
   /** 是否允许休眠，休眠状态下物体不参与物理计算以提高性能 */
   get allowSleeping(): boolean {
-    return this._body.isSleepingAllowed();
+    return this.body.isSleepingAllowed();
   }
   set allowSleeping(value: boolean) {
-    this._body.setSleepingAllowed(value);
+    this.body.setSleepingAllowed(value);
   }
 
   /** 是否处于休眠状态，休眠时物体暂停物理计算 */
   get sleeping(): boolean {
-    return !this._body.isAwake();
+    return !this.body.isAwake();
   }
   set sleeping(value: boolean) {
-    this._body.setAwake(!value);
+    this.body.setAwake(!value);
   }
 
   /** 刚体质量，由形状和密度决定（只读） */
   get mass(): number {
-    return this._body.getMass();
+    return this.body.getMass();
   }
 
   constructor(options?: RigidBodyOptions) {
     super();
-    console.assert(this._physics !== undefined, "physics not init");
-    this._body = this._physics.world.createBody({ active: false, type: "kinematic", fixedRotation: true });
+    console.assert(this.physics !== undefined, "physics not init");
+    this.body = this.physics.world.createBody({ active: false, type: "kinematic", fixedRotation: true });
     if (options) {
       this.setProps(options as Record<string, any>);
     }
@@ -141,7 +148,7 @@ export class RigidBody extends ScriptBase {
    * 设置刚体类型、添加形状、设置初始位置和角度
    */
   override onAwake(): void {
-    const body = this._body;
+    const body = this.body;
     const target = this.target;
 
     if (this.rigidType === "dynamic") body.setDynamic();
@@ -149,21 +156,27 @@ export class RigidBody extends ScriptBase {
 
     if (this.shapes.length) {
       for (const shape of this.shapes) {
-        this.addShape(shape);
+        addShape(this, shape);
       }
     } else {
-      this.addShape({ shapeType: "box" });
+      addShape(this, { shapeType: "box" });
     }
 
     const tempPoint = Point.TEMP.set(0, 0);
     const worldPoint = target.localToWorld(tempPoint, tempPoint, this.scene);
-    body.setPosition(this._physics.toPhPos(worldPoint));
+    body.setPosition(this.physics.toPhPos(worldPoint));
     body.setAngle(target.rotation);
     body.setActive(true);
     body.setUserData(this);
 
     if (this.onCollisionStart || this.onCollisionEnd) {
       this._registerCollisionEvent();
+    }
+
+    if (this.joints.length) {
+      for (const joint of this.joints) {
+        addJoint(this, joint);
+      }
     }
   }
 
@@ -183,13 +196,13 @@ export class RigidBody extends ScriptBase {
   override onUpdate(): void {
     if (this.rigidType === "static") return;
     const target = this.target;
-    const pos = this._body.getPosition();
+    const pos = this.body.getPosition();
 
     // 复用临时对象
-    let pos2D = this._physics.to2DPos(pos, this._tempPos2D);
+    let pos2D = this.physics.to2DPos(pos, this._tempPos2D);
 
     // 检测是否在全局边界内，不在则销毁 target
-    if (!this._physics.inBoundaryArea(pos2D)) {
+    if (!this.physics.inBoundaryArea(pos2D)) {
       this.target.destroy();
       return;
     }
@@ -199,7 +212,7 @@ export class RigidBody extends ScriptBase {
     }
 
     if (this.allowRotation) {
-      const angle = this._body.getAngle();
+      const angle = this.body.getAngle();
       target.rotation = angle % PI2;
     }
 
@@ -220,91 +233,23 @@ export class RigidBody extends ScriptBase {
    * 组件启用时激活物理刚体
    */
   override onEnable(): void {
-    this._body.setActive(true);
+    this.body.setActive(true);
   }
 
   /**
    * 组件禁用时停用物理刚体
    */
   override onDisable(): void {
-    this._body.setActive(false);
+    this.body.setActive(false);
   }
 
   /**
-   * 组件销毁时清理物理刚体
+   * 组件销毁时清理物理刚体和关联的关节
    */
   override onDestroy(): void {
-    this._physics.world.destroyBody(this._body);
-  }
-
-  /**
-   * 添加物理形状到刚体
-   * 根据形状类型创建不同的碰撞区域，支持矩形、圆形、边缘线和多边形
-   * @param shape - 要添加的形状配置
-   */
-  addShape(shape: IShape): void {
-    if (!this.awaked) {
-      this.shapes.push(shape);
-      return;
-    }
-
-    const options = {
-      density: 1,
-      isSensor: this.isSensor,
-      friction: this.friction,
-      restitution: this.restitution,
-      filterGroupIndex: 0,
-      filterCategoryBits: this._physics.getCategoryBit(this.category),
-      filterMaskBits: this._physics.getCategoryMask(this.categoryAccepted),
-      ...shape,
-    };
-    const target = this.target;
-    const rect = target.getWorldRotatingRect(this.scene);
-
-    const physics = this._physics;
-    const { pl } = physics;
-    const toPh = physics.toPh.bind(physics);
-    const toPhPos = physics.toPhPos.bind(physics);
-
-    let fixture: Fixture | undefined = undefined;
-    const offsetX = toPh(shape.offset?.x ?? 0);
-    const offsetY = toPh(shape.offset?.y ?? 0);
-    switch (shape.shapeType) {
-      case "box": {
-        const hw = toPh(shape.width ?? rect.width) / 2;
-        const hh = toPh(shape.height ?? rect.height) / 2;
-        fixture = this._body.createFixture(new pl.Box(hw, hh, { x: hw + offsetX, y: hh + offsetY }), options);
-        break;
-      }
-      case "circle": {
-        const radius = toPh(shape.radius ?? rect.height / 2);
-        // 修正圆心位置，确保与物体中心对齐
-        const centerX = offsetX + radius;
-        const centerY = offsetY + radius;
-        fixture = this._body.createFixture(new pl.Circle({ x: centerX, y: centerY }, radius), options);
-        break;
-      }
-      case "chain": {
-        const vertices = shape.vertices.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
-        // 检查顶点数量是否合法
-        console.assert(vertices.length >= 2, "Chain shape must have at least 2 vertices");
-        if (vertices.length < 2) return;
-        fixture = this._body.createFixture(new pl.Chain(vertices, false), options);
-        break;
-      }
-      case "polygon": {
-        const vertices = shape.vertices.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
-        // 检查顶点数量是否合法
-        console.assert(vertices.length >= 3 && vertices.length <= 8, "Polygon shape must have 3-8 vertices");
-        if (vertices.length < 3 || vertices.length > 8) return;
-        fixture = this._body.createFixture(new pl.Polygon(vertices), options);
-        break;
-      }
-    }
-
-    if (options.crossSide) {
-      fixture?.setUserData({ crossSide: options.crossSide });
-    }
+    // TODO 会不会自动销毁关节和形状
+    // 销毁刚体
+    this.physics.world.destroyBody(this.body);
   }
 
   /**
@@ -320,8 +265,8 @@ export class RigidBody extends ScriptBase {
       worldPos = this.target.parent!.localToWorld(worldPos, worldPos, this.scene);
     }
 
-    this._body.setPosition(this._physics.toPhPos(worldPos));
-    if (this.rigidType !== "static") this._body.setAwake(true);
+    this.body.setPosition(this.physics.toPhPos(worldPos));
+    if (this.rigidType !== "static") this.body.setAwake(true);
   }
 
   /**
@@ -329,8 +274,8 @@ export class RigidBody extends ScriptBase {
    * @returns 刚体位置坐标
    */
   getPosition(): IPoint {
-    const pos = this._body.getPosition();
-    return this._physics.to2DPos(pos);
+    const pos = this.body.getPosition();
+    return this.physics.to2DPos(pos);
   }
 
   /**
@@ -338,7 +283,7 @@ export class RigidBody extends ScriptBase {
    * @returns 旋转角度（弧度）
    */
   getRotation(): number {
-    return this._body.getAngle() % PI2;
+    return this.body.getAngle() % PI2;
   }
 
   /**
@@ -346,9 +291,9 @@ export class RigidBody extends ScriptBase {
    * @param rotation - 旋转角度（弧度）
    */
   setRotation(rotation: number): void {
-    this._body.setAngle(rotation);
+    this.body.setAngle(rotation);
     this.target.rotation = rotation;
-    if (this.rigidType !== "static") this._body.setAwake(true);
+    if (this.rigidType !== "static") this.body.setAwake(true);
   }
 
   /**
@@ -357,7 +302,7 @@ export class RigidBody extends ScriptBase {
    * @param y - y方向速度，为undefined则保持当前速度
    */
   setLinearVelocity(x?: number, y?: number): void {
-    this._body.setLinearVelocity({ x: x ?? this.linearVelocity.x, y: y ?? this.linearVelocity.y });
+    this.body.setLinearVelocity({ x: x ?? this.linearVelocity.x, y: y ?? this.linearVelocity.y });
   }
 
   /**
@@ -368,7 +313,7 @@ export class RigidBody extends ScriptBase {
    */
   applyLinearImpulse(impulse: IPoint, point: IPoint = { x: 0, y: 0 }): void {
     console.assert(this.rigidType === "dynamic", "applyLinearImpulse only works on dynamic bodies");
-    this._body.applyLinearImpulse(impulse, point, true);
+    this.body.applyLinearImpulse(impulse, point, true);
   }
 
   /**
@@ -379,7 +324,7 @@ export class RigidBody extends ScriptBase {
    */
   applyForce(force: IPoint, point: IPoint = { x: 0, y: 0 }): void {
     console.assert(this.rigidType === "dynamic", "applyForce only works on dynamic bodies");
-    this._body.applyForce(force, point, true);
+    this.body.applyForce(force, point, true);
   }
 
   /**
@@ -389,7 +334,7 @@ export class RigidBody extends ScriptBase {
    */
   applyForceToCenter(force: IPoint): void {
     console.assert(this.rigidType === "dynamic", "applyForceToCenter only works on dynamic bodies");
-    this._body.applyForceToCenter(force, true);
+    this.body.applyForceToCenter(force, true);
   }
 
   /**
@@ -402,7 +347,7 @@ export class RigidBody extends ScriptBase {
       this.rigidType === "dynamic" && this.allowRotation,
       "applyTorque only works on dynamic bodies with allowRotation enabled",
     );
-    this._body.applyTorque(torque, true);
+    this.body.applyTorque(torque, true);
   }
 
   /**
@@ -415,6 +360,6 @@ export class RigidBody extends ScriptBase {
       this.rigidType === "dynamic" && this.allowRotation,
       "applyAngularImpulse only works on dynamic bodies with allowRotation enabled",
     );
-    this._body.applyAngularImpulse(impulse, true);
+    this.body.applyAngularImpulse(impulse, true);
   }
 }
