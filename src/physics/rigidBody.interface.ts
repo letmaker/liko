@@ -70,6 +70,8 @@ export type IShape = IBoxShape | ICircleShape | IChainShape | IPolygonShape;
 export interface IRevoluteJoint {
   /** 关节类型，旋转关节 */
   jointType: "revolute";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
@@ -105,6 +107,8 @@ export interface IRevoluteJoint {
 export interface IDistanceJoint {
   /** 关节类型，距离关节 */
   jointType: "distance";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
@@ -132,12 +136,12 @@ export interface IDistanceJoint {
 export interface IFixedJoint {
   /** 关节类型，固定关节 */
   jointType: "fixed";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorA: IPoint;
-  /** 目标刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorB: IPoint;
+  localAnchor: IPoint;
   /** 是否允许连接的两个刚体相互碰撞，默认为false */
   collideConnected?: boolean;
   /** 频率，用于软约束，默认为0（硬约束） */
@@ -161,6 +165,8 @@ export interface IFixedJoint {
 export interface IPrismaticJoint {
   /** 关节类型，棱柱关节 */
   jointType: "prismatic";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
@@ -202,6 +208,8 @@ export interface IPrismaticJoint {
 export interface IWheelJoint {
   /** 关节类型，轮子关节 */
   jointType: "wheel";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
@@ -239,6 +247,8 @@ export interface IWheelJoint {
 export interface IRopeJoint {
   /** 关节类型，绳索关节 */
   jointType: "rope";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
@@ -266,6 +276,8 @@ export interface IRopeJoint {
 export interface IMotorJoint {
   /** 关节类型，马达关节 */
   jointType: "motor";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 是否允许连接的两个刚体相互碰撞，默认为true */
@@ -297,6 +309,8 @@ export interface IMotorJoint {
 export interface IPulleyJoint {
   /** 关节类型，滑轮关节 */
   jointType: "pulley";
+  /** 关节标签，方便用来销毁 */
+  label?: string;
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */

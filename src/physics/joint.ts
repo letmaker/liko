@@ -1,10 +1,11 @@
+import type { Joint } from "planck";
 import type { RigidBody } from "./rigidBody";
 import type { IJoint } from "./rigidBody.interface";
 
-export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
+export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
   if (!rigidBody.awaked) {
     rigidBody.joints.push(joint);
-    return;
+    return null;
   }
   const { physics, body, target } = rigidBody;
   const { pl, world, toPhPos, toPh } = physics;
@@ -30,8 +31,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
         maxMotorTorque: joint.maxMotorTorque,
         motorSpeed: joint.motorSpeed,
       };
-      world.createJoint(new pl.RevoluteJoint(revoluteJointDef));
-      break;
+      return world.createJoint(new pl.RevoluteJoint(revoluteJointDef));
     }
     case "distance": {
       const distanceJointDef = {
@@ -44,8 +44,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
         frequencyHz: joint.frequency,
         dampingRatio: joint.dampingRatio,
       };
-      world.createJoint(new pl.DistanceJoint(distanceJointDef));
-      break;
+      return world.createJoint(new pl.DistanceJoint(distanceJointDef));
     }
     case "fixed": {
       const fixedJointDef = {
@@ -57,8 +56,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
         frequencyHz: joint.frequency,
         dampingRatio: joint.dampingRatio,
       };
-      world.createJoint(new pl.WeldJoint(fixedJointDef));
-      break;
+      return world.createJoint(new pl.WeldJoint(fixedJointDef));
     }
     // case "prismatic": {
     //   const localAxisA = toPhPos(joint.localAxisA);
@@ -77,8 +75,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
     //     maxMotorForce: joint.maxMotorForce,
     //     motorSpeed: joint.motorSpeed,
     //   };
-    //   world.createJoint(new pl.PrismaticJoint(prismaticJointDef));
-    //   break;
+    //   return world.createJoint(new pl.PrismaticJoint(prismaticJointDef));
     // }
     // case "wheel": {
     //   const localAxisA = toPhPos(joint.localAxisA);
@@ -95,8 +92,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
     //     frequencyHz: joint.frequency || 2.0,
     //     dampingRatio: joint.dampingRatio || 0.7,
     //   };
-    //   world.createJoint(new pl.WheelJoint(wheelJointDef));
-    //   break;
+    //   return world.createJoint(new pl.WheelJoint(wheelJointDef));
     // }
     // case "rope": {
     //   const ropeJointDef = {
@@ -107,8 +103,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
     //     maxLength: joint.maxLength,
     //     collideConnected: joint.collideConnected,
     //   };
-    //   world.createJoint(new pl.RopeJoint(ropeJointDef));
-    //   break;
+    //   return world.createJoint(new pl.RopeJoint(ropeJointDef));
     // }
     // case "motor": {
     //   const linearOffset = joint.linearOffset ? toPhPos(joint.linearOffset) : { x: 0, y: 0 };
@@ -122,8 +117,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
     //     maxTorque: joint.maxTorque || 1.0,
     //     correctionFactor: joint.correctionFactor || 0.3,
     //   };
-    //   world.createJoint(new pl.MotorJoint(motorJointDef));
-    //   break;
+    //   return world.createJoint(new pl.MotorJoint(motorJointDef));
     // }
     // case "pulley": {
     //   const groundAnchorA = toPhPos(joint.groundAnchorA);
@@ -140,8 +134,8 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): void {
     //     ratio: joint.ratio,
     //     collideConnected: joint.collideConnected !== false, // 默认为true
     //   };
-    //   world.createJoint(new pl.PulleyJoint(pulleyJointDef));
-    //   break;
+    //   return world.createJoint(new pl.PulleyJoint(pulleyJointDef));
     // }
   }
+  return null;
 }

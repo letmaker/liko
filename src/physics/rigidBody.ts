@@ -1,4 +1,4 @@
-import type { Body } from "planck";
+import type { Body, Joint } from "planck";
 import { EventType, PI2 } from "../const";
 import { type IPoint, Point } from "../math/point";
 import type { ICollision } from "../scripts/script";
@@ -18,6 +18,7 @@ import { addShape } from "./shape";
 @RegScript("RigidBody")
 export class RigidBody extends ScriptBase {
   private _tempPos2D: IPoint = { x: 0, y: 0 };
+  private _joints: Joint[] = [];
 
   /** @private */
   physics = window.physics;
@@ -175,7 +176,9 @@ export class RigidBody extends ScriptBase {
 
     if (this.joints.length) {
       for (const joint of this.joints) {
-        addJoint(this, joint);
+        const j = addJoint(this, joint);
+        j?.setUserData(joint.label);
+        if (j) this._joints.push(j);
       }
     }
   }
@@ -241,15 +244,6 @@ export class RigidBody extends ScriptBase {
    */
   override onDisable(): void {
     this.body.setActive(false);
-  }
-
-  /**
-   * 组件销毁时清理物理刚体和关联的关节
-   */
-  override onDestroy(): void {
-    // TODO 会不会自动销毁关节和形状
-    // 销毁刚体
-    this.physics.world.destroyBody(this.body);
   }
 
   /**
@@ -361,5 +355,24 @@ export class RigidBody extends ScriptBase {
       "applyAngularImpulse only works on dynamic bodies with allowRotation enabled",
     );
     this.body.applyAngularImpulse(impulse, true);
+  }
+
+  destroyJoint(label: string): void {
+    const joint = this._joints.find((j) => j.getUserData() === label);
+    if (joint) {
+      this.physics.world.destroyJoint(joint);
+      this._joints = this._joints.filter((j) => j !== joint);
+    }
+  }
+
+  /**
+   * 组件销毁时清理物理刚体和关联的关节
+   */
+  override onDestroy(): void {
+    // TODO 会不会自动销毁关节和形状
+    for (const joint of this._joints) {
+      this.physics.world.destroyJoint(joint);
+    }
+    this.physics.world.destroyBody(this.body);
   }
 }
