@@ -170,24 +170,20 @@ export interface IPrismaticJoint {
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorA: IPoint;
-  /** 目标刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorB: IPoint;
+  localAnchor: IPoint;
   /** 局部轴向，定义允许移动的方向 */
-  localAxisA: IPoint;
+  localAxis: IPoint;
   /** 是否允许连接的两个刚体相互碰撞，默认为false */
   collideConnected?: boolean;
-  /** 参考角度，默认为0 */
-  referenceAngle?: number;
   /** 是否启用移动限制 */
   enableLimit?: boolean;
   /** 最小移动限制 */
   lowerTranslation?: number;
   /** 最大移动限制 */
   upperTranslation?: number;
-  /** 是否启用马达 */
+  /** 是否启用马达，需要同时设置 maxMotorForce 和 motorSpeed 才会运动 */
   enableMotor?: boolean;
-  /** 马达最大力 */
+  /** 马达能提供的最大力量 */
   maxMotorForce?: number;
   /** 马达速度 */
   motorSpeed?: number;
@@ -213,14 +209,12 @@ export interface IWheelJoint {
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorA: IPoint;
-  /** 目标刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorB: IPoint;
+  localAnchor: IPoint;
   /** 局部轴向，定义允许移动的方向 */
-  localAxisA: IPoint;
+  localAxis: IPoint;
   /** 是否允许连接的两个刚体相互碰撞，默认为false */
   collideConnected?: boolean;
-  /** 是否启用马达 */
+  /** 是否启用马达，需要同时设置 maxMotorTorque 和 motorSpeed 才会运动 */
   enableMotor?: boolean;
   /** 马达最大扭矩 */
   maxMotorTorque?: number;
@@ -252,9 +246,7 @@ export interface IRopeJoint {
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorA: IPoint;
-  /** 目标刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorB: IPoint;
+  localAnchor: IPoint;
   /** 绳索的最大长度 */
   maxLength: number;
   /** 是否允许连接的两个刚体相互碰撞，默认为false */
