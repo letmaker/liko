@@ -73,9 +73,7 @@ export interface IRevoluteJoint {
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorA: IPoint;
-  /** 目标刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorB: IPoint;
+  localAnchor: IPoint;
   /** 是否允许连接的两个刚体相互碰撞，默认为false */
   collideConnected?: boolean;
   /** 是否启用角度限制 */
@@ -110,12 +108,10 @@ export interface IDistanceJoint {
   /** 目标刚体 */
   targetBody: IRigidBody;
   /** 当前刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorA: IPoint;
-  /** 目标刚体上的连接点，相对于刚体中心的偏移 */
-  localAnchorB: IPoint;
+  localAnchor: IPoint;
   /** 是否允许连接的两个刚体相互碰撞，默认为false */
   collideConnected?: boolean;
-  /** 两个锚点之间的距离，默认为当前两点间的距离 */
+  /** 两个锚点之间的距离，默认为10 */
   length?: number;
   /** 频率，用于软约束，默认为0（硬约束） */
   frequency?: number;

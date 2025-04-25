@@ -117,18 +117,18 @@ export class Physics {
    * @param value - 游戏世界中的坐标值
    * @returns 物理世界中的坐标值
    */
-  toPh(value: number) {
+  toPh = (value: number) => {
     return value / this._pixelRatio;
-  }
+  };
 
   /**
    * 转换物理坐标到游戏坐标
    * @param value - 物理世界中的坐标值
    * @returns 游戏世界中的坐标值
    */
-  to2D(value: number) {
+  to2D = (value: number) => {
     return value * this._pixelRatio;
-  }
+  };
 
   /**
    * 转换游戏坐标点到物理世界坐标点
@@ -136,11 +136,11 @@ export class Physics {
    * @param out - 输出结果的对象，默认为新对象
    * @returns 物理世界中的坐标点
    */
-  toPhPos(pos: IPoint, out: IPoint = { x: 0, y: 0 }) {
+  toPhPos = (pos: IPoint, out: IPoint = { x: 0, y: 0 }) => {
     out.x = pos.x / this._pixelRatio;
     out.y = pos.y / this._pixelRatio;
     return out;
-  }
+  };
 
   /**
    * 转换物理坐标点到游戏坐标点
@@ -148,11 +148,11 @@ export class Physics {
    * @param out - 输出结果的对象，默认为新对象
    * @returns 游戏世界中的坐标点
    */
-  to2DPos(pos: IPoint, out: IPoint = { x: 0, y: 0 }) {
+  to2DPos = (pos: IPoint, out: IPoint = { x: 0, y: 0 }) => {
     out.x = pos.x * this._pixelRatio;
     out.y = pos.y * this._pixelRatio;
     return out;
-  }
+  };
 
   /**
    * 设置重力

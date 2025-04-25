@@ -56,10 +56,14 @@ interface ISceneOptions extends INodeOptions {
   onPaused?: () => void;
   /** 场景恢复播放时的回调 */
   onResumed?: () => void;
-  /** 场景加载完成时的回调 */
-  onLoaded?: () => void;
   /** 场景加载进度回调 */
   onProgress?: (progress: number) => void;
+  /** 场景加载完成时的回调 */
+  onLoaded?: () => void;
+  /** 场景加载失败时的回调 */
+  onError?: (error: Error) => void;
+  /** 场景更新时的回调 */
+  onUpdate?: (delta: number) => void;
 }
 
 /**
@@ -248,6 +252,7 @@ export class Scene extends LikoNode implements IScene {
     this.pp.currentTime += scaleDelta;
     // 遍历所有子节点，执行脚本
     this._$updateScripts(this, scaleDelta);
+    this.emit(EventType.update, scaleDelta); // @ap
   }
 
   private _$updateScripts(node: LikoNode, delta: number) {

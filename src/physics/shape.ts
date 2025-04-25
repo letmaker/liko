@@ -28,9 +28,7 @@ export function addShape(rigidBody: RigidBody, shape: IShape): void {
   const rect = target.getWorldRotatingRect(rigidBody.scene);
 
   const physics = _physics;
-  const { pl } = physics;
-  const toPh = physics.toPh.bind(physics);
-  const toPhPos = physics.toPhPos.bind(physics);
+  const { pl, toPh, toPhPos } = physics;
 
   let fixture: Fixture | undefined = undefined;
   const offsetX = toPh(shape.offset?.x ?? 0);

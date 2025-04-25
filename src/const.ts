@@ -57,6 +57,9 @@ export enum EventType {
   /** 信号触发时，由 node 派发 */
   signal = "signal",
 
+  /** 帧动画更新时，由 scene 派发 */
+  update = "update",
+
   /** 键盘被按下时，由 stage 派发 */
   keydown = "keydown",
   /** 键盘被抬起时，由 stage 派发 */
