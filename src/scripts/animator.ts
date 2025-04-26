@@ -1,18 +1,19 @@
 import { Effect } from "./effect/effect";
 import { ScriptBase } from "./script-base";
 
+/** 动画效果配置接口 */
 interface IEffect {
-  /** 目标对象的ID */
+  /** 目标对象的 ID */
   targetID: string;
-  /** 延迟开始时间(秒) */
+  /** 延迟开始时间（秒） */
   delay: number;
-  /** 效果持续时间(秒) */
+  /** 效果持续时间（秒） */
   duration: number;
   /** 缓动函数名称 */
   easing?: string;
   /** 重复次数 */
   repeat?: number;
-  /** 重复之间的延迟时间(秒) */
+  /** 重复之间的延迟时间（秒） */
   repeatDelay?: number;
   /** 是否往返动画 */
   yoyo?: boolean;
@@ -25,7 +26,10 @@ interface IEffect {
 }
 
 /**
- * 动画控制器类，用于管理和播放多个动画效果
+ * 动画控制器类
+ *
+ * 用于管理和播放多个动画效果，支持动画的暂停、恢复和时间控制。
+ * 可以通过设置 effects 属性来配置多个动画效果，通常由编辑器生成。
  */
 export class Animator extends ScriptBase {
   /** 动画总持续时间，一般由编辑器设定，以秒为单位 */
@@ -43,7 +47,7 @@ export class Animator extends ScriptBase {
 
   private _repeatTimes = 0;
   private _repeat = 1;
-  /** 动画重复次数，默认为1次，设置为0，等同于无数次 */
+  /** 动画重复次数，默认为 1 次，设置为 0 表示无限重复 */
   get repeat(): number {
     return this._repeat;
   }
@@ -82,22 +86,22 @@ export class Animator extends ScriptBase {
   }
 
   /**
-   * 暂停动画播放
+   * 暂停动画播放，将动画设置为暂停状态，停止更新动画效果。
    */
   pause(): void {
     this._paused = true;
   }
 
   /**
-   * 恢复动画播放
+   * 恢复动画播放，将动画从暂停状态恢复为播放状态。
    */
   resume(): void {
     this._paused = false;
   }
 
   /**
-   * 跳转到指定时间点
-   * @param time - 目标时间点
+   * 跳转到指定时间点。将动画播放进度设置到指定的时间位置，并更新所有效果的状态。
+   * @param time - 目标时间点（秒）
    */
   goto(time: number): void {
     this.currentTime = time;
@@ -107,15 +111,15 @@ export class Animator extends ScriptBase {
   }
 
   /**
-   * 组件唤醒时调用
+   * 组件唤醒时调用，当动画控制器被添加到场景中并首次激活时触发。
    */
   override onAwake(): void {
     this.signal("animator.awake");
   }
 
   /**
-   * 每帧更新动画状态
-   * @param delta - 帧间隔时间
+   * 每帧更新动画状态，根据时间增量更新所有动画效果，处理动画的播放、重复和完成逻辑。
+   * @param delta - 帧间隔时间（秒）
    */
   override onUpdate(delta: number): void {
     if (this._paused || this.currentTime > this.duration || this.duration === 0) return;
@@ -138,7 +142,7 @@ export class Animator extends ScriptBase {
   }
 
   /**
-   * 销毁组件
+   * 销毁组件，清理动画控制器的资源，释放内存。
    */
   override destroy(): void {
     super.destroy();
