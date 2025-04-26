@@ -43,6 +43,8 @@ export class PointerManager {
     this._canvas.removeEventListener("pointerdown", this._downHandler, true);
     globalThis.removeEventListener("pointermove", this._moveHandler, true);
     globalThis.removeEventListener("pointerup", this._upHandler, true);
+
+    this._lastOver = undefined;
   }
 
   private _onPointerDown(e: PointerEvent): void {
@@ -81,6 +83,8 @@ export class PointerManager {
   }
 
   private _onPointerMove(e: PointerEvent): void {
+    // TODO 需要处理防抖吗
+
     // 处理指针移动事件
     const moveEvent = this._convertEvent(e, "move");
     this.hitTest(this.root, moveEvent.pointer, moveEvent.path);

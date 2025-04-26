@@ -15,7 +15,7 @@ export class SoundLoader implements ILoader {
    * @returns 是否支持该类型
    */
   test(type: string): boolean {
-    return this.map[type];
+    return !!this.map[type];
   }
 
   /**

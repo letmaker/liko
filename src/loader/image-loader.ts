@@ -16,7 +16,7 @@ export class ImageLoader implements ILoader {
    * @returns 如果支持该类型则返回true，否则返回false
    */
   test(type: string): boolean {
-    return this.map[type];
+    return !!this.map[type];
   }
 
   /**

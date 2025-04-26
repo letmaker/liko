@@ -63,6 +63,8 @@ export class LoaderManager extends Dispatcher {
    * @template T - 资源类型
    */
   load<T>(url: string, type?: string): Promise<T | undefined> {
+    // TODO: 是否需要增加一个资源加载的优先级
+
     // 如果有缓存，则优先从缓存获取
     const res = this.get(url);
     if (res) return Promise.resolve(res);
@@ -125,6 +127,7 @@ export class LoaderManager extends Dispatcher {
   }
 
   private _error(url: string, error: string): void {
+    // TODO 和直接 throw 相比，哪个更好
     console.error("Failed to load url:", url, "Error:", error);
     delete this._loadingMap[url];
     this._loaded++;

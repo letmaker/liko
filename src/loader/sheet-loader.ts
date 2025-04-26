@@ -22,8 +22,7 @@ export class SheetLoader implements ILoader {
    * @returns 如果支持该类型则返回true，否则返回false
    */
   test(type: string): boolean {
-    if (this.map[type]) return true;
-    return false;
+    return !!this.map[type];
   }
 
   /**
