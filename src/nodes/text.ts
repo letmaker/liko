@@ -50,7 +50,7 @@ interface ITextOptions extends INodeOptions {
 }
 
 /**
- * 文本渲染节点
+ * 文本渲染节点，用于在场景中显示文本内容
  */
 @RegNode("Text")
 export class Text extends LikoNode implements IRenderable {
@@ -133,7 +133,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 获取或设置字体大小 */
+  /** 获取或设置字体大小，单位为像素 */
   get fontSize() {
     return this.pp.fontSize;
   }
