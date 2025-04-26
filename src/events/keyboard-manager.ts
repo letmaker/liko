@@ -8,8 +8,7 @@ export class KeyBoardManager {
   private _keydownHandler = this._onKeydown.bind(this);
   private _keyupHandler = this._onKeyup.bind(this);
   private _wheelHandler = this._onWheel.bind(this);
-
-  keyMap: Record<string, boolean> = {};
+  private _keyMap: Record<string, boolean> = {};
 
   constructor(public stage: Stage) {
     globalThis.addEventListener("keydown", this._keydownHandler, { capture: true, passive: true });
@@ -24,12 +23,12 @@ export class KeyBoardManager {
   }
 
   private _onKeydown(e: KeyboardEvent) {
-    this.keyMap[e.key] = true;
+    this._keyMap[e.key] = true;
     this.stage.emit(EventType.keydown, e);
   }
 
   private _onKeyup(e: KeyboardEvent) {
-    this.keyMap[e.key] = false;
+    this._keyMap[e.key] = false;
     this.stage.emit(EventType.keyup, e);
   }
 
@@ -43,6 +42,6 @@ export class KeyBoardManager {
    * @param key 区分大小写
    */
   hasKeydown(key: string) {
-    return this.keyMap[key] === true;
+    return this._keyMap[key] === true;
   }
 }
