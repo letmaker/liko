@@ -29,7 +29,7 @@ export class ImageLoader implements ILoader {
       const res = await fetch(url);
       const blob = await res.blob();
       const bitmap = await createImageBitmap(blob);
-      return Texture.create(new TextureBuffer(bitmap), url);
+      return Texture.createFormBuffer(new TextureBuffer(bitmap), url);
     } catch (e) {
       console.error(`Error loading image from ${url}:`, e);
       return undefined;

@@ -53,7 +53,7 @@ export class SheetLoader implements ILoader {
         const key = keys[i];
         const sheet = sheets[key];
         const path = rootPath + key;
-        const texture = Texture.create(buffer, path, sheet);
+        const texture = Texture.createFormBuffer(buffer, path, sheet);
 
         manager.cache(path, texture);
         textures.push(texture);

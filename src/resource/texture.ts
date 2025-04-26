@@ -77,7 +77,7 @@ export class Texture {
    * @param url - 图像资源的 URL 地址
    * @returns 创建的纹理对象，如果加载失败则返回 undefined
    */
-  static async from(url: string): Promise<Texture | undefined> {
+  static async createFromUrl(url: string): Promise<Texture | undefined> {
     return loader.load(url, "image");
   }
 
@@ -88,8 +88,8 @@ export class Texture {
    * @param sheet - 可选的图集信息
    * @returns 创建的纹理对象
    */
-  static create(buffer: ITextureBuffer, url?: string, sheet?: ISheet): Texture {
-    return new Texture().set(buffer, url, sheet);
+  static createFormBuffer(buffer: ITextureBuffer, url?: string, sheet?: ISheet): Texture {
+    return new Texture().setBuffer(buffer, url, sheet);
   }
 
   /**
@@ -99,7 +99,7 @@ export class Texture {
    * @param sheet - 可选的图集信息
    * @returns 当前纹理实例，用于链式调用
    */
-  set(buffer: ITextureBuffer, url?: string, sheet?: ISheet) {
+  setBuffer(buffer: ITextureBuffer, url?: string, sheet?: ISheet) {
     if (this._buffer !== buffer) {
       this._buffer?.destroy();
       this._buffer = buffer;

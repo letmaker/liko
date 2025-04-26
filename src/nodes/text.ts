@@ -372,7 +372,7 @@ export class Text extends LikoNode implements IRenderable {
     if (canvasWidth > canvas.width || canvasHeight > canvas.height) {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
-      texture.set(new TextureBuffer(canvas));
+      texture.setBuffer(new TextureBuffer(canvas));
       this.markDirty(DirtyType.child);
     } else {
       // 实际画布可能更大，所以需要用 sheet
@@ -384,7 +384,7 @@ export class Text extends LikoNode implements IRenderable {
         trimmed: true,
       };
 
-      texture.set(texture.buffer, undefined, sheet);
+      texture.setBuffer(texture.buffer, undefined, sheet);
       // 宽高不变，重新更新 Texture 的图片
       texture.buffer.dirty();
     }

@@ -45,7 +45,7 @@ export class Canvas extends LikoNode implements IRenderable {
     pp.cmd = [];
     pp.canvas = Device.createCanvas(1, 1);
     pp.ctx = pp.canvas.getContext("2d") as CanvasRenderingContext2D;
-    pp.texture = Texture.create(new RenderTargetBuffer(1, 1), "canvas");
+    pp.texture = Texture.createFormBuffer(new RenderTargetBuffer(1, 1), "canvas");
     pp.changed = false;
     pp.maxLineWidth = 0;
     pp.clipped = false;
@@ -504,10 +504,10 @@ export class Canvas extends LikoNode implements IRenderable {
     if (canvasWidth > canvas.width || canvasHeight > canvas.height) {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
-      texture.set(new TextureBuffer(canvas), undefined, sheet);
+      texture.setBuffer(new TextureBuffer(canvas), undefined, sheet);
       this.markDirty(DirtyType.child);
     } else {
-      texture.set(texture.buffer, undefined, sheet);
+      texture.setBuffer(texture.buffer, undefined, sheet);
       // 宽高不变，重新更新 Texture 的图片
       texture.buffer.dirty();
     }

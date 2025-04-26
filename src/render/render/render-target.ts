@@ -1,6 +1,6 @@
-import { RenderTargetBuffer } from "../buffer/render-target-buffer";
-import { Texture } from "../../resource/texture";
 import { Sprite } from "../../nodes/sprite";
+import { Texture } from "../../resource/texture";
+import { RenderTargetBuffer } from "../buffer/render-target-buffer";
 
 /**
  * 渲染材质
@@ -25,7 +25,7 @@ export class RenderTarget extends Sprite {
       this.width = width;
       this.height = height;
       this.buffer = new RenderTargetBuffer(width, height);
-      this.texture.set(this.buffer);
+      this.texture.setBuffer(this.buffer);
     }
     return this.buffer.texture;
   }
