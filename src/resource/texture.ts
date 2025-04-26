@@ -34,6 +34,7 @@ export class Texture {
   private _height = 0;
   private _destroyed = false;
   private _trimmed = false;
+  private _rotated = false;
   private _trim: Rectangle = new Rectangle();
   private _sheet?: ISheet;
 
@@ -47,19 +48,24 @@ export class Texture {
     return this._height;
   }
 
-  /** 纹理的裁剪区域 */
-  get trim() {
-    return this._trim;
-  }
-
   /** 纹理是否被裁剪 */
   get trimmed() {
     return this._trimmed;
   }
 
+  /** 纹理是否被旋转 */
+  get rotated() {
+    return this._rotated;
+  }
+
   /** 纹理的图集信息 */
   get sheet() {
     return this._sheet;
+  }
+
+  /** 纹理的裁剪区域 */
+  get trim() {
+    return this._trim;
   }
 
   /** 纹理是否已销毁 */
@@ -110,6 +116,7 @@ export class Texture {
       this._width = sheet.sourceSize.w;
       this._height = sheet.sourceSize.h;
       this._trimmed = sheet.trimmed;
+      this._rotated = sheet.rotated;
       this._trim.set(
         sheet.spriteSourceSize.x,
         sheet.spriteSourceSize.y,
@@ -122,6 +129,7 @@ export class Texture {
       this._width = buffer.width;
       this._height = buffer.height;
       this._trimmed = false;
+      this._rotated = false;
       this._trim.set(0, 0, buffer.width, buffer.height);
     }
     return this;
@@ -132,16 +140,18 @@ export class Texture {
    * @param sheet - 图集信息
    */
   private _updateUvs(sheet: ISheet) {
-    const { uvs } = this;
+    const { uvs, _rotated } = this;
     const { frame } = sheet;
     const { width, height } = this.buffer;
 
     const nX = frame.x / width;
     const nY = frame.y / height;
-    const nW = frame.w / width;
-    const nH = frame.h / height;
+    const nW = (_rotated ? frame.h : frame.w) / width;
+    const nH = (_rotated ? frame.w : frame.h) / height;
 
-    if (sheet.rotated) {
+    if (_rotated) {
+      let rotate = 2;
+
       // 计算宽度和高度的一半
       const w2 = nW / 2;
       const h2 = nH / 2;
@@ -151,9 +161,7 @@ export class Texture {
       const cY = nY + h2;
 
       // 初始旋转值
-      let rotate = groupD8.NW; // 左上角为起点
-
-      // 设置四个顶点的 UV 坐标
+      rotate = groupD8.add(rotate, groupD8.NW); // 左上角为起点
       uvs.x0 = cX + w2 * groupD8.uX(rotate);
       uvs.y0 = cY + h2 * groupD8.uY(rotate);
 

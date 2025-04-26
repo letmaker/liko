@@ -12,7 +12,7 @@ const JELLY_FACTOR = 6.9813172;
 /** 缓动函数类型定义 */
 type EaseFunction = (amount: number) => number;
 
-export const Ease: Record<string, EaseFunction> = {
+export const Ease = {
   /**
    * 直线无缓动
    */
@@ -383,5 +383,5 @@ export const Ease: Record<string, EaseFunction> = {
  * @returns 对应的缓动函数，如果未找到则返回 Linear 函数
  */
 export function getEase(name: string): EaseFunction {
-  return Ease[name] || Ease.Linear;
+  return (Ease as Record<string, EaseFunction>)[name] || Ease.Linear;
 }

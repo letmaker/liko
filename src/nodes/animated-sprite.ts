@@ -13,6 +13,7 @@ interface IAnimatedSpritePrivateProps extends INodePrivateProps {
   url: string;
   currentFrame: number;
   texture: Texture;
+  textures: Texture[];
 }
 
 interface IAnimatedSpriteOptions extends INodeOptions {
@@ -33,21 +34,21 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   declare pp: IAnimatedSpritePrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
 
-  /** 精灵动画的纹理集合 */
-  textures: Texture[] = [];
   /** 标识动画是否正在播放 */
   isPlaying = false;
   /** 动画的播放帧率 */
   frameRate = 30;
 
-  constructor(options?: IAnimatedSpriteOptions) {
-    super();
+  /** 精灵动画的纹理集合 */
+  get textures(): Texture[] {
+    return this.pp.textures;
+  }
+  set textures(value: Texture[]) {
+    if (this.pp.textures === value) return;
 
-    this.pp.url = "";
-    this.pp.currentFrame = 0;
-
-    this.setProps(options as Record<string, unknown>);
-    this._$renderFrame(this.pp.currentFrame);
+    this.pp.textures = value;
+    this._$renderFrame(0);
+    this.markDirty(DirtyType.child);
   }
 
   /** 当前显示的纹理对象 */
@@ -58,12 +59,13 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     if (this.pp.texture !== value) {
       this.pp.texture = value;
       this.markDirty(DirtyType.texture);
+      this.markDirty(DirtyType.size);
     }
   }
 
   /** 动画的总持续时间（秒） */
   get duration(): number {
-    return this.textures.length / this.frameRate;
+    return this.pp.textures.length / this.frameRate;
   }
 
   /** 当前显示的动画帧索引 */
@@ -78,14 +80,15 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   }
 
   private _$renderFrame(frame: number) {
-    if (this.textures.length) {
+    const { textures } = this.pp;
+    if (textures.length) {
       let index = frame;
-      if (index >= this.textures.length) {
+      if (index >= textures.length) {
         index = 0;
         this.pp.currentFrame = 0;
       }
-      this.texture = this.textures[index];
-      if (index === this.textures.length - 1) {
+      this.texture = textures[index];
+      if (index === textures.length - 1) {
         this.emit(EventType.ended);
       }
     }
@@ -99,6 +102,17 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     this.load(value);
   }
 
+  constructor(options?: IAnimatedSpriteOptions) {
+    super();
+
+    this.pp.url = "";
+    this.pp.currentFrame = 0;
+    this.pp.textures = [];
+
+    this.setProps(options as Record<string, unknown>);
+    this._$renderFrame(this.pp.currentFrame);
+  }
+
   /**
    * 从指定 URL 加载动画资源
    * @param url - 动画资源的 URL 地址
@@ -107,7 +121,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     if (this.pp.url !== url) {
       this.pp.url = url;
 
-      const textures = await loader.load<Texture[]>(url);
+      const textures = await loader.load<Texture[]>(url, "sheet");
       if (this.destroyed || !textures) return;
       console.assert(textures.length > 0);
 
@@ -164,7 +178,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
    * @param time - 目标时间点（秒）
    */
   gotoTime(time: number) {
-    this.currentFrame = Math.round((time / this.duration) * this.textures.length);
+    this.currentFrame = Math.round((time / this.duration) * this.pp.textures.length);
   }
 
   /**
@@ -173,6 +187,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
    */
   override destroy(): void {
     this.stop();
+    this.textures.length = 0;
     super.destroy();
   }
 }

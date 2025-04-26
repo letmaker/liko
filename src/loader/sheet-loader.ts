@@ -57,10 +57,20 @@ export class SheetLoader implements ILoader {
         manager.cache(path, texture);
         textures.push(texture);
       }
+      textures.sort((a, b) => {
+        const numA = getNumber(a.url);
+        const numB = getNumber(b.url);
+        return numA - numB;
+      });
       return textures;
     } catch (e) {
       console.error(`Error loading sheet from ${url}:`, e);
       return undefined;
     }
   }
+}
+
+function getNumber(url: string) {
+  const match = url.match(/\d+/);
+  return match ? Number.parseInt(match[0]) : 0;
 }
