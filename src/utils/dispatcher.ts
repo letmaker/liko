@@ -49,7 +49,7 @@ export class Handler {
  * 事件管理器，用于管理事件的注册、触发和销毁
  */
 export class Dispatcher {
-  private _events: Record<string, Array<Handler>> = {};
+  private _events: Record<string, Handler[]> = {};
 
   /**
    * 注册事件监听（多次注册，只生效最后一次）
@@ -166,7 +166,7 @@ export class Dispatcher {
   /**
    * 销毁事件管理器，移除所有监听
    */
-  destroy() {
+  destroy(): void {
     this.offAll();
   }
 }
