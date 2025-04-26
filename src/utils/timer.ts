@@ -39,14 +39,13 @@ class TimerHandler extends Handler {
  * 主要用于渲染相关的计时回调，不适用于精确的时间判断
  */
 export class Timer {
-  /** 系统级Timer实例，业务代码应优先使用stage的timer，使用此实例需手动移除 */
+  /** 系统级 Timer 实例，业务代码应优先使用 stage 的 timer，使用此实例需手动移除 */
   static readonly system: Timer = new Timer();
 
-  /** 延迟执行的处理器列表 */
-  private static readonly _callLaterList: Array<TimerHandler> = [];
+  private static readonly _callLaterList: TimerHandler[] = [];
 
   /**
-   * 在渲染之前，延迟执行，用于减少重复计算，每帧多次调用只执行一次
+   * 在渲染之前延迟执行，用于减少重复计算，每帧多次调用只执行一次
    * @param callback 回调函数
    * @param caller 调用者
    * @param args 回调参数
@@ -63,7 +62,10 @@ export class Timer {
     return true;
   }
 
-  static runAllCallLater() {
+  /**
+   * 执行所有延迟回调
+   */
+  static runAllCallLater(): void {
     if (Timer._callLaterList.length > 0) {
       for (let i = 0; i < Timer._callLaterList.length; i++) {
         Timer._callLaterList[i].run();
@@ -101,7 +103,7 @@ export class Timer {
 
   private _destroyed = false;
   /** 计时器是否销毁 */
-  get destroyed() {
+  get destroyed(): boolean {
     return this._destroyed;
   }
 
@@ -256,7 +258,7 @@ export class Timer {
         }
       }
 
-      // 定期清理已销毁的timer
+      // 定期清理已销毁的 timer
       if (this.currentFrame % 5000 === 0) {
         this._clean();
       }
