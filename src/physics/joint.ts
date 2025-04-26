@@ -84,7 +84,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
         collideConnected: joint.collideConnected,
         enableMotor: joint.enableMotor,
         maxMotorTorque: joint.maxMotorTorque,
-        motorSpeed: joint.motorSpeed,
+        motorSpeed: joint.motorSpeed ? -joint.motorSpeed : undefined,
         frequencyHz: joint.frequency || 2.0,
         dampingRatio: joint.dampingRatio || 0.7,
       };
@@ -103,13 +103,13 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       return world.createJoint(new pl.RopeJoint(ropeJointDef));
     }
     case "motor": {
-      const linearOffset = joint.linearOffset ? toPhPos(joint.linearOffset) : { x: 0, y: 0 };
       const motorJointDef = {
         bodyA: body,
         bodyB: joint.targetBody.body,
         collideConnected: joint.collideConnected !== false, // 默认为true
-        linearOffset,
+        linearOffset: joint.linearOffset ? toPhPos(joint.linearOffset) : undefined,
         angularOffset: joint.angularOffset ?? 0,
+        // TODO 这块暂时没有想好
         maxForce: joint.maxForce ?? 1.0,
         maxTorque: joint.maxTorque ?? 1.0,
         correctionFactor: joint.correctionFactor ?? 0.3,
