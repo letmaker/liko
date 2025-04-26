@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Ease } from "../../scripts/effect/ease";
 import { Tween } from "../../scripts/effect/tween";
 import { Timer } from "../../utils/timer";
-import { Ease } from "../../scripts/effect/ease";
 
 // 模拟 Timer.system
 vi.mock("../../utils/timer", () => ({
@@ -42,7 +42,7 @@ describe("Tween", () => {
       });
 
       expect(tween).toBeInstanceOf(Tween);
-      expect(tween.playing).toBe(false);
+      expect(tween.isPlaying).toBe(false);
       expect(tween.destroyed).toBe(false);
     });
 
@@ -54,7 +54,7 @@ describe("Tween", () => {
       });
 
       expect(tween).toBeInstanceOf(Tween);
-      expect(tween.playing).toBe(false);
+      expect(tween.isPlaying).toBe(false);
       expect(tween.destroyed).toBe(false);
     });
 
@@ -158,7 +158,7 @@ describe("Tween", () => {
 
       const promise = tween.play();
       expect(promise).toBeInstanceOf(Promise);
-      expect(tween.playing).toBe(true);
+      expect(tween.isPlaying).toBe(true);
       expect(Timer.system.onFrame).toHaveBeenCalled();
 
       // 模拟动画完成
@@ -207,7 +207,7 @@ describe("Tween", () => {
       tween.play();
       tween.stop();
 
-      expect(tween.playing).toBe(false);
+      expect(tween.isPlaying).toBe(false);
       expect(Timer.system.clearTimer).toHaveBeenCalled();
     });
 
@@ -222,7 +222,7 @@ describe("Tween", () => {
       tween.destroy();
 
       expect(tween.destroyed).toBe(true);
-      expect(tween.playing).toBe(false);
+      expect(tween.isPlaying).toBe(false);
       expect(Timer.system.clearTimer).toHaveBeenCalled();
     });
 

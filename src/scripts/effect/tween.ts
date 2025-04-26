@@ -104,11 +104,10 @@ export class Tween {
     Tween._list.length = 0;
   }
 
-  // @testable
   private _effects: Effect[] = [];
   private _current?: Effect;
   private _currentTime = 0;
-  private _playing = false;
+  private _isPlaying = false;
   private _paused = false;
   private _destroyed = false;
 
@@ -120,8 +119,8 @@ export class Tween {
     return this._destroyed;
   }
   /** 是否正在播放中 */
-  get playing(): boolean {
-    return this._playing;
+  get isPlaying(): boolean {
+    return this._isPlaying;
   }
   /** 是否已暂停 */
   get paused(): boolean {
@@ -167,6 +166,33 @@ export class Tween {
    */
   from(options: TweenOption): this {
     return this._add(false, options);
+  }
+
+  /**
+   * 等待指定的时间，创建一个持续时间为指定秒数的动画效果，并添加到动画队列。
+   * @param seconds - 等待的时间（秒）
+   * @returns 当前 Tween 实例，支持链式调用
+   */
+  wait(seconds: number): this {
+    return this._add(true, {
+      target: {} as any,
+      props: {},
+      duration: seconds,
+    });
+  }
+
+  /**
+   * 调用指定的回调函数，创建一个持续时间为 0 的动画效果，并添加到动画队列。
+   * @param callback - 回调函数
+   * @returns 当前 Tween 实例，支持链式调用
+   */
+  call(callback: () => void): this {
+    return this._add(true, {
+      target: {} as any,
+      props: {},
+      duration: 0,
+      onStart: callback,
+    });
   }
 
   /**
@@ -230,13 +256,13 @@ export class Tween {
    * @returns 返回一个 Promise，当所有动画完成时解析
    */
   play(): Promise<void> {
-    if (this._destroyed || this._playing) return Promise.resolve();
+    if (this._destroyed || this._isPlaying) return Promise.resolve();
 
     return new Promise((resolve) => {
       this._currentTime = 0;
       this._paused = false;
       this._resolve = resolve;
-      this._playing = true;
+      this._isPlaying = true;
       this._next();
       this._update();
       Timer.system.onFrame(this._update, this);
@@ -256,7 +282,7 @@ export class Tween {
    * @returns 当前 Tween 实例，支持链式调用
    */
   pause(): this {
-    if (this._playing && !this._paused) {
+    if (this._isPlaying && !this._paused) {
       this._paused = true;
       Timer.system.clearTimer(this._update, this);
     }
@@ -268,7 +294,7 @@ export class Tween {
    * @returns 当前 Tween 实例，支持链式调用
    */
   resume(): this {
-    if (this._playing && this._paused) {
+    if (this._isPlaying && this._paused) {
       this._paused = false;
       Timer.system.onFrame(this._update, this);
     }
@@ -280,8 +306,8 @@ export class Tween {
    * @returns 当前 Tween 实例，支持链式调用
    */
   stop(): this {
-    if (this._playing) {
-      this._playing = false;
+    if (this._isPlaying) {
+      this._isPlaying = false;
       this._paused = false; // 重置暂停状态
       Timer.system.clearTimer(this._update, this);
     }

@@ -21,7 +21,7 @@ export interface IScene extends IAnimation {
   /** 当前播放时间 */
   currentTime: number;
   /** 是否正在播放 */
-  playing: boolean;
+  isPlaying: boolean;
   /** 是否暂停 */
   paused: boolean;
   /** 克隆场景中的节点 */
@@ -41,7 +41,7 @@ export interface IScene extends IAnimation {
 interface IScenePrivateProps extends INodePrivateProps {
   url: string;
   currentTime: number;
-  playing: boolean;
+  isPlaying: boolean;
   paused: boolean;
 }
 
@@ -91,8 +91,8 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /** 是否正在播放 */
-  get playing(): boolean {
-    return this.pp.playing;
+  get isPlaying(): boolean {
+    return this.pp.isPlaying;
   }
 
   /** 是否暂停 */
@@ -113,7 +113,7 @@ export class Scene extends LikoNode implements IScene {
     const pp = this.pp;
     pp.url = "";
     pp.currentTime = 0;
-    pp.playing = false;
+    pp.isPlaying = false;
     pp.paused = false;
 
     this.on(EventType.addToStage, this.play, this);
@@ -197,8 +197,8 @@ export class Scene extends LikoNode implements IScene {
    */
   play(): void {
     const pp = this.pp;
-    if (!pp.playing) {
-      pp.playing = true;
+    if (!pp.isPlaying) {
+      pp.isPlaying = true;
       pp.paused = false;
       this.stage?.timer.onFrame(this.update, this);
       this.emit(EventType.played);
@@ -209,8 +209,8 @@ export class Scene extends LikoNode implements IScene {
    * 停止播放
    */
   stop(): void {
-    if (this.pp.playing) {
-      this.pp.playing = false;
+    if (this.pp.isPlaying) {
+      this.pp.isPlaying = false;
       this.stage?.timer.clearTimer(this.update, this);
       this.emit(EventType.stopped);
     }
@@ -221,7 +221,7 @@ export class Scene extends LikoNode implements IScene {
    */
   pause(): void {
     const pp = this.pp;
-    if (!pp.playing || pp.paused) return;
+    if (!pp.isPlaying || pp.paused) return;
 
     pp.paused = true;
     this.stage?.timer.clearTimer(this.update, this);
@@ -233,7 +233,7 @@ export class Scene extends LikoNode implements IScene {
    */
   resume(): void {
     const pp = this.pp;
-    if (!pp.playing || !pp.paused) return;
+    if (!pp.isPlaying || !pp.paused) return;
 
     pp.paused = false;
     this.stage?.timer.onFrame(this.update, this);

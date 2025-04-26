@@ -259,7 +259,7 @@ export class Timer {
       }
 
       // 定期清理已销毁的 timer
-      if (this.currentFrame % 5000 === 0) {
+      if (this.currentFrame % 2000 === 0) {
         this._clean();
       }
     } else {
