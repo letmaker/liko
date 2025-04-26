@@ -17,13 +17,13 @@ const eventMap = {
 type EventType = keyof typeof eventMap;
 
 /**
- * 鼠标事件管理器
+ * 指针事件管理器，负责处理鼠标和触摸事件
  */
 export class PointerManager {
   private _downHandler = this._onPointerDown.bind(this);
   private _moveHandler = this._onPointerMove.bind(this);
   private _upHandler = this._onPointerUp.bind(this);
-  /** 最后 over 的节点 */
+  /** 最后触发 pointerover 事件的节点 */
   private _lastOver: LikoNode | undefined;
 
   private _canvas: HTMLCanvasElement;
@@ -31,11 +31,14 @@ export class PointerManager {
   constructor(public root: Stage) {
     this._canvas = root.canvas;
     this._canvas.addEventListener("pointerdown", this._downHandler, { capture: true, passive: true });
-    // 监听globalThis是为了实现画布外拖动和鼠标抬起
+    // 监听 globalThis 是为了实现画布外拖动和鼠标抬起
     globalThis.addEventListener("pointermove", this._moveHandler, { capture: true, passive: true });
     globalThis.addEventListener("pointerup", this._upHandler, { capture: true, passive: true });
   }
 
+  /**
+   * 销毁事件管理器，移除所有事件监听
+   */
   destroy() {
     this._canvas.removeEventListener("pointerdown", this._downHandler, true);
     globalThis.removeEventListener("pointermove", this._moveHandler, true);
@@ -57,7 +60,7 @@ export class PointerManager {
       this.hitTest(this.root, upEvent.pointer, upEvent.path);
       this._emitEvent(upEvent);
 
-      // 如果没有被preventDefault，则触发 click 事件
+      // 如果没有被 preventDefault，则触发 click 事件
       if (!upEvent.preventDefaulted) {
         const clickEvent = this._cloneEvent(upEvent, "click");
         const clickPath = clickEvent.path;
@@ -70,7 +73,7 @@ export class PointerManager {
         this._emitEvent(clickEvent);
       }
     } else {
-      // 画布外，派发 upOutSide 事件
+      // 画布外，派发 upOutside 事件
       const outsizeUpEvent = this._cloneEvent(upEvent, "upOutside");
       outsizeUpEvent.path.push(...downPath);
       this._emitEvent(outsizeUpEvent);
@@ -78,13 +81,13 @@ export class PointerManager {
   }
 
   private _onPointerMove(e: PointerEvent): void {
-    // 处理鼠标移动事件
+    // 处理指针移动事件
     const moveEvent = this._convertEvent(e, "move");
     this.hitTest(this.root, moveEvent.pointer, moveEvent.path);
     if (moveEvent.path.length < 1) return;
     this._emitEvent(moveEvent);
 
-    // over out
+    // 处理 pointerover 和 pointerout 事件
     const pointerTarget = moveEvent.path[0];
     const overEvent = this._cloneEvent(moveEvent, "over");
     const outEvent = this._cloneEvent(moveEvent, "out");
@@ -103,6 +106,9 @@ export class PointerManager {
     }
   }
 
+  /**
+   * 根据目标节点获取事件冒泡路径
+   */
   private _getPathByTarget(target: LikoNode, path: LikoNode[]) {
     if (target.pointerEnabled) path.push(target);
     if (target.parent) {
@@ -110,6 +116,9 @@ export class PointerManager {
     }
   }
 
+  /**
+   * 克隆事件对象并设置新的事件类型
+   */
   private _cloneEvent(event: LikoPointerEvent, type: EventType) {
     const newEvent = eventMap[type];
     const newType = newEvent.type;
@@ -121,7 +130,9 @@ export class PointerManager {
     return newEvent;
   }
 
-  /** 转换原始鼠标事件为引擎的鼠标事件 */
+  /**
+   * 转换原生指针事件为引擎的指针事件
+   */
   private _convertEvent(e: PointerEvent, type: EventType): LikoPointerEvent {
     const event = eventMap[type];
     event.nativeEvent = e;
@@ -140,9 +151,11 @@ export class PointerManager {
     return event;
   }
 
-  /** 转换鼠标事件的坐标为 stage 坐标 */
+  /**
+   * 转换客户端坐标为舞台坐标
+   */
   private _convertPoint(x: number, y: number, out: IPoint) {
-    // canvas 是否在 document 中
+    // 判断 canvas 是否在 document 中
     const canvas = this._canvas;
     const rect = canvas.isConnected
       ? canvas.getBoundingClientRect()
@@ -154,14 +167,14 @@ export class PointerManager {
   }
 
   /**
-   * 对目标节点进行鼠标碰撞测试
+   * 对目标节点进行指针碰撞测试
    * @param target 碰撞的目标节点
-   * @param pointer 鼠标位置
-   * @param out 输出数组
+   * @param pointer 指针位置
+   * @param out 输出数组，存储命中的节点
    * @returns 返回命中的节点列表
    */
   hitTest(target: LikoNode, pointer: IPoint, out: LikoNode[]): LikoNode[] {
-    // 节点可见，并且节点接受鼠标事件，才进行碰撞判断
+    // 节点可见，并且节点接受指针事件，才进行碰撞判断
     if ((!target.pointerEnabled && !target.pointerEnabledForChildren) || !target.visible) return out;
 
     // 从上往下，命中子节点，命中后冒泡到父节点
@@ -184,7 +197,9 @@ export class PointerManager {
     return out;
   }
 
-  /** 冒泡派发鼠标事件 */
+  /**
+   * 冒泡派发指针事件
+   */
   private _emitEvent(event: LikoPointerEvent) {
     if (event.path.length) {
       event.target = event.path[0];

@@ -273,7 +273,7 @@ export class RigidBody extends ScriptBase {
    */
   getPosition(): IPoint {
     const pos = this.body.getPosition();
-    return this.physics.to2DPos(pos);
+    return this.physics.to2DPos(pos, pos);
   }
 
   /**
@@ -312,6 +312,7 @@ export class RigidBody extends ScriptBase {
    * @param point - 作用点，默认为物体原点
    */
   applyLinearImpulse(impulse: IPoint, point: IPoint = { x: 0, y: 0 }): void {
+    // TODO 换成错误 throw 出来更好？
     console.assert(this.rigidType === "dynamic", "applyLinearImpulse only works on dynamic bodies");
     this.body.applyLinearImpulse(impulse, point, true);
   }

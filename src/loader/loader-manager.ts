@@ -1,15 +1,28 @@
 import { EventType } from "../const";
 import { Dispatcher } from "../utils/dispatcher";
 
-/** 定义资源加载器的接口规范 */
+/**
+ * 定义资源加载器的接口规范
+ */
 export interface ILoader {
-  /** 判断加载器是否支持指定的资源类型 */
+  /**
+   * 判断加载器是否支持指定的资源类型
+   * @param type - 资源类型
+   * @returns 是否支持处理该类型
+   */
   test: (type: string) => boolean;
-  /** 执行资源加载操作 */
+  /**
+   * 执行资源加载操作
+   * @param url - 资源的 URL 地址
+   * @param manager - 加载管理器实例
+   * @returns 加载完成的资源
+   */
   load: (url: string, manager: LoaderManager) => Promise<any>;
 }
 
-/** 资源加载管理器，负责资源的加载、缓存和事件分发 */
+/**
+ * 资源加载管理器，负责资源的加载、缓存和事件分发
+ */
 export class LoaderManager extends Dispatcher {
   private static _loaders: ILoader[] = [];
 
@@ -44,9 +57,10 @@ export class LoaderManager extends Dispatcher {
 
   /**
    * 加载指定的资源
-   * @param url - 资源的URL地址
-   * @param type - 可选的资源类型，若未指定则根据URL后缀自动判断
-   * @returns 返回加载完成的资源，加载失败时返回undefined
+   * @param url - 资源的 URL 地址
+   * @param type - 可选的资源类型，若未指定则根据 URL 后缀自动判断
+   * @returns 返回加载完成的资源，加载失败时返回 undefined
+   * @template T - 资源类型
    */
   load<T>(url: string, type?: string): Promise<T | undefined> {
     // 如果有缓存，则优先从缓存获取
@@ -119,7 +133,7 @@ export class LoaderManager extends Dispatcher {
 
   /**
    * 将资源存入缓存
-   * @param url - 资源的URL地址
+   * @param url - 资源的 URL 地址
    * @param res - 要缓存的资源对象
    */
   cache(url: string, res: unknown) {
@@ -128,8 +142,8 @@ export class LoaderManager extends Dispatcher {
 
   /**
    * 从缓存中获取资源
-   * @param url - 资源的URL地址
-   * @returns 返回缓存的资源，如果不存在则返回undefined
+   * @param url - 资源的 URL 地址
+   * @returns 返回缓存的资源，如果不存在则返回 undefined
    */
   get(url: string) {
     return this.cacheMap[url];
@@ -137,7 +151,7 @@ export class LoaderManager extends Dispatcher {
 
   /**
    * 卸载并释放相关资源
-   * @param url - 要卸载的资源URL地址
+   * @param url - 要卸载的资源 URL 地址
    */
   unload(url: string) {
     const res = this.cacheMap[url];
