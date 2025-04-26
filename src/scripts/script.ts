@@ -15,7 +15,7 @@ export interface ICollision {
  * 游戏对象行为脚本基类，提供事件处理和生命周期管理
  *
  * 继承自 ScriptBase，为游戏对象添加事件响应能力，包括：
- * - 鼠标事件（点击、按下、抬起、移动）
+ * - 指针事件（点击、按下、抬起、移动）
  * - 物理碰撞事件（开始碰撞、结束碰撞）
  * - 场景间通信事件（signal）
  * - 全局输入事件（键盘按键）
@@ -32,54 +32,58 @@ export class Script extends ScriptBase {
     const prototype = Script.prototype;
     const target = this.target;
     if (target) {
-      // 鼠标事件
-      if (this.onClick !== prototype.onClick) {
+      const { onClick, onPointerDown, onPointerUp, onPointerMove, onCollisionStart, onCollisionEnd, onSignal } =
+        prototype;
+      // 指针事件
+      if (this.onClick !== onClick) {
         target.on(EventType.click, this.onClick, this);
       }
-      if (this.onPointerDown !== prototype.onPointerDown) {
+      if (this.onPointerDown !== onPointerDown) {
         target.on(EventType.pointerdown, this.onPointerDown, this);
       }
-      if (this.onPointerUp !== prototype.onPointerUp) {
+      if (this.onPointerUp !== onPointerUp) {
         target.on(EventType.pointerup, this.onPointerUp, this);
       }
-      if (this.onPointerMove !== prototype.onPointerMove) {
+      if (this.onPointerMove !== onPointerMove) {
         target.on(EventType.pointermove, this.onPointerMove, this);
       }
 
       // 物理事件
-      if (this.onCollisionStart !== prototype.onCollisionStart) {
+      if (this.onCollisionStart !== onCollisionStart) {
         target.on(EventType.collisionStart, this.onCollisionStart, this);
       }
-      if (this.onCollisionEnd !== prototype.onCollisionEnd) {
+      if (this.onCollisionEnd !== onCollisionEnd) {
         target.on(EventType.collisionEnd, this.onCollisionEnd, this);
       }
 
       // 信号事件
-      if (this.onSignal !== prototype.onSignal) {
+      if (this.onSignal !== onSignal) {
         this.scene?.on(EventType.signal, this.onSignal, this);
       }
 
       const { stage } = this;
       if (stage) {
+        const { onStageClick, onStagePointerDown, onStagePointerUp, onStagePointerMove, onKeyDown, onKeyUp } =
+          prototype;
         // stage 事件
-        if (this.onStageClick !== prototype.onStageClick) {
+        if (this.onStageClick !== onStageClick) {
           stage.on(EventType.click, this.onStageClick, this);
         }
-        if (this.onStagePointerDown !== prototype.onStagePointerDown) {
+        if (this.onStagePointerDown !== onStagePointerDown) {
           stage.on(EventType.pointerdown, this.onStagePointerDown, this);
         }
-        if (this.onStagePointerUp !== prototype.onStagePointerUp) {
+        if (this.onStagePointerUp !== onStagePointerUp) {
           stage.on(EventType.pointerup, this.onStagePointerUp, this);
         }
-        if (this.onStagePointerMove !== prototype.onStagePointerMove) {
+        if (this.onStagePointerMove !== onStagePointerMove) {
           stage.on(EventType.pointermove, this.onStagePointerMove, this);
         }
 
         // 键盘事件
-        if (this.onKeyDown !== prototype.onKeyDown) {
+        if (this.onKeyDown !== onKeyDown) {
           stage.on(EventType.keydown, this.onKeyDown, this);
         }
-        if (this.onKeyUp !== prototype.onKeyUp) {
+        if (this.onKeyUp !== onKeyUp) {
           stage.on(EventType.keyup, this.onKeyUp, this);
         }
       }
@@ -88,28 +92,28 @@ export class Script extends ScriptBase {
 
   /**
    * target 被点击时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onClick(e: LikoPointerEvent): void {}
 
   /**
    * 当鼠标在 target 上按下时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onPointerDown(e: LikoPointerEvent): void {}
 
   /**
    * 当鼠标在 target 上抬起时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onPointerUp(e: LikoPointerEvent): void {}
 
   /**
    * 当鼠标在 target 上移动时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onPointerMove(e: LikoPointerEvent): void {}
@@ -138,28 +142,28 @@ export class Script extends ScriptBase {
 
   /**
    * 当舞台（Stage）被点击时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onStageClick(e: LikoPointerEvent): void {}
 
   /**
    * 当在舞台（Stage）上按下鼠标时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onStagePointerDown(e: LikoPointerEvent): void {}
 
   /**
    * 当在舞台（Stage）上抬起鼠标时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onStagePointerUp(e: LikoPointerEvent): void {}
 
   /**
    * 当在舞台（Stage）上移动鼠标时触发的回调函数
-   * @param e - 鼠标事件对象
+   * @param e - 指针事件对象
    */
   // @ts-expect-error
   onStagePointerMove(e: LikoPointerEvent): void {}
