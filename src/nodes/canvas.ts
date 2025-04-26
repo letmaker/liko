@@ -223,6 +223,7 @@ export class Canvas extends LikoNode implements IRenderable {
 
   /**
    * 绘制二次贝塞尔曲线路径
+   *
    * 起点是当前路径最后落点，cpx 和 cpy 是控制点，x 和 y 是终点
    * @param cpx - 控制点的 x 坐标
    * @param cpy - 控制点的 y 坐标
@@ -239,6 +240,7 @@ export class Canvas extends LikoNode implements IRenderable {
 
   /**
    * 绘制三次贝塞尔曲线路径
+   *
    * 起点是当前路径最后落点，有两个控制点，x 和 y 是终点
    * @param cp1x - 控制点 1 的 x 坐标
    * @param cp1y - 控制点 1 的 y 坐标
@@ -258,7 +260,8 @@ export class Canvas extends LikoNode implements IRenderable {
 
   /**
    * 开始一个新的路径
-   * 绘制闭环路径绘制的时候，需要调用 beginPath 和 closePath
+   *
+   * 绘制闭环路径时，需要调用 beginPath 和 closePath
    * @returns 当前实例，支持链式调用
    */
   beginPath(): this {
@@ -552,6 +555,9 @@ export class Canvas extends LikoNode implements IRenderable {
     return this.pp.ctx.isPointInPath(p.x, p.y);
   }
 
+  /**
+   * 销毁 Canvas 实例及其资源
+   */
   override destroy(): void {
     this.pp.cmd.length = 0;
     this.pp.texture?.destroy();
