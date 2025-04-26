@@ -8,15 +8,15 @@ interface TweenOption {
   target: EffectTarget;
   /** 动画属性集合 */
   props: EffectProps;
-  /** 动画持续时长(秒) */
+  /** 动画持续时长（秒） */
   duration?: number;
-  /** 动画标签，可用于停止动画；多次tween时会自动停止相同标签的动画 */
+  /** 动画标签，可用于停止动画；多次 tween 时会自动停止相同标签的动画 */
   label?: string;
-  /** 延迟时间(秒) */
+  /** 延迟时间（秒） */
   delay?: number;
-  /** 重复次数，默认为1次 */
+  /** 重复次数，默认为 1 次 */
   repeat?: number;
-  /** 重复间隔(秒) */
+  /** 重复间隔（秒） */
   repeatDelay?: number;
   /** 是否使用往返动画效果 */
   yoyo?: boolean;
@@ -36,15 +36,19 @@ interface TweenOption {
 
 /**
  * 缓动动画管理类
- * 用于创建和管理对象属性的平滑过渡动画，结束时会自动销毁。
+ *
+ * 用于创建和管理对象属性的平滑过渡动画，支持链式调用和队列执行。
+ * 动画完成后会自动销毁，释放资源。
  */
 export class Tween {
   private static _list: Tween[] = [];
 
   /**
    * 从目标对象当前状态缓动到指定状态
-   * @param options - 动画参数，设置label标签时会自动清除相同label的动画
-   * @returns 新创建的Tween实例
+   *
+   * 创建一个新的 Tween 实例。如果设置了 label 标签，会自动清除相同 label 的动画。
+   * @param options - 动画参数配置对象
+   * @returns 新创建的 Tween 实例
    */
   static to(options: TweenOption): Tween {
     // 清理相同 label 动画
@@ -59,8 +63,10 @@ export class Tween {
 
   /**
    * 从指定状态缓动到目标对象当前状态
-   * @param options - 动画参数，设置label标签时会自动清除相同label的动画
-   * @returns 新创建的Tween实例
+   *
+   * 创建一个新的 Tween 实例。如果设置了 label 标签，会自动清除相同 label 的动画。
+   * @param options - 动画参数配置对象
+   * @returns 新创建的 Tween 实例
    */
   static from(options: TweenOption): Tween {
     // 清理相同 label 动画
@@ -74,7 +80,7 @@ export class Tween {
   }
 
   /**
-   * 清理指定标签的动画
+   * 清理指定标签的动画，查找并销毁具有指定标签的第一个动画实例。
    * @param label - 要清理的动画标签
    */
   static clear(label: string) {
@@ -87,7 +93,7 @@ export class Tween {
   }
 
   /**
-   * 清理所有动画实例
+   * 清理所有动画实例，销毁所有存在的 Tween 实例，并清空缓动列表。
    */
   static clearAll() {
     // 创建副本以避免在迭代过程中修改数组
@@ -127,9 +133,11 @@ export class Tween {
 
   /**
    * 立即设置目标对象的属性值
+   *
+   * 直接修改目标对象的属性，不创建动画过渡效果。
    * @param target - 目标对象
    * @param props - 要设置的属性集合
-   * @returns 当前Tween实例
+   * @returns 当前 Tween 实例，支持链式调用
    */
   set(target: EffectTarget, props: Record<string, any>): this {
     const keys = Object.keys(props);
@@ -141,8 +149,10 @@ export class Tween {
 
   /**
    * 从目标对象当前状态缓动到指定状态
-   * @param options - 动画参数
-   * @returns 当前Tween实例
+   *
+   * 创建一个从当前值到目标值的动画效果，并添加到动画队列。
+   * @param options - 动画参数配置对象
+   * @returns 当前 Tween 实例，支持链式调用
    */
   to(options: TweenOption): this {
     return this._add(true, options);
@@ -150,8 +160,10 @@ export class Tween {
 
   /**
    * 从指定状态缓动到目标对象当前状态
-   * @param options - 动画参数
-   * @returns 当前Tween实例
+   *
+   * 创建一个从指定值到当前值的动画效果，并添加到动画队列。
+   * @param options - 动画参数配置对象
+   * @returns 当前 Tween 实例，支持链式调用
    */
   from(options: TweenOption): this {
     return this._add(false, options);
@@ -159,9 +171,9 @@ export class Tween {
 
   /**
    * 添加缓动效果到队列
-   * @param isTo - 是否为to动画
-   * @param options - 动画参数
-   * @returns 当前Tween实例
+   * @param isTo - 是否为 to 动画
+   * @param options - 动画参数配置对象
+   * @returns 当前 Tween 实例
    */
   private _add(isTo: boolean, options: TweenOption): this {
     const effect = new Effect();
@@ -213,7 +225,9 @@ export class Tween {
 
   /**
    * 开始播放缓动队列
-   * @returns 返回一个Promise，当所有动画完成时解析
+   *
+   * 按顺序执行队列中的所有动画效果。如果已经在播放或已销毁，则直接返回已解析的 Promise。
+   * @returns 返回一个 Promise，当所有动画完成时解析
    */
   play(): Promise<void> {
     if (this._destroyed || this._playing) return Promise.resolve();
@@ -238,8 +252,8 @@ export class Tween {
   }
 
   /**
-   * 暂停缓动队列，可通过resume恢复播放
-   * @returns 当前Tween实例
+   * 暂停缓动队列，暂停当前正在播放的动画，可通过 resume 方法恢复播放。
+   * @returns 当前 Tween 实例，支持链式调用
    */
   pause(): this {
     if (this._playing && !this._paused) {
@@ -250,8 +264,8 @@ export class Tween {
   }
 
   /**
-   * 恢复已暂停的缓动队列
-   * @returns 当前Tween实例
+   * 恢复已暂停的缓动队列，恢复之前暂停的动画继续播放。
+   * @returns 当前 Tween 实例，支持链式调用
    */
   resume(): this {
     if (this._playing && this._paused) {
@@ -262,8 +276,8 @@ export class Tween {
   }
 
   /**
-   * 停止缓动队列，可通过play继续播放
-   * @returns 当前Tween实例
+   * 停止缓动队列，停止当前动画播放，可通过 play 方法重新开始播放。
+   * @returns 当前 Tween 实例，支持链式调用
    */
   stop(): this {
     if (this._playing) {
@@ -275,7 +289,7 @@ export class Tween {
   }
 
   /**
-   * 销毁整个缓动队列，销毁后不可再用
+   * 销毁整个缓动队列，清理所有资源并从全局管理列表中移除，销毁后不可再用。
    */
   destroy(): void {
     if (this._destroyed) return;
@@ -296,9 +310,9 @@ export class Tween {
   }
 
   /**
-   * 设置整个缓动队列结束时的回调
+   * 设置整个缓动队列结束时的回调，当所有动画效果执行完毕后调用指定的回调函数。
    * @param callback - 结束回调函数
-   * @returns 当前Tween实例
+   * @returns 当前 Tween 实例，支持链式调用
    */
   onAllComplete(callback: () => void): this {
     this._onAllComplete = callback;
