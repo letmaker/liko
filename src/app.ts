@@ -17,13 +17,13 @@ const defaultOptions = {
 
 /** 引擎初始化选项接口 */
 export interface IAppOptions {
-  /** 画布宽度（逻辑像素） */
+  /** 画布宽度（逻辑像素），必须为正数 */
   width?: number;
-  /** 画布高度（逻辑像素） */
+  /** 画布高度（逻辑像素），必须为正数 */
   height?: number;
   /** 背景颜色 */
   bgColor?: ColorData;
-  /** 画布容器 ID */
+  /** 画布容器 ID，如果提供则必须存在于 DOM 中 */
   container?: string;
   /** 自定义画布元素 */
   canvas?: HTMLCanvasElement;
@@ -125,6 +125,7 @@ export class App {
     // 计算当前时间（秒）
     const second = time * 0.001;
 
+    // TODO：多个 app 实例，这里会被多次 update，会有问题
     // 更新系统计时器
     Timer.system.update(second);
 
