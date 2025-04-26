@@ -127,8 +127,8 @@ export class LoaderManager extends Dispatcher {
   }
 
   private _error(url: string, error: string): void {
-    // TODO 和直接 throw 相比，哪个更好
-    console.error("Failed to load url:", url, "Error:", error);
+    // 和直接 throw 相比，哪个更好：console.error 允许程序继续执行，适合非致命性错误，资源加载失败通常不应该中断整个游戏进程
+    -console.error("Failed to load url:", url, "Error:", error);
     delete this._loadingMap[url];
     this._loaded++;
     this.emit(EventType.error, url, error);
