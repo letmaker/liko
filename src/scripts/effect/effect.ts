@@ -1,5 +1,6 @@
 import { Ease, getEase } from "./ease";
 
+type PropNumber = number | `+${number}` | `-${number}` | `*${number}`;
 /**
  * 表示可以作为动画属性的值类型
  * @remarks
@@ -8,7 +9,7 @@ import { Ease, getEase } from "./ease";
  * - 字符串：用于相对值，如 "+10" 或 "*2"
  * - 对象：包含数字或字符串的复合属性
  */
-type PropValue = number | `+${number}` | `*${number}` | Record<string, number | `+${number}` | `*${number}`>;
+type PropValue = PropNumber | Record<string, PropNumber>;
 
 /** 表示可以应用动画效果的目标对象类型 */
 export type EffectTarget = Record<string, any>;
