@@ -1,38 +1,42 @@
 import type { LikoNode } from "../nodes/node";
 
 // biome-ignore format:
-/** 鼠标事件类型 */
+/** 指针事件类型，包含点击、按下、抬起、移动、进入、离开等事件 */
 export type PointerEventType = "click" | "pointerdown" | "pointerup" | "pointermove" | "pointerover" | "pointerout" | "pointerupoutside";
 
 /**
- * 鼠标事件，出于性能考虑，鼠标事件节点是复用的，每个类型（比如 pointerup，click 等）共用一个鼠标事件节点
- * 及时读取不受影响，如果需要延迟读取鼠标事件内容，请 clone 他 */
+ * 指针事件类，用于处理鼠标和触摸事件
+ *
+ * @remarks
+ * 出于性能考虑，事件对象是复用的，每个事件类型（如 pointerup、click 等）共用一个事件实例
+ * 如果需要延迟读取事件内容，请使用 clone 方法复制一个新的事件对象
+ */
 export class LikoPointerEvent {
-  /** 是否调用过 stopPropagation */
+  /** 标识事件是否已停止传播 */
   propagationStopped = false;
-  /** 是否调用过 preventDefault */
+  /** 标识事件的默认行为是否已被阻止 */
   preventDefaulted = false;
-  /** 原始的鼠标事件 */
+  /** 原始的浏览器 PointerEvent 对象 */
   nativeEvent!: PointerEvent;
-  /** 鼠标事件目标节点 */
+  /** 触发事件的目标节点 */
   target!: LikoNode;
-  /** 鼠标事件冒泡到的当前节点 */
+  /** 当前正在处理事件的节点 */
   currentTarget!: LikoNode;
-  /** 相对于 stage 的鼠标位置 */
+  /** 相对于 stage 的指针坐标 */
   pointer = { x: 0, y: 0 };
-  /** 两次间隔鼠标移动差值 */
+  /** 指针移动的相对位移 */
   movement = { x: 0, y: 0 };
-  /** 是否同时按了 alt 键盘 */
+  /** 指示 Alt 键是否被按下 */
   altKey = false;
-  /** 是否同时按了 ctrl 键盘 */
+  /** 指示 Ctrl 键是否被按下 */
   ctrlKey = false;
-  /** 是否同时按了 shift 键盘 */
+  /** 指示 Shift 键是否被按下 */
   shiftKey = false;
-  /** click 事件时，detail 记录的是点击次数 */
+  /** 事件的详细信息，对于 click 事件表示点击次数 */
   detail = 0;
-  /** 代表按下的鼠标按键，0-鼠标左键，1-鼠标中键，2-鼠标右键 */
+  /** 触发事件的指针按键：0 - 左键，1 - 中键，2 - 右键 */
   button = 0;
-  /** 鼠标事件冒泡路径 */
+  /** 事件的冒泡路径，从目标节点到根节点 */
   path: LikoNode[] = [];
 
   /**
@@ -41,23 +45,26 @@ export class LikoPointerEvent {
   constructor(public type: PointerEventType) {}
 
   /**
-   * 阻止鼠标默认行为，如果是 up 时调用，则会阻止 click 事件的派发
+   * 阻止事件的默认行为
+   *
+   * @remarks
+   * 如果在 pointerup 事件中调用，将会阻止后续 click 事件的派发
+   * 注意：在 passive 事件监听器中调用可能无效
    */
   preventDefault() {
     this.preventDefaulted = true;
-    // 可能受到passive的影响？
     this.nativeEvent.preventDefault();
   }
 
   /**
-   * 停止事件冒泡
+   * 停止事件在节点树中的进一步冒泡传播
    */
   stopPropagation() {
     this.propagationStopped = true;
   }
 
   /**
-   * clone 别的鼠标事件数据到本鼠标事件
+   * 从其他事件对象复制属性到当前事件
    */
   cloneFrom(event: LikoPointerEvent): this {
     this.type = event.type;
@@ -75,7 +82,7 @@ export class LikoPointerEvent {
   }
 
   /**
-   * clone 当前鼠标事件
+   * 创建当前事件对象的副本
    */
   clone() {
     return new LikoPointerEvent(this.type).cloneFrom(this);

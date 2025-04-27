@@ -21,17 +21,17 @@ export class Matrix {
     return tempMatrix.identity();
   }
 
-  /** @default 1 */
+  /** x 轴缩放 */
   a = 1;
-  /** @default 0 */
+  /** y 轴倾斜 */
   b = 0;
-  /** @default 0 */
+  /** x 轴倾斜 */
   c = 0;
-  /** @default 1 */
+  /** y 轴缩放 */
   d = 1;
-  /** @default 0 */
+  /** x 轴平移 */
   tx = 0;
-  /** @default 0 */
+  /** y 轴平移 */
   ty = 0;
 
   /** 是否为单位矩阵 */
@@ -40,20 +40,27 @@ export class Matrix {
   }
 
   /**
-   * 矩阵
-   * @param a x轴缩放
-   * @param b y轴倾斜
-   * @param c x轴倾斜
-   * @param d y轴缩放
-   * @param tx x轴平移
-   * @param ty y轴平移
+   * 创建矩阵实例
+   * @param a - x 轴缩放
+   * @param b - y 轴倾斜
+   * @param c - x 轴倾斜
+   * @param d - y 轴缩放
+   * @param tx - x 轴平移
+   * @param ty - y 轴平移
    */
   constructor(a = 1, b = 0, c = 0, d = 1, tx = 0, ty = 0) {
     this.set(a, b, c, d, tx, ty);
   }
 
   /**
-   * 设置当前矩阵
+   * 设置当前矩阵的所有属性值
+   * @param a - x 轴缩放
+   * @param b - y 轴倾斜
+   * @param c - x 轴倾斜
+   * @param d - y 轴缩放
+   * @param tx - x 轴平移
+   * @param ty - y 轴平移
+   * @returns 当前矩阵实例，支持链式调用
    */
   set(a: number, b: number, c: number, d: number, tx: number, ty: number): this {
     this.a = a;
@@ -67,10 +74,10 @@ export class Matrix {
   }
 
   /**
-   * 把指定坐标点，转换到新的坐标系，比如从子坐标系转到世界坐标系
-   * @param pos 指定坐标点
-   * @param out 返回值，方便复用
-   * @returns 返回 out
+   * 将坐标点从当前坐标系转换到新的坐标系，例如：从子坐标系转到世界坐标系
+   * @param pos - 要转换的坐标点
+   * @param out - 输出结果的坐标点，如不提供则创建新的 Point 实例
+   * @returns 转换后的坐标点
    */
   apply<P extends IPoint = Point>(pos: IPoint, out?: P): P {
     const output = (out || new Point()) as P;
@@ -85,10 +92,10 @@ export class Matrix {
   }
 
   /**
-   * 把指定坐标点，转换到逆变换坐标系，比如从世界系转到子坐标系
-   * @param pos 指定坐标点
-   * @param out 返回值，方便复用
-   * @returns 返回 out
+   * 将坐标点从当前坐标系转换到逆变换坐标系，例如：从世界坐标系转到子坐标系
+   * @param pos - 要转换的坐标点
+   * @param out - 输出结果的坐标点，如不提供则创建新的 Point 实例
+   * @returns 转换后的坐标点
    */
   applyInverse<P extends IPoint = Point>(pos: IPoint, out?: P): P {
     const output = (out || new Point()) as P;
@@ -105,8 +112,9 @@ export class Matrix {
 
   /**
    * 平移矩阵
-   * @param x x 坐标平铺量
-   * @param y y 坐标平移量
+   * @param x - x 坐标平移量
+   * @param y - y 坐标平移量
+   * @returns 当前矩阵实例，支持链式调用
    */
   translate(x: number, y: number): this {
     this.tx += x;
@@ -117,8 +125,9 @@ export class Matrix {
 
   /**
    * 缩放矩阵
-   * @param x x 轴缩放比率
-   * @param y y 轴缩放比率
+   * @param x - x 轴缩放比率
+   * @param y - y 轴缩放比率
+   * @returns 当前矩阵实例，支持链式调用
    */
   scale(x: number, y: number): this {
     this.a *= x;
@@ -133,7 +142,8 @@ export class Matrix {
 
   /**
    * 旋转矩阵
-   * @param radian 旋转的弧度
+   * @param radian - 旋转的弧度值
+   * @returns 当前矩阵实例，支持链式调用
    */
   rotate(radian: number): this {
     const cos = Math.cos(radian);
@@ -154,8 +164,12 @@ export class Matrix {
   }
 
   /**
-   * 将给定的矩阵，附加到（乘以）当前矩阵
-   * @param matrix 附加的矩阵
+   * 将给定的矩阵附加到（乘以）当前矩阵
+   *
+   * 计算公式：this = this * matrix
+   *
+   * @param matrix - 要附加的矩阵
+   * @returns 当前矩阵实例，支持链式调用
    */
   append(matrix: Matrix): this {
     const a1 = this.a;
@@ -175,8 +189,12 @@ export class Matrix {
   }
 
   /**
-   * 把给定的矩阵，附加到当前矩阵之前
-   * @param matrix 给定的矩阵
+   * 将给定的矩阵附加到当前矩阵之前
+   *
+   * 计算公式：this = matrix * this
+   *
+   * @param matrix - 要附加的矩阵
+   * @returns 当前矩阵实例，支持链式调用
    */
   prepend(matrix: Matrix): this {
     const tx1 = this.tx;
@@ -198,7 +216,9 @@ export class Matrix {
   }
 
   /**
-   * 分解矩阵信息
+   * 分解矩阵信息为位置、缩放和旋转
+   * @param transform - 变换对象，用于存储分解后的信息
+   * @returns 包含位置、缩放和旋转信息的对象
    */
   decompose(transform: Transform) {
     const { a, b, c, d } = this;
@@ -226,7 +246,8 @@ export class Matrix {
   }
 
   /**
-   * 翻转矩阵
+   * 计算矩阵的逆矩阵，并应用到当前矩阵
+   * @returns 当前矩阵实例，支持链式调用
    */
   invert(): this {
     const a1 = this.a;
@@ -248,6 +269,7 @@ export class Matrix {
 
   /**
    * 重置为单位矩阵
+   * @returns 当前矩阵实例，支持链式调用
    */
   identity(): this {
     this.set(1, 0, 0, 1, 0, 0);
@@ -255,8 +277,9 @@ export class Matrix {
   }
 
   /**
-   * 把给定矩阵内容 copy 到当前矩阵内
-   * @param matrix 给定的矩阵
+   * 将给定矩阵的内容复制到当前矩阵
+   * @param matrix - 要复制的源矩阵
+   * @returns 当前矩阵实例，支持链式调用
    */
   copyFrom(matrix: Matrix): this {
     this.set(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
@@ -264,7 +287,8 @@ export class Matrix {
   }
 
   /**
-   * clone 当前矩阵，返回新矩阵
+   * 克隆当前矩阵，返回新矩阵实例
+   * @returns 新的矩阵实例
    */
   clone(): Matrix {
     return new Matrix(this.a, this.b, this.c, this.d, this.tx, this.ty);

@@ -11,26 +11,24 @@ export interface BoundsData {
 const defaultMatrix = new Matrix();
 
 /**
- * 包围盒
+ * 包围盒类，用于表示对象的边界区域
  */
 export class Bounds {
-  private _matrix = defaultMatrix;
-
-  /** 最小的 X */
+  /** 最小的 X 坐标 */
   minX = Number.POSITIVE_INFINITY;
-  /** 最小的 Y */
+  /** 最小的 Y 坐标 */
   minY = Number.POSITIVE_INFINITY;
-  /** 最大的 X */
+  /** 最大的 X 坐标 */
   maxX = Number.NEGATIVE_INFINITY;
-  /** 最大的 Y */
+  /** 最大的 Y 坐标 */
   maxY = Number.NEGATIVE_INFINITY;
 
-  /** 包围盒的 x 坐标 */
+  /** 包围盒的 x 坐标，等同于 minX */
   get x(): number {
     return this.minX;
   }
 
-  /** 包围盒的 y 坐标 */
+  /** 包围盒的 y 坐标，等同于 minY */
   get y(): number {
     return this.minY;
   }
@@ -45,32 +43,32 @@ export class Bounds {
     return this.maxY - this.minY;
   }
 
-  /** 包围盒的左边沿 */
+  /** 包围盒的左边沿，等同于 minX */
   get left(): number {
     return this.minX;
   }
 
-  /** 包围盒的右边沿 */
+  /** 包围盒的右边沿，等同于 maxX */
   get right(): number {
     return this.maxX;
   }
 
-  /** 包围盒的顶部 */
+  /** 包围盒的顶部，等同于 minY */
   get top(): number {
     return this.minY;
   }
 
-  /** 包围盒的底部 */
+  /** 包围盒的底部，等同于 maxY */
   get bottom(): number {
     return this.maxY;
   }
 
-  /** 是否有效 */
+  /** 是否有效，当 minX 和 minY 不为初始值时为有效 */
   get isValid(): boolean {
     return this.minX + this.minY !== Number.POSITIVE_INFINITY;
   }
 
-  /** 是否是空 */
+  /** 是否为空，当 minX > maxX 或 minY > maxY 时为空 */
   get isEmpty(): boolean {
     return this.minX > this.maxX || this.minY > this.maxY;
   }
@@ -83,6 +81,13 @@ export class Bounds {
     return this._rectangle;
   }
 
+  /**
+   * 创建一个包围盒实例
+   * @param minX - 最小 X 坐标，默认为正无穷大
+   * @param minY - 最小 Y 坐标，默认为正无穷大
+   * @param maxX - 最大 X 坐标，默认为负无穷大
+   * @param maxY - 最大 Y 坐标，默认为负无穷大
+   */
   constructor(
     minX = Number.POSITIVE_INFINITY,
     minY = Number.POSITIVE_INFINITY,
@@ -93,7 +98,12 @@ export class Bounds {
   }
 
   /**
-   * 设置包围盒
+   * 设置包围盒的边界值
+   * @param minX - 最小 X 坐标
+   * @param minY - 最小 Y 坐标
+   * @param maxX - 最大 X 坐标
+   * @param maxY - 最大 Y 坐标
+   * @returns 当前实例，支持链式调用
    */
   set(minX: number, minY: number, maxX: number, maxY: number): this {
     this.minX = minX;
@@ -104,32 +114,28 @@ export class Bounds {
   }
 
   /**
-   * 重置包围盒
+   * 重置包围盒到初始状态
+   * @returns 当前实例，支持链式调用
    */
   reset(): this {
     this.minX = Number.POSITIVE_INFINITY;
     this.minY = Number.POSITIVE_INFINITY;
     this.maxX = Number.NEGATIVE_INFINITY;
     this.maxY = Number.NEGATIVE_INFINITY;
-
-    this._matrix = defaultMatrix;
     return this;
   }
 
   /**
-   * 设置包围盒的当前矩阵
-   * @param matrix 设置包围盒的矩阵
-   */
-  setMatrix(matrix: Matrix): this {
-    this._matrix = matrix;
-    return this;
-  }
-
-  /**
-   * 添加两个顶点，左上角和右下角
+   * 添加两个顶点，左上角和右下角，扩展包围盒
+   * @param x0 - 左上角 X 坐标
+   * @param y0 - 左上角 Y 坐标
+   * @param x1 - 右下角 X 坐标
+   * @param y1 - 右下角 Y 坐标
+   * @param matrix - 可选的变换矩阵，默认使用当前矩阵
+   * @returns 当前实例，支持链式调用
    */
   addFrame(x0: number, y0: number, x1: number, y1: number, matrix?: Matrix): this {
-    const { a, b, c, d, tx, ty } = matrix ?? this._matrix;
+    const { a, b, c, d, tx, ty } = matrix ?? defaultMatrix;
     let { minX, minY, maxX, maxY } = this;
 
     let x = a * x0 + c * y0 + tx;
@@ -173,9 +179,10 @@ export class Bounds {
   }
 
   /**
-   * 添加矩形
-   * @param rect 矩形
-   * @param matrix 矩形的矩阵
+   * 添加矩形到包围盒
+   * @param rect - 要添加的矩形
+   * @param matrix - 可选的变换矩阵
+   * @returns 当前实例，支持链式调用
    */
   addRect(rect: Rectangle, matrix?: Matrix): this {
     this.addFrame(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height, matrix);
@@ -183,9 +190,10 @@ export class Bounds {
   }
 
   /**
-   * 添加指定的包围盒
-   * @param bounds 指定的包围盒
-   * @param matrix 包围盒的矩阵信息
+   * 添加指定的包围盒到当前包围盒
+   * @param bounds - 要添加的包围盒
+   * @param matrix - 可选的变换矩阵
+   * @returns 当前实例，支持链式调用
    */
   addBounds(bounds: BoundsData, matrix?: Matrix): this {
     this.addFrame(bounds.minX, bounds.minY, bounds.maxX, bounds.maxY, matrix);
@@ -193,8 +201,9 @@ export class Bounds {
   }
 
   /**
-   * 根据指定的 mask 点，遮罩减少包围盒
-   * @param mask 遮罩包围盒
+   * 根据指定的 mask 包围盒，限制当前包围盒的范围
+   * @param mask - 用于限制范围的遮罩包围盒
+   * @returns 当前实例，支持链式调用
    */
   addBoundsMask(mask: Bounds): this {
     this.minX = this.minX > mask.minX ? this.minX : mask.minX;
@@ -205,8 +214,9 @@ export class Bounds {
   }
 
   /**
-   * 对包围盒的点施加矩阵信息
-   * @param matrix 矩阵
+   * 对包围盒的四个顶点应用矩阵变换
+   * @param matrix - 要应用的矩阵
+   * @returns 当前实例，支持链式调用
    */
   applyMatrix(matrix: Matrix): this {
     const { minX, minY, maxX, maxY } = this;
@@ -244,8 +254,9 @@ export class Bounds {
   }
 
   /**
-   * 重置包围盒，使得能包含指定的矩形区域
-   * @param rect 矩形区域
+   * 限制包围盒在指定矩形区域内
+   * @param rect - 限制的矩形区域
+   * @returns 当前实例，支持链式调用
    */
   fit(rect: Rectangle): this {
     if (this.minX < rect.left) this.minX = rect.left;
@@ -258,8 +269,9 @@ export class Bounds {
 
   /**
    * 通过 paddingX 和 paddingY 扩展包围盒区域
-   * @param paddingX x 方向扩展大小
-   * @param paddingY y 方向扩展大小，省略同 paddingX
+   * @param paddingX - x 方向扩展大小
+   * @param paddingY - y 方向扩展大小，省略时与 paddingX 相同
+   * @returns 当前实例，支持链式调用
    */
   pad(paddingX: number, paddingY: number = paddingX): this {
     this.minX -= paddingX;
@@ -272,6 +284,7 @@ export class Bounds {
 
   /**
    * 天花板处理：左上角取下限值，右下角取上限值
+   * @returns 当前实例，支持链式调用
    */
   ceil(): this {
     this.minX = Math.floor(this.minX);
@@ -284,8 +297,9 @@ export class Bounds {
 
   /**
    * 缩放包围盒
-   * @param x  x 轴缩放值
-   * @param y  y 轴缩放值，省略同 x
+   * @param x - x 轴缩放值
+   * @param y - y 轴缩放值，省略时与 x 相同
+   * @returns 当前实例，支持链式调用
    */
   scale(x: number, y: number = x): this {
     this.minX *= x;
@@ -297,10 +311,10 @@ export class Bounds {
   }
 
   /**
-   * 是否包含某坐标点
-   * @param x x 坐标点
-   * @param y y 坐标点
-   * @returns 是否包含在 Bounds 内部
+   * 判断包围盒是否包含某坐标点
+   * @param x - 要检测的 x 坐标
+   * @param y - 要检测的 y 坐标
+   * @returns 是否包含在包围盒内部
    */
   contains(x: number, y: number): boolean {
     if (this.minX <= x && this.minY <= y && this.maxX >= x && this.maxY >= y) {
@@ -311,7 +325,8 @@ export class Bounds {
   }
 
   /**
-   * clone 包围盒
+   * 克隆当前包围盒
+   * @returns 新的包围盒实例
    */
   clone(): Bounds {
     return new Bounds(this.minX, this.minY, this.maxX, this.maxY);
