@@ -12,37 +12,37 @@ export interface IRectangle {
 const tempPoints = [new Point(), new Point(), new Point(), new Point()];
 
 /**
- * 矩形区域
+ * 二维矩形区域类
  */
 export class Rectangle {
-  /** 全局临时对象，方便复用，以减少对象创建 */
+  /** 全局临时矩形对象，用于减少对象创建开销 */
   static readonly TEMP = new Rectangle();
 
-  /** x 轴坐标 */
+  /** 矩形左上角的 x 坐标 */
   x = 0;
-  /** y 轴坐标 */
+  /** 矩形左上角的 y 坐标 */
   y = 0;
-  /** 宽度 */
+  /** 矩形的宽度，单位为像素 */
   width = 0;
-  /** 高度 */
+  /** 矩形的高度，单位为像素 */
   height = 0;
 
-  /** 矩形的左边缘，等同于 x */
+  /** 获取矩形的左边界坐标，等同于 x */
   get left(): number {
     return this.x;
   }
 
-  /** 矩形的右边缘 */
+  /** 获取矩形的右边界坐标 */
   get right(): number {
     return this.x + this.width;
   }
 
-  /** 矩形的顶部，等同于 y */
+  /** 获取矩形的上边界坐标，等同于 y */
   get top(): number {
     return this.y;
   }
 
-  /** 矩形的底部 */
+  /** 获取矩形的下边界坐标 */
   get bottom(): number {
     return this.y + this.height;
   }
@@ -52,7 +52,12 @@ export class Rectangle {
   }
 
   /**
-   * 设置矩形数据
+   * 设置矩形的位置和大小
+   * @param x - 左上角的 x 坐标
+   * @param y - 左上角的 y 坐标
+   * @param width - 矩形的宽度
+   * @param height - 矩形的高度
+   * @returns 当前矩形实例，支持链式调用
    */
   set(x: number, y: number, width: number, height: number): this {
     this.x = x;
@@ -63,7 +68,8 @@ export class Rectangle {
   }
 
   /**
-   * 重置矩形
+   * 重置矩形的所有属性为默认值（0）
+   * @returns 当前矩形实例，支持链式调用
    */
   reset(): this {
     this.set(0, 0, 0, 0);
@@ -71,8 +77,9 @@ export class Rectangle {
   }
 
   /**
-   * copy 指定的矩形信息到此矩形
-   * @param rect 指定的矩形
+   * 从指定的矩形对象复制属性值到当前矩形
+   * @param rect - 源矩形对象
+   * @returns 当前矩形实例，支持链式调用
    */
   copyFrom(rect: IRectangle): this {
     this.set(rect.x, rect.y, rect.width, rect.height);
@@ -80,8 +87,9 @@ export class Rectangle {
   }
 
   /**
-   * copy 指定的 bounds 信息到此矩形
-   * @param bounds bounds 信息
+   * 从指定的边界对象复制属性值到当前矩形
+   * @param bounds - 源边界对象
+   * @returns 当前矩形实例，支持链式调用
    */
   copyFromBounds(bounds: Bounds): this {
     this.set(bounds.minX, bounds.minY, bounds.width, bounds.height);
@@ -89,18 +97,18 @@ export class Rectangle {
   }
 
   /**
-   * 判断两个矩形是否相等
-   * @param rect 给定的矩形
-   * @returns 是否相同
+   * 判断当前矩形与指定矩形的所有属性值是否完全相等
+   * @param rect - 待比较的矩形对象
+   * @returns 如果所有属性值都相等则返回 true，否则返回 false
    */
   equals(rect: IRectangle): boolean {
     return rect.x === this.x && rect.y === this.y && rect.width === this.width && rect.height === this.height;
   }
 
   /**
-   * 放大此矩形，以包含给定的矩形
-   * @param rect 给定的矩形
-   * @returns 返回当前矩形本身
+   * 扩展当前矩形以完全包含指定的矩形
+   * @param rect - 需要包含的目标矩形
+   * @returns 当前矩形实例，支持链式调用
    */
   fit(rect: Rectangle): this {
     const x1 = Math.min(this.x, rect.x);
@@ -117,9 +125,10 @@ export class Rectangle {
   }
 
   /**
-   * 通过 paddingX 和 paddingY 扩展矩形区域
-   * @param paddingX x 方向扩展大小
-   * @param paddingY y 方向扩展大小，省略同 paddingX
+   * 按指定的内边距扩展矩形的四个边
+   * @param paddingX - 水平方向的内边距值
+   * @param paddingY - 垂直方向的内边距值，默认等于 paddingX
+   * @returns 当前矩形实例，支持链式调用
    */
   pad(paddingX = 0, paddingY = paddingX): this {
     this.x -= paddingX;
@@ -131,10 +140,10 @@ export class Rectangle {
   }
 
   /**
-   * 是否包含某坐标点
-   * @param x x 坐标点
-   * @param y y 坐标点
-   * @returns 是否包含
+   * 判断指定坐标点是否在矩形区域内
+   * @param x - 待检测点的 x 坐标
+   * @param y - 待检测点的 y 坐标
+   * @returns 如果点在矩形内（包含边界）返回 true，否则返回 false
    */
   contains(x: number, y: number): boolean {
     if (x >= this.x && x < this.x + this.width) {
@@ -146,11 +155,11 @@ export class Rectangle {
   }
 
   /**
-   * 是否在线框内部
-   * @param x x 坐标点
-   * @param y y 坐标点
-   * @param strokeWidth 线段宽度
-   * @returns 是否包含在线宽内部
+   * 判断指定坐标点是否在矩形的描边区域内
+   * @param x - 待检测点的 x 坐标
+   * @param y - 待检测点的 y 坐标
+   * @param strokeWidth - 描边的宽度
+   * @returns 如果点在描边区域内返回 true，否则返回 false
    */
   strokeContains(x: number, y: number, strokeWidth: number): boolean {
     const { width, height } = this;
@@ -179,10 +188,10 @@ export class Rectangle {
   }
 
   /**
-   * 两个矩形是否相交
-   * @param other 另外的矩形
-   * @param otherMatrix 另外的矩形的矩阵信息
-   * @returns  是否相交
+   * 判断当前矩形是否与另一个矩形相交
+   * @param other - 待检测的矩形对象
+   * @param otherMatrix - 可选的变换矩阵，用于在检测前对待检测矩形进行变换
+   * @returns 如果两个矩形相交返回 true，否则返回 false
    */
   intersects(other: Rectangle, otherMatrix?: Matrix): boolean {
     if (!otherMatrix) {
@@ -269,7 +278,8 @@ export class Rectangle {
   }
 
   /**
-   * clone 矩形，返回新矩形
+   * 创建当前矩形的一个副本
+   * @returns 一个新的矩形实例，包含与当前矩形相同的属性值
    */
   clone(): Rectangle {
     return new Rectangle(this.x, this.y, this.width, this.height);

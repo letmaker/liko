@@ -1,29 +1,38 @@
+/** 点坐标接口 */
 export interface IPoint {
+  /** x 轴坐标值 */
   x: number;
+  /** y 轴坐标值 */
   y: number;
 }
 
 /**
- * 坐标点
+ * 二维坐标点类
  */
 export class Point {
-  /** 全局临时对象，方便复用，以减少对象创建 */
+  /** 全局临时对象，用于复用以减少对象创建开销 */
   static readonly TEMP = new Point();
 
-  /** x 坐标点 */
+  /** x 轴坐标值 */
   x = 0;
-  /** y 坐标点 */
+  /** y 轴坐标值 */
   y = 0;
 
+  /**
+   * 创建一个新的坐标点实例
+   * @param x - x 轴坐标值
+   * @param y - y 轴坐标值
+   */
   constructor(x = 0, y = 0) {
     this.x = x;
     this.y = y;
   }
 
   /**
-   * 设置坐标点
-   * @param x x 坐标点
-   * @param y y 坐标点，不设置则等于 x
+   * 设置坐标点的位置
+   * @param x - x 轴坐标值
+   * @param y - y 轴坐标值，不设置则等于 x
+   * @returns 当前实例，支持链式调用
    */
   set(x = 0, y: number = x): this {
     this.x = x;
@@ -32,35 +41,35 @@ export class Point {
   }
 
   /**
-   * 重置为 0,0
+   * 重置坐标点为原点 (0, 0)
    */
-  reset() {
+  reset(): void {
     this.x = 0;
     this.y = 0;
   }
 
   /**
-   * 比较两个坐标点是否相同
-   * @param point 给定的坐标点
-   * @returns 是否相同
+   * 比较当前坐标点与给定坐标点是否相同
+   * @param point - 待比较的坐标点
+   * @returns 两点是否完全重合
    */
   equals(point: IPoint): boolean {
     return point.x === this.x && point.y === this.y;
   }
 
   /**
-   * 返回当前点和目标点的夹角，单位为弧度
-   * @param point 目标点
-   * @returns 返回夹角信息，单位为弧度
+   * 计算当前点到目标点的夹角
+   * @param point - 目标点坐标
+   * @returns 两点间的夹角（单位：弧度）
    */
   radian(point: IPoint): number {
     return Math.atan2(point.y - this.y, point.x - this.x);
   }
 
   /**
-   * 计算两点的距离
-   * @param point 给定点位
-   * @returns 距离长度
+   * 计算当前点到目标点的距离
+   * @param point - 目标点坐标
+   * @returns 两点间的直线距离
    */
   distance(point: IPoint): number {
     const dx = this.x - point.x;
@@ -69,9 +78,10 @@ export class Point {
   }
 
   /**
-   * 添加增量值
-   * @param dx  x 增量
-   * @param dy  y 增量
+   * 将坐标点按指定增量进行偏移
+   * @param dx - x 轴偏移量
+   * @param dy - y 轴偏移量
+   * @returns 当前实例，支持链式调用
    */
   add(dx: number, dy: number): this {
     this.x += dx;
@@ -80,18 +90,22 @@ export class Point {
   }
 
   /**
-   * 向量归一化
+   * 将当前点作为向量进行归一化处理
+   * @returns 当前实例，支持链式调用
    */
   normalize(): this {
     const length = Math.sqrt(this.x * this.x + this.y * this.y);
-    this.x = this.x / length;
-    this.y = this.y / length;
+    if (length !== 0) {
+      this.x = this.x / length;
+      this.y = this.y / length;
+    }
     return this;
   }
 
   /**
-   * 把指定的坐标点 copy 到当前坐标
-   * @param point 指定的坐标点
+   * 从指定坐标点复制坐标值
+   * @param point - 源坐标点
+   * @returns 当前实例，支持链式调用
    */
   copyFrom(point: IPoint): this {
     this.set(point.x, point.y);
@@ -99,7 +113,8 @@ export class Point {
   }
 
   /**
-   * clone 当前坐标点，返回新的坐标对象
+   * 创建当前坐标点的副本
+   * @returns 新的坐标点实例
    */
   clone(): Point {
     return new Point(this.x, this.y);

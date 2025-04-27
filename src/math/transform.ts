@@ -3,20 +3,22 @@ import type { Matrix } from "./matrix";
 import { ObservablePoint } from "./observable-point";
 import type { IPoint } from "./point";
 
+/** 变换选项接口 */
 export interface ITransformOptions {
+  /** 变换状态观察者 */
   observer?: { markDirty: (type: number) => void };
 }
 
 /**
- * 变换
+ * 2D 变换类，用于处理对象的缩放、旋转和位移等变换操作
  */
 export class Transform {
-  /** 全局临时对象，方便复用，以减少对象创建 */
+  /** 全局临时变换对象，用于复用以减少对象创建 */
   static readonly TEMP = new Transform();
 
-  /** 对象的缩放值 */
+  /** 对象的 x 轴和 y 轴缩放值 */
   scale: ObservablePoint = new ObservablePoint(this, 1, 1);
-  /** 对象的轴心点 */
+  /** 对象的变换轴心点坐标 */
   pivot: ObservablePoint = new ObservablePoint(this, 0, 0);
 
   private _observer?: { markDirty: (type: DirtyType) => void };
@@ -24,7 +26,7 @@ export class Transform {
   private _cx = 1;
   private _sx = 0;
 
-  /** 对象的旋转值（单位为弧度） */
+  /** 对象的旋转值（单位：弧度） */
   get rotation(): number {
     return this._rotation;
   }
@@ -45,10 +47,10 @@ export class Transform {
   }
 
   /**
-   * 把当前变换信息设置到指定的矩阵
-   * @param matrix 指定的矩阵
-   * @param pos 位置坐标
-   * @returns 返回指定的矩阵
+   * 将当前变换信息应用到指定矩阵
+   * @param matrix - 目标矩阵
+   * @param pos - 位置坐标
+   * @returns 返回应用变换后的矩阵
    */
   getMatrix(matrix: Matrix, pos: IPoint): Matrix {
     const lt = matrix;
@@ -65,6 +67,13 @@ export class Transform {
     return lt;
   }
 
+  /**
+   * 更新局部和世界变换矩阵
+   * @param local - 局部变换矩阵
+   * @param world - 世界变换矩阵
+   * @param pos - 位置坐标
+   * @param parent - 父级变换矩阵
+   */
   updateMatrix(local: Matrix, world: Matrix, pos: IPoint, parent: Matrix): void {
     const { _cx, _sx } = this;
     const { _x, _y } = this.scale;
@@ -88,7 +97,8 @@ export class Transform {
   }
 
   /**
-   * 当缩放值、轴心点、倾斜值、旋转值发生变化后，会调用此回调
+   * 标记变换状态为脏
+   * 当对象的缩放、轴心点、旋转等属性发生变化时调用此方法
    */
   markDirty(): void {
     this._observer?.markDirty(DirtyType.transform);

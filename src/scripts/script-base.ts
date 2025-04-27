@@ -4,30 +4,37 @@ import type { IScene } from "../nodes/scene";
 import type { Stage } from "../nodes/stage";
 
 /**
- * 节点扩展脚本，扩展 node 的功能
- * 生命周期：onCreate(设置 target 时执行) > onAwake(添加到场景后，只执行一次) > onUpdate(每次更新) > onDestroy(销毁时执行)
- * 改变 enable 时，会触发 onEnable 或者 onDisable
+ * 节点扩展脚本基类，用于扩展 node 的功能
+ *
+ * @remarks
+ * 生命周期顺序：
+ * 1. onCreate - 设置 target 时执行
+ * 2. onAwake - 添加到场景后执行一次
+ * 3. onUpdate - 每帧更新时执行
+ * 4. onDestroy - 销毁时执行
+ *
+ * 当 enable 状态改变时，会触发 onEnable 或 onDisable
  */
 export abstract class ScriptBase {
-  /** id 一般由编辑器指定 */
+  /** 脚本唯一标识符，通常由编辑器指定 */
   id = "";
-  /** 脚本标签，方便标识 */
+  /** 脚本标签，用于快速识别和查找 */
   label = "";
 
   private _$awaked = false;
-  /** 是否激活过，添加到场景后，会被激活 */
+  /** 脚本是否已被激活（添加到场景后触发） */
   get awaked(): boolean {
     return this._$awaked;
   }
 
   private _$destroyed = false;
-  /** 是否销毁了 */
+  /** 脚本是否已被销毁 */
   get destroyed(): boolean {
     return this._$destroyed;
   }
 
   private _$enabled = true;
-  /** 是否启用脚本，不启用则脚本不被执行，改变状态会回调 onEnable 和 onDisable */
+  /** 脚本是否启用，禁用时不执行更新且触发 onDisable */
   get enabled(): boolean {
     return this._$enabled;
   }
@@ -41,7 +48,7 @@ export abstract class ScriptBase {
   }
 
   private _$target?: LikoNode;
-  /** 脚本目标对象，设置 target 后回调 onCreate */
+  /** 脚本挂载的目标节点，设置后触发 onCreate */
   get target(): LikoNode {
     if (!this._$target) {
       console.warn("Script target is not set");
@@ -57,12 +64,12 @@ export abstract class ScriptBase {
     }
   }
 
-  /** target 的 stage 引用 */
+  /** 目标节点所在的舞台引用 */
   get stage(): Stage | undefined {
     return this._$target?.stage;
   }
 
-  /** target 的 scene 引用（使用时尽量引用成局部变量，减少遍历获取） */
+  /** 目标节点所在的场景引用（建议缓存为局部变量以提高性能） */
   get scene(): IScene | undefined {
     return this._$target?.scene;
   }
@@ -94,18 +101,26 @@ export abstract class ScriptBase {
   }
 
   /**
-   * 同场景发送信号，发射的信号可以同场景 script 的 onSignal 内被监听到，用于同场景脚本及节点之间的消息通信
-   * 注意：signal需要在脚本 destroy 前面触发，否则无法正确发送
-   * @param type 事件名称，不区分大小写
-   * @param params 可选参数
+   * 向同场景的其他脚本发送信号
+   *
+   * @remarks
+   * 发送的信号可以在同场景其他脚本的 onSignal 方法中被监听到，用于场景内脚本间通信。
+   * 注意：必须在脚本销毁前发送信号，否则无法正确触发。
+   *
+   * @param key - 信号类型标识符，不区分大小写
+   * @param params - 可选的信号参数对象
    */
   signal(key: string, params?: Record<string, any>): void {
     this._$target?.scene?.emit(EventType.signal, key, params);
   }
 
   /**
-   * 更新脚本，回调 onUpdate
-   * @param delta - 距离上一帧的时间间隔
+   * 执行脚本的更新逻辑
+   *
+   * @remarks
+   * 每帧调用一次，用于更新脚本状态。如果脚本未启用或未激活则不会执行。
+   *
+   * @param delta - 距离上一帧的时间间隔（毫秒）
    */
   update(delta: number): void {
     // TODO 这里可以做性能优化，比如有 update 的时候才执行
@@ -156,8 +171,15 @@ export abstract class ScriptBase {
   onDestroy(): void {}
 
   /**
-   * 销毁脚本，脚本被销毁后，不再可用，回调 onDestroy
-   * 脚本销毁时，target、root、scene、stage、timer 上的所有监听都会被自动取消，如果还监听 Timer.system 需要自己手动取消
+   * 销毁脚本实例
+   *
+   * @remarks
+   * 销毁后脚本将不再可用，会自动：
+   * - 触发 onDestroy 回调
+   * - 清除在 target、scene、stage、timer 上的所有监听
+   * - 解除与目标节点的关联
+   *
+   * 注意：如果使用了 Timer.system 的监听，需要手动清除
    */
   destroy(): void {
     if (this._$destroyed) return;
