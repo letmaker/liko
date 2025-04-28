@@ -60,8 +60,16 @@ test();
 ```
 
 
-## 更多 demo
+## Demo
+demo:
+https://letmaker.github.io/liko-page/
+
+示例源码:
 https://github.com/letmaker/liko-demo
+
+## 文档
+api文档:
+https://letmaker.github.io/liko-page/docs/
 
 ## License
 MIT

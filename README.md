@@ -59,10 +59,16 @@ test();
 
 
 ## Demo
+demo:
+https://letmaker.github.io/liko-page/
+
+source code:
 https://github.com/letmaker/liko-demo
 
 ## Documentation
-todo
+api:
+https://letmaker.github.io/liko-page/docs/
+
 
 ## License
 MIT
