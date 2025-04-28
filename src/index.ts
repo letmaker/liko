@@ -1,10 +1,9 @@
-export * from "./const";
-export * from "./utils/register";
-export * from "./utils/decorators";
-export * from "./utils/utils";
+export { EventType } from "./const";
+export * as register from "./utils/register";
+export * as utils from "./utils/utils";
 export { Dispatcher } from "./utils/dispatcher";
 export { Timer } from "./utils/timer";
-export { App, type IAppOptions } from "./app";
+export { App } from "./app";
 export { LikoPointerEvent } from "./events/pointer-event";
 export { Bounds } from "./math/bounds";
 export { Matrix } from "./math/matrix";
