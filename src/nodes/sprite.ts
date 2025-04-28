@@ -20,9 +20,13 @@ interface ISpritePrivateProps extends INodePrivateProps {
 }
 
 interface ISpriteOptions extends INodeOptions {
+  /** 精灵加载的图片 URL */
   url?: string;
+  /** 精灵使用的纹理对象 */
   texture?: Texture;
+  /** 精灵叠加颜色，用于调整节点的颜色 */
   tintColor?: ColorData;
+  /** 精灵加载完成后的回调 */
   onLoaded?: () => void;
 }
 

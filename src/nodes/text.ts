@@ -37,15 +37,25 @@ interface ITextPrivateProps extends INodePrivateProps {
 }
 
 interface ITextOptions extends INodeOptions {
+  /** 文本内容 */
   text?: string;
+  /** 文本颜色 */
   textColor?: string | CanvasGradient | CanvasPattern;
+  /** 文本描边颜色 */
   textStrokeColor?: string;
+  /** 文本描边宽度 */
   textStrokeWidth?: number;
+  /** 字体名称 */
   fontFamily?: string;
+  /** 字体大小，单位为像素 */
   fontSize?: number;
+  /** 字体粗细 */
   fontWeight?: FontWeight;
+  /** 字体样式 */
   fontStyle?: FontStyle;
+  /** 文本水平对齐方式 */
   textAlign?: TextAlign;
+  /** 行高，单位为像素，默认为字号大小 */
   lineHeight?: number;
 }
 
@@ -166,7 +176,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 获取或设置行高，单位为像素，一般最好大于字号 */
+  /** 获取或设置行高，单位为像素，默认为字号大小 */
   get lineHeight() {
     const { lineHeight, fontSize } = this.pp;
     return lineHeight > 0 ? lineHeight : fontSize;

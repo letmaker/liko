@@ -17,12 +17,19 @@ interface IAnimatedSpritePrivateProps extends INodePrivateProps {
 }
 
 interface IAnimatedSpriteOptions extends INodeOptions {
+  /** 动画资源的 URL 地址 */
   url?: string;
+  /** 动画的播放帧率 */
   frameRate?: number;
+  /** 精灵动画的纹理集合 */
   textures?: Texture[];
+  /** 动画开始播放事件回调 */
   onPlayed?: () => void;
+  /** 动画停止播放事件回调 */
   onStopped?: () => void;
+  /** 动画加载完成事件回调 */
   onLoaded?: () => void;
+  /** 动画播放结束事件回调 */
   onEnded?: () => void;
 }
 
