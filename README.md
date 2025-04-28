@@ -61,10 +61,13 @@ test();
 ## Demo
 https://github.com/letmaker/liko-demo
 
+## Documentation
+todo
+
 ## License
 MIT
 
 ## Thanks
-- [planck-js](https://github.com/piqnt/planck.js)
-- [pixi.js](https://github.com/pixijs/pixijs)
 - [npm](https://www.npmjs.com/package/liko)
+- [pixi.js](https://github.com/pixijs/pixijs)
+- [planck-js](https://github.com/piqnt/planck.js)
