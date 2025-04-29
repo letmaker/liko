@@ -8,7 +8,7 @@ import { RegNode } from "../utils/decorators";
 import type { INodeOptions } from "./node";
 import { type INodePrivateProps, LikoNode } from "./node";
 
-/** 实现 IRenderable 接口，就可以渲染出图片 */
+/** 实现 IRenderable 接口的节点可以渲染图像 */
 export interface IRenderable extends LikoNode {
   renderObject: SpriteObject;
   texture: Texture;
@@ -26,13 +26,14 @@ interface ISpriteOptions extends INodeOptions {
   texture?: Texture;
   /** 精灵叠加颜色，用于调整节点的颜色 */
   tintColor?: ColorData;
-  /** 精灵加载完成后的回调 */
+  /** 精灵加载完成后的回调函数 */
   onLoaded?: () => void;
 }
 
 /**
  * 精灵类，使用图片作为渲染对象
- * 提供图像显示、纹理管理等功能
+ *
+ * 提供图像显示、纹理管理和事件处理等功能
  */
 @RegNode("Sprite")
 export class Sprite extends LikoNode implements IRenderable {
@@ -62,7 +63,7 @@ export class Sprite extends LikoNode implements IRenderable {
       // TODO 针对 texture 切换，要专门优化，重新组织 batch
       const batch = this.renderObject.batch;
       const textureId = batch?.getTextureId(value) ?? batch?.add(this.texture);
-      if (textureId && textureId > -1) {
+      if (textureId !== undefined && textureId > -1) {
         this.renderObject.textureId = textureId;
         this.markDirty(DirtyType.texture);
       } else {

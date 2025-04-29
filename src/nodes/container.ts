@@ -15,13 +15,17 @@ export class Container extends LikoNode {
     return false;
   }
 
+  /**
+   * 遍历所有子节点，计算它们的边界并合并到当前容器的边界中
+   */
   protected override _customLocalBounds(bounds: Bounds): void {
     for (const child of this.children) {
       const { position } = child;
       if (child.rotation) {
         // 对于旋转的节点，需要添加矩形的四个顶点并应用变换矩阵
         bounds.addFrame(0, 0, child.width, child.height);
-        bounds.addFrame(0, child.height, child.width, 0);
+        // TODO 是否需要
+        // bounds.addFrame(0, child.height, child.width, 0);
         bounds.applyMatrix(child.localMatrix);
       } else {
         // 对于未旋转的节点，直接添加其边界框

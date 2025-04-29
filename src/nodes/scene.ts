@@ -124,6 +124,7 @@ export class Scene extends LikoNode implements IScene {
 
   /**
    * 销毁场景实例
+   * @returns 当前实例，支持链式调用
    */
   override destroy(): this {
     if (this.destroyed) return this;
@@ -138,6 +139,7 @@ export class Scene extends LikoNode implements IScene {
    * 加载场景
    * @param url - 场景资源路径
    * @param preloadAssets - 是否预加载场景内的所有资源，默认为 true
+   * @returns Promise 对象，加载完成后解析
    */
   async load(url: string, preloadAssets = true) {
     if (this.pp.url === url && this.json) {
@@ -164,6 +166,7 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 加载场景内的所有资源
    * @param json - 场景数据
+   * @returns Promise 对象，所有资源加载完成后解析
    */
   async preloadAssets(json: INodeData) {
     const res: string[] = [];
@@ -195,6 +198,7 @@ export class Scene extends LikoNode implements IScene {
 
   /**
    * 播放场景
+   * @returns 当前实例，支持链式调用
    */
   play(): this {
     const pp = this.pp;
@@ -209,6 +213,7 @@ export class Scene extends LikoNode implements IScene {
 
   /**
    * 停止播放
+   * @returns 当前实例，支持链式调用
    */
   stop(): this {
     if (this.pp.isPlaying) {
@@ -221,6 +226,7 @@ export class Scene extends LikoNode implements IScene {
 
   /**
    * 暂停播放
+   * @returns 当前实例，支持链式调用
    */
   pause(): this {
     const pp = this.pp;
@@ -234,6 +240,7 @@ export class Scene extends LikoNode implements IScene {
 
   /**
    * 恢复播放
+   * @returns 当前实例，支持链式调用
    */
   resume(): this {
     const pp = this.pp;
@@ -248,6 +255,7 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 更新场景及脚本
    * @param delta - 距离上一帧的时间间隔，可选参数
+   * @returns 当前实例，支持链式调用
    */
   update(delta?: number): this {
     const stage = this.stage;
@@ -282,6 +290,7 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 从数据创建场景
    * @param json - 场景数据
+   * @returns 当前实例，支持链式调用
    */
   override fromJson(json: INodeData): this {
     this.json = json;
