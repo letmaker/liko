@@ -53,7 +53,7 @@ export class Canvas extends LikoNode implements IRenderable {
     // document.body.appendChild(pp.canvas);
   }
 
-  /** 获取渲染纹理对象 */
+  /** 获取渲染纹理对象，在需要时自动更新画布内容 */
   get texture(): Texture {
     if (this.pp.changed) this._$drawCanvas();
     return this.pp.texture;
@@ -128,6 +128,7 @@ export class Canvas extends LikoNode implements IRenderable {
 
   /**
    * 绘制椭圆路径或圆弧
+   *
    * 通过设置 startAngle 和 endAngle，还可以绘制圆弧
    * @param centerX - 椭圆圆心的 x 坐标
    * @param centerY - 椭圆圆心的 y 坐标
@@ -281,10 +282,12 @@ export class Canvas extends LikoNode implements IRenderable {
   /**
    * 创建裁剪区域
    * @param path - 可选的 Path2D 对象
+   * @returns 当前实例，支持链式调用
    */
-  clip(path?: Path2D) {
+  clip(path?: Path2D): this {
     this.pp.cmd.push({ type: "clip", params: path ? [path] : [] });
     this.pp.clipped = true;
+    return this;
   }
 
   /**

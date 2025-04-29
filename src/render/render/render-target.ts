@@ -13,8 +13,9 @@ export class RenderTarget extends Sprite {
     this.texture = new Texture();
   }
 
-  override destroy(): void {
+  override destroy(): this {
     this.buffer?.destroy();
+    return this;
   }
 
   createTexture(width: number, height: number) {

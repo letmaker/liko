@@ -37,6 +37,7 @@ export class Stage extends LikoNode {
    * 重设舞台大小
    * @param width - 舞台宽度（逻辑像素）
    * @param height - 舞台高度（逻辑像素）
+   * @returns 返回 this 引用，支持链式调用
    */
   resize(width: number, height: number): this {
     const newWidth = Math.round(width);
@@ -85,7 +86,7 @@ export class Stage extends LikoNode {
    * @param options - 加载选项
    * @param options.destroyOther - 是否销毁其他场景
    * @param options.preloadAssets - 是否预加载所有资源
-   * @returns 加载完成的场景实例
+   * @returns Promise，解析为加载完成的场景实例
    */
   async loadScene(url: string, options?: { destroyOther?: boolean; preloadAssets?: boolean }) {
     const scene = new Scene();
@@ -103,7 +104,7 @@ export class Stage extends LikoNode {
    * @param options - 创建选项
    * @param options.destroyOther - 是否销毁其他场景
    * @param options.preloadAssets - 是否预加载所有资源
-   * @returns 创建的场景实例
+   * @returns Promise，解析为创建的场景实例
    */
   async createScene(json: INodeData, options?: { destroyOther?: boolean; preloadAssets?: boolean }) {
     const scene = new Scene();
@@ -120,6 +121,7 @@ export class Stage extends LikoNode {
 
   /**
    * 暂停舞台的动画和计时器
+   * @returns 返回 this 引用，支持链式调用
    */
   pause(): this {
     this.timer.pause();
@@ -128,6 +130,7 @@ export class Stage extends LikoNode {
 
   /**
    * 恢复舞台的动画和计时器
+   * @returns 返回 this 引用，支持链式调用
    */
   resume(): this {
     this.timer.resume();
@@ -136,6 +139,7 @@ export class Stage extends LikoNode {
 
   /**
    * 销毁 Stage 实例及其所有资源，包括计时器、数据存储、渲染器和输入管理器
+   * @returns 返回 this 引用，支持链式调用
    */
   override destroy(): this {
     if (!this.destroyed) {

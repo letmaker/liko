@@ -34,7 +34,7 @@ interface IAnimatedSpriteOptions extends INodeOptions {
 }
 
 /**
- * 精灵动画类
+ * 精灵动画类，用于播放序列帧动画
  */
 @RegNode("AnimatedSprite")
 export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation {
@@ -43,7 +43,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
   /** 标识动画是否正在播放 */
   isPlaying = false;
-  /** 动画的播放帧率 */
+  /** 动画的播放帧率，默认为 30 帧/秒 */
   frameRate = 30;
 
   /** 精灵动画的纹理集合 */
@@ -153,6 +153,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   /**
    * 开始播放动画
    * 如果动画已经在播放中，则不会重复开始
+   * @returns 当前实例，支持链式调用
    */
   play() {
     if (!this.isPlaying) {
@@ -168,6 +169,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   /**
    * 停止播放动画
    * 如果动画已经停止，则不会执行任何操作
+   * @returns 当前实例，支持链式调用
    */
   stop() {
     if (this.isPlaying) {
@@ -185,6 +187,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   /**
    * 跳转到动画的指定时间点
    * @param time - 目标时间点（秒）
+   * @returns 当前实例，支持链式调用
    */
   gotoTime(time: number) {
     this.currentFrame = Math.round((time / this.duration) * this.pp.textures.length);
@@ -193,7 +196,8 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
   /**
    * 销毁精灵动画实例
-   * 在销毁前会停止动画播放
+   * 在销毁前会停止动画播放并清空纹理集合
+   * @returns 当前实例，支持链式调用
    */
   override destroy(): this {
     this.stop();
