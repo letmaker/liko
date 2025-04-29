@@ -18,7 +18,7 @@ export class BatchGroup {
   batches: BatchData[] = [];
   nodes: LikoNode[] = [];
 
-  posBuffer = new VertexBuffer("pos");
+  posBuffer = new VertexBuffer("position");
   colorBuffer = new VertexBuffer("color");
   uvBuffer = new VertexBuffer("uv");
   indexBuffer = new IndexBuffer();
@@ -71,13 +71,13 @@ export class BatchGroup {
       const node = this.nodes[i];
       i++;
 
-      const { dirty, transform, localMatrix, worldMatrix, pos, parent, tintColor, alpha } = node.pp;
+      const { dirty, transform, localMatrix, worldMatrix, position, parent, tintColor, alpha } = node.pp;
       const tfDirty = dirty & DirtyType.transform;
       const colorDirty = dirty & DirtyType.color;
 
       // 更新 worldMatrix
       if (tfDirty) {
-        transform.updateMatrix(localMatrix, worldMatrix, pos, parent!.worldMatrix);
+        transform.updateMatrix(localMatrix, worldMatrix, position, parent!.worldMatrix);
       }
 
       // 更新 worldAlpha
@@ -112,12 +112,12 @@ export class BatchGroup {
 
   private _collect(node: LikoNode, worldMatrix: Matrix, worldAlpha: number) {
     const { pp, children } = node;
-    const { visible, alpha, dirty, transform, localMatrix, pos } = pp;
+    const { visible, alpha, dirty, transform, localMatrix, position } = pp;
     if (!visible || alpha < 0.001) return;
 
     // 更新 worldMatrix
     if (dirty & DirtyType.transform) {
-      transform.updateMatrix(localMatrix, pp.worldMatrix, pos, worldMatrix);
+      transform.updateMatrix(localMatrix, pp.worldMatrix, position, worldMatrix);
     }
 
     // 更新 worldAlpha

@@ -125,12 +125,13 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 销毁场景实例
    */
-  override destroy(): void {
-    if (!this.destroyed) {
-      this.stop();
-      this.json = undefined;
-      super.destroy();
-    }
+  override destroy(): this {
+    if (this.destroyed) return this;
+
+    this.stop();
+    this.json = undefined;
+    super.destroy();
+    return this;
   }
 
   /**
@@ -195,7 +196,7 @@ export class Scene extends LikoNode implements IScene {
   /**
    * 播放场景
    */
-  play(): void {
+  play(): this {
     const pp = this.pp;
     if (!pp.isPlaying) {
       pp.isPlaying = true;
@@ -203,56 +204,62 @@ export class Scene extends LikoNode implements IScene {
       this.stage?.timer.onFrame(this.update, this);
       this.emit(EventType.played);
     }
+    return this;
   }
 
   /**
    * 停止播放
    */
-  stop(): void {
+  stop(): this {
     if (this.pp.isPlaying) {
       this.pp.isPlaying = false;
       this.stage?.timer.clearTimer(this.update, this);
       this.emit(EventType.stopped);
     }
+    return this;
   }
 
   /**
    * 暂停播放
    */
-  pause(): void {
+  pause(): this {
     const pp = this.pp;
-    if (!pp.isPlaying || pp.paused) return;
+    if (!pp.isPlaying || pp.paused) return this;
 
     pp.paused = true;
     this.stage?.timer.clearTimer(this.update, this);
     this.emit(EventType.paused);
+    return this;
   }
 
   /**
    * 恢复播放
    */
-  resume(): void {
+  resume(): this {
     const pp = this.pp;
-    if (!pp.isPlaying || !pp.paused) return;
+    if (!pp.isPlaying || !pp.paused) return this;
 
     pp.paused = false;
     this.stage?.timer.onFrame(this.update, this);
     this.emit(EventType.resumed);
+    return this;
   }
 
   /**
    * 更新场景及脚本
    * @param delta - 距离上一帧的时间间隔，可选参数
    */
-  update(delta?: number): void {
+  update(delta?: number): this {
     const stage = this.stage;
-    if (!this.enabled || !stage || this.pp.paused) return;
+    if (!this.enabled || !stage || this.pp.paused) return this;
 
     const scaleDelta = delta ?? stage.timer.delta * this.timeScale;
     this.pp.currentTime += scaleDelta;
     // 遍历所有子节点，执行脚本
     this._$updateScripts(this, scaleDelta);
-    this.emit(EventType.update, scaleDelta); // @ap
+    this.emit(EventType.update, scaleDelta);
+
+    return this;
   }
 
   private _$updateScripts(node: LikoNode, delta: number) {
@@ -276,9 +283,10 @@ export class Scene extends LikoNode implements IScene {
    * 从数据创建场景
    * @param json - 场景数据
    */
-  override fromJson(json: INodeData) {
+  override fromJson(json: INodeData): this {
     this.json = json;
     super.fromJson(json);
+    return this;
   }
 
   /**

@@ -26,19 +26,33 @@ export interface INodeData {
   description?: string;
   /** 节点属性集合，包含节点的各种配置参数 */
   props: {
+    /** 节点标签 */
     label?: string;
+    /** 是否启用节点 */
     enabled?: boolean;
+    /** 是否仅编辑器可见 */
     editorOnly?: boolean;
-    pos?: IPoint;
+    /** 节点位置 */
+    position?: IPoint;
+    /** 节点缩放 */
     scale?: IPoint;
+    /** 节点锚点 */
     anchor?: IPoint;
+    /** 节点旋转弧度 */
     rotation?: number;
+    /** 节点旋转角度 */
     angle?: number;
+    /** 节点宽度 */
     width?: number;
+    /** 节点高度 */
     height?: number;
+    /** 节点透明度 */
     alpha?: number;
+    /** 节点可见性 */
     visible?: boolean;
+    /** 是否启用指针事件 */
     pointerEnabled?: boolean;
+    /** 是否启用子节点指针事件 */
     pointerEnabledForChildren?: boolean;
     [key: string]: unknown;
   };
@@ -60,8 +74,11 @@ export interface IScriptData {
   description?: string;
   /** 脚本属性集合，包含脚本的各种配置参数 */
   props: {
+    /** 脚本类名或路径 */
     script: string;
+    /** 脚本标签 */
     label?: string;
+    /** 是否启用脚本 */
     enabled?: boolean;
     [key: string]: unknown;
   };
@@ -110,7 +127,7 @@ export interface INodePrivateProps {
   alpha: number;
   localMatrix: Matrix;
   worldMatrix: Matrix;
-  pos: ObservablePoint;
+  position: ObservablePoint;
   anchor: ObservablePoint;
   width: number;
   height: number;
@@ -129,7 +146,7 @@ export interface INodeOptions {
   /** 节点标签，用于快速查找和识别节点 */
   label?: string;
   /** 节点位置，相对于父节点的坐标 */
-  pos?: IPoint;
+  position?: IPoint;
   /** 节点缩放，影响节点的显示大小 */
   scale?: IPoint;
   /** 节点锚点，以宽高的百分比表示，影响旋转和缩放的中心点 */
@@ -191,11 +208,11 @@ export abstract class LikoNode {
     alpha: 1,
     localMatrix: new Matrix(),
     worldMatrix: new Matrix(),
-    pos: new ObservablePoint(this),
+    position: new ObservablePoint(this),
     anchor: new ObservablePoint(this),
-    /** -1代表通过 getLocalBounds 获得宽 */
+    /** -1 代表通过 getLocalBounds 获得宽 */
     width: -1,
-    /** -1代表通过 getLocalBounds 获得高 */
+    /** -1 代表通过 getLocalBounds 获得高 */
     height: -1,
     visible: true,
     destroyed: false,
@@ -228,10 +245,13 @@ export abstract class LikoNode {
 
   /**
    * 销毁此节点及所有子节点，销毁后此节点不可再用
-   * 节点被销毁时，所有子节点、脚本、滤镜以及在 node、root、scene、stage 和 stage.timer 上的监听都会被自动取消
+   *
+   * 节点被销毁时，所有子节点、脚本、滤镜以及在 node、root、scene、stage 和 stage.timer 上的监听都会被自动取消。
+   *
+   * @returns 当前节点实例，支持链式调用
    */
-  destroy(): void {
-    if (this.pp.destroyed) return;
+  destroy(): this {
+    if (this.pp.destroyed) return this;
 
     this.pp.destroyed = true;
     this.enabled = false;
@@ -245,6 +265,7 @@ export abstract class LikoNode {
     this.destroyScripts();
     this.destroyFilters();
     this.destroyChildren();
+    return this;
   }
 
   /** 是否已被销毁，销毁后不可再用 */
@@ -358,11 +379,11 @@ export abstract class LikoNode {
   }
 
   /** 节点位置坐标，相对于父节点的坐标系 */
-  get pos(): ObservablePoint {
-    return this.pp.pos;
+  get position(): ObservablePoint {
+    return this.pp.position;
   }
-  set pos(value: IPoint) {
-    this.pp.pos.copyFrom(value);
+  set position(value: IPoint) {
+    this.pp.position.copyFrom(value);
   }
 
   /** 节点缩放比率，1.0 表示原始大小 */
@@ -447,16 +468,16 @@ export abstract class LikoNode {
 
   /** 本地矩阵，相对于父节点的变换矩阵 */
   get localMatrix() {
-    const { dirty, transform, localMatrix, pos } = this.pp;
+    const { dirty, transform, localMatrix, position } = this.pp;
     // 矩阵发生变化时，才重新计算矩阵
     if (dirty & DirtyType.transform) {
-      return transform.getMatrix(localMatrix, pos);
+      return transform.getMatrix(localMatrix, position);
     }
     return localMatrix;
   }
   set localMatrix(value) {
-    const { pos, scale, rotation } = value.decompose(this.pp.transform);
-    this.pos = pos;
+    const { position, scale, rotation } = value.decompose(this.pp.transform);
+    this.position = position;
     this.scale = scale;
     this.rotation = rotation;
   }
@@ -523,11 +544,15 @@ export abstract class LikoNode {
 
   /**
    * 添加子节点到当前节点
+   *
+   * 如果子节点已有父节点，会先从原父节点中移除。添加后子节点会继承当前节点的舞台引用，
+   * 并触发 added 事件。如果指定了索引，子节点会被插入到指定位置。
+   *
    * @param child - 要添加的子节点
    * @param index - 指定添加的索引位置（可选）
-   * @returns 返回被添加的子节点
+   * @returns 当前节点实例，支持链式调用
    */
-  addChild<T extends LikoNode>(child: T, index?: number): T {
+  addChild<T extends LikoNode>(child: T, index?: number): this {
     const pp = this.pp;
     if (pp.children === defaultChildren) pp.children = [];
     child.removeSelf();
@@ -537,7 +562,7 @@ export abstract class LikoNode {
     if (pp.stage) this._$addToStage(child, pp.stage);
     child.emit(EventType.added, this);
     this.markDirty(DirtyType.child);
-    return child;
+    return this;
   }
 
   private _$addToStage(child: LikoNode, stage: Stage) {
@@ -561,9 +586,10 @@ export abstract class LikoNode {
    * 修改子节点在子节点列表中的索引位置
    * @param child - 要修改索引的子节点
    * @param index - 新的索引位置
+   * @returns 当前节点实例，支持链式调用
    * @throws 如果索引超出范围则抛出错误
    */
-  setChildIndex(child: LikoNode, index: number): void {
+  setChildIndex(child: LikoNode, index: number): this {
     const children = this.children;
     if (index < 0 || index >= children.length) {
       throw new Error(`The index ${index} is out of bounds`);
@@ -572,10 +598,15 @@ export abstract class LikoNode {
     children.splice(currentIndex, 1);
     children.splice(index, 0, child);
     this.markDirty(DirtyType.child);
+    return this;
   }
 
   /**
    * 根据筛选条件查找子节点
+   *
+   * 在当前节点的子节点中查找符合指定条件的节点，支持按 ID、标签或类型查找。
+   * 可以选择是否递归查找所有后代节点。
+   *
    * @param options - 筛选条件，可包含 id、label、Class 和 deep 选项
    * @returns 返回匹配的子节点，如果未找到则返回 undefined
    */
@@ -601,10 +632,14 @@ export abstract class LikoNode {
 
   /**
    * 从当前节点中删除指定的子节点
+   *
+   * 将指定的子节点从当前节点的子节点列表中移除，但不会销毁该子节点。
+   * 移除后，子节点的 parent 和 stage 引用会被清除，并触发 removed 事件。
+   *
    * @param child - 要删除的子节点
-   * @returns 返回被删除的子节点，如果未找到则返回传入的参数
+   * @returns 当前节点实例，支持链式调用
    */
-  removeChild<T extends LikoNode>(child?: T) {
+  removeChild<T extends LikoNode>(child?: T): this {
     if (child) {
       const index = this.pp.children.indexOf(child);
       if (index !== -1) {
@@ -615,22 +650,32 @@ export abstract class LikoNode {
         this.markDirty(DirtyType.child);
       }
     }
-    return child;
+    return this;
   }
 
   /**
    * 将当前节点从其父节点中移除
-   * 即使没有被添加到父节点，调用此方法也不会报错
+   *
+   * 从父节点的子节点列表中移除当前节点，但不会销毁当前节点。
+   * 即使没有被添加到父节点，调用此方法也不会报错。
+   *
+   * @returns 当前节点实例，支持链式调用
    */
-  removeSelf(): void {
+  removeSelf(): this {
     if (this.pp.parent) this.pp.parent.removeChild(this);
+    return this;
   }
 
   /**
    * 删除当前节点的所有子节点
-   * 子节点会被从节点树中移除，但不会被销毁
+   *
+   * 将所有子节点从当前节点的子节点列表中移除，但不会销毁这些子节点。
+   * 子节点会被从节点树中移除，可以被重新添加到其他节点中。
+   * 所有被移除的子节点会触发 removed 事件。
+   *
+   * @returns 当前节点实例，支持链式调用
    */
-  removeChildren(): void {
+  removeChildren(): this {
     const { children } = this;
     if (children.length) {
       for (const child of children) {
@@ -640,13 +685,18 @@ export abstract class LikoNode {
       children.length = 0;
       this.markDirty(DirtyType.child);
     }
+    return this;
   }
 
   /**
    * 销毁当前节点的所有子节点
-   * 与 removeChildren 不同，此方法会彻底销毁子节点，销毁后子节点不可再用
+   *
+   * 与 removeChildren 不同，此方法会彻底销毁子节点，销毁后子节点不可再用。
+   * 销毁过程会递归处理所有子节点，清理所有资源和事件监听。
+   *
+   * @returns 当前节点实例，支持链式调用
    */
-  destroyChildren(): void {
+  destroyChildren(): this {
     const { children } = this;
     if (children.length) {
       for (let i = children.length - 1; i > -1; i--) {
@@ -655,33 +705,41 @@ export abstract class LikoNode {
       children.length = 0;
       this.markDirty(DirtyType.child);
     }
+    return this;
   }
 
   /**
    * 添加滤镜到当前节点
+   *
+   * 将指定的滤镜实例添加到当前节点，使节点在渲染时应用该滤镜效果。
    * @param filter - 要添加的滤镜实例
-   * @returns 返回被添加的滤镜实例
+   * @returns 当前节点实例，支持链式调用
    */
-  addFilter<T extends Filter>(filter: T): T {
+  addFilter<T extends Filter>(filter: T): this {
     if (this.pp.filters === defaultFilters) this.pp.filters = [];
     this.pp.filters.push(filter);
     this.markDirty(DirtyType.filter);
-    return filter;
+    return this;
   }
 
   /**
    * 更新滤镜状态，当滤镜参数变化时调用
+   *
+   * 当滤镜的参数发生变化时，应调用此方法以确保变化生效。
    * @param filter - 要更新的滤镜实例
-   * @returns 返回更新后的滤镜实例
+   * @returns 当前节点实例，支持链式调用
    */
-  updateFilter<T extends Filter>(filter: T): T {
+  updateFilter<T extends Filter>(filter: T): this {
     filter._dirty = true;
     this.markDirty(DirtyType.filter);
-    return filter;
+    return this;
   }
 
   /**
    * 根据筛选条件查找滤镜实例
+   *
+   * 在当前节点的滤镜列表中查找符合指定条件的滤镜实例。
+   * 支持按 ID、标签或类型查找。
    * @param options - 筛选条件，可包含 id、label 和 Class 选项
    * @returns 返回匹配的滤镜实例，如果未找到则返回 undefined
    */
@@ -699,10 +757,12 @@ export abstract class LikoNode {
 
   /**
    * 从当前节点移除指定的滤镜
+   *
+   * 将指定的滤镜实例从当前节点的滤镜列表中移除，但不会销毁该滤镜。
    * @param filter - 要移除的滤镜实例
-   * @returns 返回被移除的滤镜实例，如果未找到则返回传入的参数
+   * @returns 当前节点实例，支持链式调用
    */
-  removeFilter<T extends Filter>(filter?: T) {
+  removeFilter<T extends Filter>(filter?: T): this {
     if (filter) {
       const index = this.pp.filters.indexOf(filter);
       if (index !== -1) {
@@ -710,14 +770,16 @@ export abstract class LikoNode {
         this.markDirty(DirtyType.filter);
       }
     }
-    return filter;
+    return this;
   }
 
   /**
    * 销毁当前节点的所有滤镜
-   * 销毁后滤镜不可再用
+   *
+   * 彻底销毁当前节点的所有滤镜实例，销毁后滤镜不可再用。
+   * @returns 当前节点实例，支持链式调用
    */
-  destroyFilters(): void {
+  destroyFilters(): this {
     const { filters } = this;
     if (filters.length) {
       for (let i = filters.length - 1; i > -1; i--) {
@@ -726,23 +788,30 @@ export abstract class LikoNode {
       filters.length = 0;
       this.markDirty(DirtyType.filter);
     }
+    return this;
   }
 
   /**
    * 添加脚本到当前节点
+   *
+   * 将指定的脚本实例添加到当前节点，并设置脚本的目标节点为当前节点。
+   * 添加后脚本会自动执行其生命周期方法（onCreate 等）。
    * @param script - 要添加的脚本实例
-   * @returns 返回被添加的脚本实例
+   * @returns 当前节点实例，支持链式调用
    */
-  addScript<T extends ScriptBase>(script: T): T {
+  addScript<T extends ScriptBase>(script: T): this {
     const pp = this.pp;
     if (pp.scripts === defaultScripts) pp.scripts = [];
     pp.scripts.push(script);
     script.target = this;
-    return script;
+    return this;
   }
 
   /**
    * 根据筛选条件查找脚本实例
+   *
+   * 在当前节点的脚本列表中查找符合指定条件的脚本实例。
+   * 支持按 ID、标签或类型查找。
    * @param options - 筛选条件，可包含 id、label 和 Class 选项
    * @returns 返回匹配的脚本实例，如果未找到则返回 undefined
    */
@@ -762,13 +831,15 @@ export abstract class LikoNode {
   /**
    * 销毁当前节点的所有脚本
    * 销毁后脚本不可再用
+   * @returns 当前节点实例，支持链式调用
    */
-  destroyScripts(): void {
+  destroyScripts(): this {
     const { scripts } = this.pp;
     for (let i = scripts.length - 1; i > -1; i--) {
       scripts[i].destroy();
     }
     scripts.length = 0;
+    return this;
   }
 
   /**
@@ -817,7 +888,13 @@ export abstract class LikoNode {
 
   /**
    * 获取本地边界（相对于父节点）
-   * 注意：返回值在节点级别复用，如需延迟使用应调用 clone 方法
+   *
+   * 计算节点在本地坐标系中的边界矩形，用于碰撞检测、点击测试和布局计算等。
+   * 如果节点设置了明确的宽高，则直接使用这些值；否则会根据节点内容计算边界。
+   * @remarks
+   * 返回值在节点级别复用，如需延迟使用应调用 clone 方法。
+   * 当节点的尺寸或子节点发生变化时，会重新计算边界。
+   * 子类可以通过重写 _customLocalBounds 方法来自定义边界计算逻辑。
    * @returns 返回本地边界对象
    */
   getLocalBounds(): Bounds {
@@ -851,7 +928,13 @@ export abstract class LikoNode {
 
   /**
    * 获取世界边界，相对于指定根节点
-   * 注意：返回值在节点级别复用，如需延迟使用应调用 clone 方法
+   *
+   * 计算节点在世界坐标系（或指定根节点坐标系）中的边界矩形，考虑了所有父节点的变换。
+   * 此方法常用于可见性检测、相机裁剪和全局碰撞检测等场景。
+   * @remarks
+   * 返回值在节点级别复用，如需延迟使用应调用 clone 方法。
+   * 此方法会考虑节点的位置、缩放和旋转等变换因素。
+   * 与 getWorldRotatingRect 不同，此方法返回的是轴对齐的边界矩形，不考虑旋转角度。
    * @param root - 相对参考节点，为空则默认相对于舞台
    * @returns 返回相对于世界或指定节点的边界对象
    */
@@ -877,8 +960,12 @@ export abstract class LikoNode {
   }
 
   /**
-   * 获取世界旋转边界，与 getWorldBounds 不同，此方法考虑了旋转角度
-   * 注意：返回值在节点级别复用，如需延迟使用应调用 clone 方法
+   * 获取世界旋转边界，考虑了旋转角度的精确边界
+   *
+   * 与 getWorldBounds 不同，此方法返回的是考虑了旋转角度的精确边界矩形，
+   * 适用于需要精确碰撞检测或旋转对象交互的场景。
+   * @remarks
+   * 返回值在节点级别复用，如需延迟使用应调用 clone 方法。
    * @param root - 相对参考节点，为空则默认相对于舞台
    * @returns 返回考虑旋转的边界对象
    */
@@ -894,37 +981,51 @@ export abstract class LikoNode {
 
   /**
    * 将本地坐标转换为世界坐标
-   * @param pos - 相对于当前节点的本地坐标
+   *
+   * 将节点本地坐标系中的点转换为世界坐标系（或指定根节点坐标系）中的点。
+   * 此方法在处理交互、碰撞检测和跨节点操作时非常有用。
+   * @remarks
+   * 转换过程会考虑节点及其所有父节点的位置、缩放和旋转。
+   * 如果指定了 root 参数，则结果将相对于该节点的坐标系。
+   * @param position - 相对于当前节点的本地坐标
    * @param out - 输出结果的对象（可选，不提供则创建新对象）
    * @param root - 相对参考节点，为空则默认相对于舞台
    * @returns 返回转换后的世界坐标
    */
-  localToWorld<P extends IPoint = Point>(pos: IPoint, out?: P, root?: LikoNode): P {
-    const result = this.worldMatrix.apply<P>(pos, out);
+  localToWorld<P extends IPoint = Point>(position: IPoint, out?: P, root?: LikoNode): P {
+    const result = this.worldMatrix.apply<P>(position, out);
     if (root && root !== this.stage) root.worldToLocal(result, result);
     return result;
   }
 
   /**
    * 将世界坐标转换为本地坐标
-   * @param pos - 世界坐标位置
+   *
+   * 将世界坐标系（或指定根节点坐标系）中的点转换为节点本地坐标系中的点。
+   * 此方法常用于处理输入事件、拖放操作和相对定位等场景。
+   * @remarks
+   * 转换过程会考虑节点及其所有父节点的位置、缩放和旋转的逆变换。
+   * 如果指定了 root 参数，则输入坐标将被视为相对于该节点的坐标。
+   * 此方法是 localToWorld 的逆操作。
+   * @param position - 世界坐标位置
    * @param out - 输出结果的对象（可选，不提供则创建新对象）
    * @param root - 相对参考节点，为空则默认相对于舞台
    * @returns 返回转换后的本地坐标
    */
-  worldToLocal<P extends IPoint = Point>(pos: IPoint, out?: P, root?: LikoNode): P {
+  worldToLocal<P extends IPoint = Point>(position: IPoint, out?: P, root?: LikoNode): P {
     if (root && root !== this.stage) {
-      const result = root.worldMatrix.apply<P>(pos, out);
+      const result = root.worldMatrix.apply<P>(position, out);
       return this.worldMatrix.applyInverse<P>(result, result);
     }
-    return this.worldMatrix.applyInverse<P>(pos);
+    return this.worldMatrix.applyInverse<P>(position);
   }
 
   /**
    * 从 JSON 数据创建或更新节点
    * @param json - 节点的 JSON 数据
+   * @returns 返回当前节点实例，支持链式调用
    */
-  fromJson(json: INodeData) {
+  fromJson(json: INodeData): this {
     this.pp.id = json.id;
     this.setProps(json.props);
 
@@ -941,11 +1042,18 @@ export abstract class LikoNode {
 
     this.setFilters(json.filters);
     this.setScripts(json.scripts);
+    return this;
   }
 
   /**
    * 根据 JSON 数据设置节点属性
-   * @param props - 属性数据对象
+   *
+   * 批量设置节点的属性值，支持设置任何节点的公开属性。
+   * 特别地，对于以 "on" 开头的属性（如 onClick），会自动注册为事件监听器。
+   * @remarks
+   * 此方法通常用于从序列化数据恢复节点状态，或在创建节点时批量设置属性。
+   * 对于不存在的属性，会被忽略而不会报错。
+   * @param props - 属性数据对象，键为属性名，值为属性值
    * @returns 返回当前节点实例，支持链式调用
    */
   setProps(props?: Record<string, unknown>): this {
@@ -965,10 +1073,16 @@ export abstract class LikoNode {
 
   /**
    * 通过脚本数据列表重置节点的脚本
-   * 会先清除现有脚本，然后根据数据创建新脚本
+   *
+   * 会先清除现有脚本，然后根据数据创建新脚本。
+   * 此方法通常用于从序列化数据恢复节点的脚本状态。
+   * @remarks
+   * 脚本创建过程会使用注册系统查找对应的脚本类，并实例化。
+   * 创建后会自动设置脚本的属性，并将脚本添加到节点。
    * @param scripts - 脚本数据列表
+   * @returns 当前节点实例，支持链式调用
    */
-  setScripts(scripts?: IScriptData[]) {
+  setScripts(scripts?: IScriptData[]): this {
     this.destroyScripts();
     if (scripts) {
       for (const data of scripts) {
@@ -979,14 +1093,21 @@ export abstract class LikoNode {
         }
       }
     }
+    return this;
   }
 
   /**
    * 通过滤镜数据列表重置节点的滤镜
-   * 会先清除现有滤镜，然后根据数据创建新滤镜
+   *
+   * 会先清除现有滤镜，然后根据数据创建新滤镜。
+   * 此方法通常用于从序列化数据恢复节点的滤镜效果。
+   * @remarks
+   * 滤镜创建过程会使用注册系统查找对应的滤镜类，并实例化。
+   * 创建后会自动设置滤镜的属性，并将滤镜添加到节点。
    * @param filters - 滤镜数据列表
+   * @returns 当前节点实例，支持链式调用
    */
-  setFilters(filters?: IFilterData[]) {
+  setFilters(filters?: IFilterData[]): this {
     this.destroyFilters();
     if (filters) {
       for (const data of filters) {
@@ -997,14 +1118,22 @@ export abstract class LikoNode {
         }
       }
     }
+    return this;
   }
 
   /**
    * 检测指定点是否在节点内部
+   *
+   * 判断世界坐标系中的点是否位于节点的可见区域内，用于鼠标交互和碰撞检测。
+   * 首先将世界坐标转换为节点的本地坐标，然后检查是否在节点的边界内。
+   * @remarks
+   * 如果节点设置了明确的宽高，则使用这些值进行判断；
+   * 否则会使用 getLocalBounds 计算的边界进行判断。
+   * 此方法不考虑节点的透明度和可见性，只进行几何判断。
    * @param point - 要检测的点（世界坐标）
    * @returns 如果点在节点内部则返回 true，否则返回 false
    */
-  hitTest(point: IPoint) {
+  hitTest(point: IPoint): boolean {
     const locPos = this.worldToLocal(point, Point.TEMP);
 
     const { width, height } = this.pp;
@@ -1018,12 +1147,18 @@ export abstract class LikoNode {
 
   /**
    * 注册事件监听器
-   * 注意：对同一事件类型、监听器和调用者，多次注册只会生效最后一次
+   *
+   * 为节点添加事件监听器，当指定类型的事件触发时，会调用提供的回调函数。
+   * 如果注册的是指针事件（如 click、pointerdown 等），会自动启用节点的指针交互功能。
+   * @remarks
+   * 对同一事件类型、监听器和调用者，多次注册只会生效最后一次。
+   * 事件系统支持冒泡机制，子节点触发的事件会向上传递到父节点。
    * @param type - 事件类型，不区分大小写
    * @param listener - 事件触发时的回调函数
    * @param caller - 回调函数的调用者，通常为 this
+   * @returns 当前节点实例，支持链式调用
    */
-  on(type: string, listener: (...args: any[]) => void, caller?: any): void {
+  on(type: string, listener: (...args: any[]) => void, caller?: any): this {
     if (this.pp.event === defaultEvent) this.pp.event = new Dispatcher();
     if (pointerMap[type] && (!this.pointerEnabled || !this.pointerEnabledForChildren)) {
       this.pointerEnabled = true;
@@ -1031,6 +1166,7 @@ export abstract class LikoNode {
       this._$pointerEnableParent();
     }
     this.pp.event.on(type, listener, caller);
+    return this;
   }
 
   private _$pointerEnableParent() {
@@ -1043,12 +1179,18 @@ export abstract class LikoNode {
 
   /**
    * 注册一次性事件监听器，事件触发一次后自动移除
-   * 注意：对同一事件类型、监听器和调用者，多次注册只会生效最后一次
+   *
+   * 与 on 方法类似，但监听器只会被触发一次，之后会自动移除。
+   * 这对于只需要响应一次的事件（如初始化完成、资源加载等）非常有用。
+   * @remarks
+   * 对同一事件类型、监听器和调用者，多次注册只会生效最后一次。
+   * 如果注册的是指针事件，会自动启用节点的指针交互功能。
    * @param type - 事件类型，不区分大小写
    * @param listener - 事件触发时的回调函数
    * @param caller - 回调函数的调用者，通常为 this
+   * @returns 当前节点实例，支持链式调用
    */
-  once(type: string, listener: (...args: any[]) => void, caller?: any): void {
+  once(type: string, listener: (...args: any[]) => void, caller?: any): this {
     if (this.pp.event === defaultEvent) this.pp.event = new Dispatcher();
     if (pointerMap[type]) {
       this.pointerEnabled = true;
@@ -1056,40 +1198,58 @@ export abstract class LikoNode {
       this._$pointerEnableParent();
     }
     this.pp.event.once(type, listener, caller);
+    return this;
   }
 
   /**
    * 移除事件监听器
+   *
+   * 移除之前通过 on 或 once 方法注册的事件监听器。需要提供完全相同的参数才能成功移除。
    * @param type - 事件类型，不区分大小写
    * @param listener - 要移除的回调函数
    * @param caller - 回调函数的调用者
+   * @returns 当前节点实例，支持链式调用
    */
-  off(type: string, listener: (...args: any[]) => void, caller?: any): void {
-    if (this.pp.event === defaultEvent) return;
+  off(type: string, listener: (...args: any[]) => void, caller?: any): this {
+    if (this.pp.event === defaultEvent) return this;
     this.pp.event.off(type, listener, caller);
+    return this;
   }
 
   /**
    * 移除特定调用者的所有事件监听器
+   *
+   * 一次性移除特定调用者注册的所有事件监听器，或在不指定调用者时移除所有监听器。
+   * 这在组件销毁或重置时特别有用。
    * @param caller - 调用者对象，如果为空则移除所有事件监听器
+   * @returns 当前节点实例，支持链式调用
    */
-  offAll(caller?: unknown): void {
-    if (this.pp.event === defaultEvent) return;
+  offAll(caller?: unknown): this {
+    if (this.pp.event === defaultEvent) return this;
     this.pp.event.offAll(caller);
+    return this;
   }
 
   /**
    * 派发事件
+   *
+   * 触发指定类型的事件，并将参数传递给所有注册的监听器。
+   * 事件会按照注册顺序依次调用监听器，并支持传递任意数量的参数。
+   * 事件会在当前节点触发，并根据事件类型可能会向上冒泡到父节点。
    * @param type - 事件类型，不区分大小写
    * @param args - 传递给监听器的参数，支持多个参数
+   * @returns 当前节点实例，支持链式调用
    */
-  emit(type: string, ...args: any[]): void {
-    if (this.pp.event === defaultEvent) return;
+  emit(type: string, ...args: any[]): this {
+    if (this.pp.event === defaultEvent) return this;
     this.pp.event.emit(type, ...args);
+    return this;
   }
 
   /**
    * 检查是否存在指定类型的事件监听器
+   *
+   * 判断当前节点是否注册了指定类型的事件监听器，用于条件判断和性能优化。
    * @param type - 事件类型，不区分大小写
    * @returns 如果存在监听器则返回 true，否则返回 false
    */

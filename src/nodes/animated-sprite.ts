@@ -162,6 +162,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
       this.stage?.timer.setInterval(1 / this.frameRate, this._$update, this);
       this.emit(EventType.played);
     }
+    return this;
   }
 
   /**
@@ -174,6 +175,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
       this.stage?.timer.clearTimer(this._$update, this);
       this.emit(EventType.stopped);
     }
+    return this;
   }
 
   private _$update() {
@@ -186,15 +188,17 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
    */
   gotoTime(time: number) {
     this.currentFrame = Math.round((time / this.duration) * this.pp.textures.length);
+    return this;
   }
 
   /**
    * 销毁精灵动画实例
    * 在销毁前会停止动画播放
    */
-  override destroy(): void {
+  override destroy(): this {
     this.stop();
     this.textures.length = 0;
     super.destroy();
+    return this;
   }
 }

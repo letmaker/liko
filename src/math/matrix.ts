@@ -75,15 +75,15 @@ export class Matrix {
 
   /**
    * 将坐标点从当前坐标系转换到新的坐标系，例如：从子坐标系转到世界坐标系
-   * @param pos - 要转换的坐标点
+   * @param position - 要转换的坐标点
    * @param out - 输出结果的坐标点，如不提供则创建新的 Point 实例
    * @returns 转换后的坐标点
    */
-  apply<P extends IPoint = Point>(pos: IPoint, out?: P): P {
+  apply<P extends IPoint = Point>(position: IPoint, out?: P): P {
     const output = (out || new Point()) as P;
 
-    const x = pos.x;
-    const y = pos.y;
+    const x = position.x;
+    const y = position.y;
 
     output.x = this.a * x + this.c * y + this.tx;
     output.y = this.b * x + this.d * y + this.ty;
@@ -93,15 +93,15 @@ export class Matrix {
 
   /**
    * 将坐标点从当前坐标系转换到逆变换坐标系，例如：从世界坐标系转到子坐标系
-   * @param pos - 要转换的坐标点
+   * @param position - 要转换的坐标点
    * @param out - 输出结果的坐标点，如不提供则创建新的 Point 实例
    * @returns 转换后的坐标点
    */
-  applyInverse<P extends IPoint = Point>(pos: IPoint, out?: P): P {
+  applyInverse<P extends IPoint = Point>(position: IPoint, out?: P): P {
     const output = (out || new Point()) as P;
 
     const { a, b, c, d, tx, ty } = this;
-    const { x, y } = pos;
+    const { x, y } = position;
     const id = 1 / (a * d + c * -b);
 
     output.x = d * id * x + -c * id * y + (ty * c - tx * d) * id;
@@ -237,12 +237,12 @@ export class Matrix {
     scale.x = Math.sqrt(a * a + b * b);
     scale.y = Math.sqrt(c * c + d * d);
 
-    const pos = { x: 0, y: 0 };
+    const position = { x: 0, y: 0 };
     const pivot = transform.pivot;
-    pos.x = this.tx + (pivot.x * a + pivot.y * c);
-    pos.y = this.ty + (pivot.x * b + pivot.y * d);
+    position.x = this.tx + (pivot.x * a + pivot.y * c);
+    position.y = this.ty + (pivot.x * b + pivot.y * d);
 
-    return { pos, scale, rotation };
+    return { position, scale, rotation };
   }
 
   /**

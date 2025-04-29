@@ -202,10 +202,10 @@ export class RigidBody extends ScriptBase {
   override onUpdate(): void {
     if (this.rigidType === "static") return;
     const target = this.target;
-    const pos = this.body.getPosition();
+    const position = this.body.getPosition();
 
     // 复用临时对象
-    let pos2D = this.physics.to2DPos(pos, this._tempPos2D);
+    let pos2D = this.physics.to2DPos(position, this._tempPos2D);
 
     // 检测是否在全局边界内，不在则销毁 target
     if (!this.physics.inBoundaryArea(pos2D)) {
@@ -225,14 +225,14 @@ export class RigidBody extends ScriptBase {
     const pivotX = target.pivot.x * target.scale.x;
     const pivotY = target.pivot.y * target.scale.y;
     if (target.rotation === 0) {
-      target.pos.set(pos2D.x + pivotX, pos2D.y + pivotY);
+      target.position.set(pos2D.x + pivotX, pos2D.y + pivotY);
       return;
     }
 
     // 考虑旋转角度对 pivot 偏移的影响
     const cos = Math.cos(target.rotation);
     const sin = Math.sin(target.rotation);
-    target.pos.set(pos2D.x + (pivotX * cos - pivotY * sin), pos2D.y + (pivotX * sin + pivotY * cos));
+    target.position.set(pos2D.x + (pivotX * cos - pivotY * sin), pos2D.y + (pivotX * sin + pivotY * cos));
   }
 
   /**
@@ -252,7 +252,7 @@ export class RigidBody extends ScriptBase {
   /**
    * 设置刚体位置
    *
-   * 注意：如果物体使用了刚体，直接修改 node.pos 是无效的，需要使用此方法
+   * 注意：如果物体使用了刚体，直接修改 node.position 是无效的，需要使用此方法
    * @param x - x 轴坐标
    * @param y - y 轴坐标
    */
@@ -272,8 +272,8 @@ export class RigidBody extends ScriptBase {
    * @returns 刚体位置坐标
    */
   getPosition(): IPoint {
-    const pos = this.body.getPosition();
-    return this.physics.to2DPos(pos, pos);
+    const position = this.body.getPosition();
+    return this.physics.to2DPos(position, position);
   }
 
   /**

@@ -58,15 +58,15 @@ export function createPatternFromUrl(url: string, repetition: "no-repeat" | "rep
 
 /**
  * 创建一个线性渐变
- * @param pos - 渐变的起点和终点位置配置
+ * @param position - 渐变的起点和终点位置配置
  * @param colorStops - 渐变的颜色停止点数组
  * @returns Canvas 线性渐变对象
  */
 export function createLinearGradient(
-  pos: { startX: number; startY: number; endX: number; endY: number },
+  position: { startX: number; startY: number; endX: number; endY: number },
   colorStops: { offset: number; color: string }[],
 ) {
-  const grd = ctx.createLinearGradient(pos.startX, pos.startY, pos.endX, pos.endY);
+  const grd = ctx.createLinearGradient(position.startX, position.startY, position.endX, position.endY);
   for (const color of colorStops) {
     grd.addColorStop(color.offset, color.color);
   }
@@ -75,15 +75,22 @@ export function createLinearGradient(
 
 /**
  * 创建一个径向渐变
- * @param pos - 渐变的内圆和外圆位置及半径配置
+ * @param position - 渐变的内圆和外圆位置及半径配置
  * @param colorStops - 渐变的颜色停止点数组
  * @returns Canvas 径向渐变对象
  */
 export function createRadialGradient(
-  pos: { startX: number; startY: number; startRadius: number; endX: number; endY: number; endRadius: number },
+  position: { startX: number; startY: number; startRadius: number; endX: number; endY: number; endRadius: number },
   colorStops: { offset: number; color: string }[],
 ) {
-  const grd = ctx.createRadialGradient(pos.startX, pos.startY, pos.startRadius, pos.endX, pos.endY, pos.endRadius);
+  const grd = ctx.createRadialGradient(
+    position.startX,
+    position.startY,
+    position.startRadius,
+    position.endX,
+    position.endY,
+    position.endRadius,
+  );
   for (const color of colorStops) {
     grd.addColorStop(color.offset, color.color);
   }

@@ -26,7 +26,7 @@ export class FilterManager {
 
     // TODO 这里需要直接调用 transform 吗，没法复用吗
     outputTarget.pp.transform = root.transform;
-    outputTarget.pos = root.pos;
+    outputTarget.position = root.position;
     outputTarget.width = root.width;
     outputTarget.height = root.height;
     return outputTarget!;

@@ -132,25 +132,25 @@ export class Physics {
 
   /**
    * 转换游戏坐标点到物理世界坐标点
-   * @param pos - 游戏世界中的坐标点
+   * @param position - 游戏世界中的坐标点
    * @param out - 输出结果的对象，默认为新对象
    * @returns 物理世界中的坐标点
    */
-  toPhPos = (pos: IPoint, out: IPoint = { x: 0, y: 0 }) => {
-    out.x = pos.x / this._pixelRatio;
-    out.y = pos.y / this._pixelRatio;
+  toPhPos = (position: IPoint, out: IPoint = { x: 0, y: 0 }) => {
+    out.x = position.x / this._pixelRatio;
+    out.y = position.y / this._pixelRatio;
     return out;
   };
 
   /**
    * 转换物理坐标点到游戏坐标点
-   * @param pos - 物理世界中的坐标点
+   * @param position - 物理世界中的坐标点
    * @param out - 输出结果的对象，默认为新对象
    * @returns 游戏世界中的坐标点
    */
-  to2DPos = (pos: IPoint, out: IPoint = { x: 0, y: 0 }) => {
-    out.x = pos.x * this._pixelRatio;
-    out.y = pos.y * this._pixelRatio;
+  to2DPos = (position: IPoint, out: IPoint = { x: 0, y: 0 }) => {
+    out.x = position.x * this._pixelRatio;
+    out.y = position.y * this._pixelRatio;
     return out;
   };
 
@@ -221,12 +221,12 @@ export class Physics {
 
   /**
    * 检测点是否在全局边界内
-   * @param pos - 要检测的点
+   * @param position - 要检测的点
    * @returns 是否在边界内
    */
-  inBoundaryArea(pos: IPoint): boolean {
+  inBoundaryArea(position: IPoint): boolean {
     if (!this.boundaryArea) return true;
-    return this.boundaryArea.contains(pos.x, pos.y);
+    return this.boundaryArea.contains(position.x, position.y);
   }
 
   /**

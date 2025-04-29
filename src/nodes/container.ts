@@ -17,7 +17,7 @@ export class Container extends LikoNode {
 
   protected override _customLocalBounds(bounds: Bounds): void {
     for (const child of this.children) {
-      const { pos } = child;
+      const { position } = child;
       if (child.rotation) {
         // 对于旋转的节点，需要添加矩形的四个顶点并应用变换矩阵
         bounds.addFrame(0, 0, child.width, child.height);
@@ -25,7 +25,7 @@ export class Container extends LikoNode {
         bounds.applyMatrix(child.localMatrix);
       } else {
         // 对于未旋转的节点，直接添加其边界框
-        bounds.addFrame(pos.x, pos.y, pos.x + child.width, pos.y + child.height);
+        bounds.addFrame(position.x, position.y, position.x + child.width, position.y + child.height);
       }
     }
   }

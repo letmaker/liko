@@ -4,7 +4,7 @@ struct VertexInput {
 };
 
 struct VertexOutput {
-  @builtin(position) pos: vec4<f32>,
+  @builtin(position) position: vec4<f32>,
   @location(0) uv: vec2<f32>,
 };
 
@@ -15,7 +15,7 @@ struct VertexOutput {
 @vertex
 fn vert_main(input: VertexInput) -> VertexOutput {
     var out: VertexOutput;
-    out.pos = projection * vec4<f32>(input.xy, 0.0, 1.0);
+    out.position = projection * vec4<f32>(input.xy, 0.0, 1.0);
     out.uv = input.uv;
     return out;
 }

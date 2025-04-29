@@ -49,10 +49,10 @@ export class Transform {
   /**
    * 将当前变换信息应用到指定矩阵
    * @param matrix - 目标矩阵
-   * @param pos - 位置坐标
+   * @param position - 位置坐标
    * @returns 返回应用变换后的矩阵
    */
-  getMatrix(matrix: Matrix, pos: IPoint): Matrix {
+  getMatrix(matrix: Matrix, position: IPoint): Matrix {
     const lt = matrix;
     const { scale, pivot } = this;
 
@@ -61,8 +61,8 @@ export class Transform {
     lt.c = -this._sx * scale._y;
     lt.d = this._cx * scale._y;
 
-    lt.tx = pos.x - (pivot._x * lt.a + pivot._y * lt.c);
-    lt.ty = pos.y - (pivot._x * lt.b + pivot._y * lt.d);
+    lt.tx = position.x - (pivot._x * lt.a + pivot._y * lt.c);
+    lt.ty = position.y - (pivot._x * lt.b + pivot._y * lt.d);
 
     return lt;
   }
@@ -71,10 +71,10 @@ export class Transform {
    * 更新局部和世界变换矩阵
    * @param local - 局部变换矩阵
    * @param world - 世界变换矩阵
-   * @param pos - 位置坐标
+   * @param position - 位置坐标
    * @param parent - 父级变换矩阵
    */
-  updateMatrix(local: Matrix, world: Matrix, pos: IPoint, parent: Matrix): void {
+  updateMatrix(local: Matrix, world: Matrix, position: IPoint, parent: Matrix): void {
     const { _cx, _sx } = this;
     const { _x, _y } = this.scale;
     const { _x: px, _y: py } = this.pivot;
@@ -83,8 +83,8 @@ export class Transform {
     const lb = _sx * _x;
     const lc = -_sx * _y;
     const ld = _cx * _y;
-    const ltx = pos.x - (px * la + py * lc);
-    const lty = pos.y - (px * lb + py * ld);
+    const ltx = position.x - (px * la + py * lc);
+    const lty = position.y - (px * lb + py * ld);
     local.set(la, lb, lc, ld, ltx, lty);
 
     const { a, b, c, d } = parent;

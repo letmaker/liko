@@ -261,17 +261,19 @@ export class Text extends LikoNode implements IRenderable {
   /**
    * 释放文本节点占用的资源
    */
-  override destroy() {
+  override destroy(): this {
     this.pp.texture.destroy();
     super.destroy();
+    return this;
   }
 
   /**
    * 设置文本内容
    * @param text - 要设置的文本内容
    */
-  setText(text: string) {
+  setText(text: string): this {
     this.text = text;
+    return this;
   }
 
   private _$resetStyle() {

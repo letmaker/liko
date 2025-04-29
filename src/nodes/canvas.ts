@@ -546,21 +546,22 @@ export class Canvas extends LikoNode implements IRenderable {
 
   /**
    * 判断某点是否在矢量图形内部
-   * @param pos - 世界坐标点
+   * @param position - 世界坐标点
    * @returns 点是否在路径内
    */
-  isPointInPath(pos: { x: number; y: number }) {
+  isPointInPath(position: { x: number; y: number }): boolean {
     // TODO: 需要考虑 pixelRatio
-    const p = this.worldToLocal(pos);
+    const p = this.worldToLocal(position);
     return this.pp.ctx.isPointInPath(p.x, p.y);
   }
 
   /**
    * 销毁 Canvas 实例及其资源
    */
-  override destroy(): void {
+  override destroy(): this {
     this.pp.cmd.length = 0;
     this.pp.texture?.destroy();
     super.destroy();
+    return this;
   }
 }

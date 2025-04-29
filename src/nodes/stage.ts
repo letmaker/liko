@@ -38,11 +38,11 @@ export class Stage extends LikoNode {
    * @param width - 舞台宽度（逻辑像素）
    * @param height - 舞台高度（逻辑像素）
    */
-  resize(width: number, height: number) {
+  resize(width: number, height: number): this {
     const newWidth = Math.round(width);
     const newHeight = Math.round(height);
     if (newWidth === this.width && newHeight === this.height) {
-      return;
+      return this;
     }
 
     this.width = newWidth;
@@ -58,6 +58,8 @@ export class Stage extends LikoNode {
 
     this.renderer.resize(newWidth, newHeight);
     this.pp.localBounds.set(0, 0, newWidth, newHeight);
+
+    return this;
   }
 
   /**
@@ -73,7 +75,7 @@ export class Stage extends LikoNode {
    * @param point - 要检测的点坐标
    * @returns 如果点在舞台内返回 true，否则返回 false
    */
-  override hitTest(point: IPoint) {
+  override hitTest(point: IPoint): boolean {
     return this.getLocalBounds().contains(point.x, point.y);
   }
 
@@ -119,21 +121,23 @@ export class Stage extends LikoNode {
   /**
    * 暂停舞台的动画和计时器
    */
-  pause() {
+  pause(): this {
     this.timer.pause();
+    return this;
   }
 
   /**
    * 恢复舞台的动画和计时器
    */
-  resume() {
+  resume(): this {
     this.timer.resume();
+    return this;
   }
 
   /**
    * 销毁 Stage 实例及其所有资源，包括计时器、数据存储、渲染器和输入管理器
    */
-  override destroy(): void {
+  override destroy(): this {
     if (!this.destroyed) {
       this.timer.destroy();
       this.store.destroy();
@@ -142,5 +146,6 @@ export class Stage extends LikoNode {
       this.pointer.destroy();
       super.destroy();
     }
+    return this;
   }
 }
