@@ -158,7 +158,7 @@ export function cloneJson<T>(json: T): T {
  * @returns 创建的脚本实例，如果创建失败则返回 undefined
  */
 export function createScript(json: IScriptData): ScriptBase | undefined {
-  const script = createScriptInstance(json.props.script);
+  const script = createScriptInstance(json.script);
   if (script) {
     script.id = json.id;
     script.setProps(json.props);

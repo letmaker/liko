@@ -68,14 +68,12 @@ export interface INodeData {
 export interface IScriptData {
   /** 脚本唯一标识符 */
   id: string;
-  /** 脚本类型，用于区分不同功能的脚本 */
-  type: "Script" | "Effect" | "Controller";
+  /** 脚本类名或路径 */
+  script: string;
   /** 脚本描述，提供给 AI 读取的附加信息 */
   description?: string;
   /** 脚本属性集合，包含脚本的各种配置参数 */
   props: {
-    /** 脚本类名或路径 */
-    script: string;
     /** 脚本标签 */
     label?: string;
     /** 是否启用脚本 */
