@@ -80,10 +80,9 @@ export class App {
     // 根据 canvas 父元素，自动调整画布大小
     if (params.autoResize) {
       window.onresize = () => {
-        const container = canvas.parentElement!;
-        const containerBounds = container.getBoundingClientRect();
-        this.stage.resize(containerBounds.width, containerBounds.height);
+        this.stage.autoResize();
       };
+      this.stage.autoResize();
     }
 
     if (params.physics) {

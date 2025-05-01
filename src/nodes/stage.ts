@@ -34,6 +34,17 @@ export class Stage extends LikoNode {
   }
 
   /**
+   * 自动调整舞台大小
+   */
+  autoResize() {
+    const container = this.canvas.parentElement;
+    if (container) {
+      const containerBounds = container.getBoundingClientRect();
+      this.resize(containerBounds.width, containerBounds.height);
+    }
+  }
+
+  /**
    * 重设舞台大小
    * @param width - 舞台宽度（逻辑像素）
    * @param height - 舞台高度（逻辑像素）

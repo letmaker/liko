@@ -1,6 +1,6 @@
-import type { IScriptData } from "../nodes/node";
+import type { INodeData, IScriptData } from "../nodes/node";
 import type { ScriptBase } from "../scripts/script-base";
-import { createScriptInstance } from "./register";
+import { createNodeInstance, createScriptInstance } from "./register";
 import { Timer } from "./timer";
 
 /** 用于生成唯一标识符的递增计数器 */
@@ -154,14 +154,28 @@ export function cloneJson<T>(json: T): T {
 
 /**
  * 根据脚本数据创建脚本实例
- * @param json - 包含脚本配置的数据对象
+ * @param data - 包含脚本配置的数据对象
  * @returns 创建的脚本实例，如果创建失败则返回 undefined
  */
-export function createScript(json: IScriptData): ScriptBase | undefined {
-  const script = createScriptInstance(json.script);
+export function createScript(data: IScriptData): ScriptBase | undefined {
+  const script = createScriptInstance(data.script);
   if (script) {
-    script.id = json.id;
-    script.setProps(json.props);
+    script.id = data.id;
+    script.setProps(data.props);
   }
   return script;
+}
+
+/**
+ * 根据节点数据，创建节点实例
+ * @param data - 节点数据
+ * @returns 节点实例，如果创建失败则返回 undefined
+ */
+export function createNode(data: INodeData) {
+  const node = createNodeInstance(data.type);
+  if (node) {
+    node.id = data.id;
+    node.fromJson(data);
+  }
+  return node;
 }
