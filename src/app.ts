@@ -2,10 +2,11 @@ import { KeyBoardManager } from "./events/keyboard-manager";
 import { PointerManager } from "./events/pointer-manager";
 import { Stage } from "./nodes/stage";
 import { type PhysicsOptions, createPhysics } from "./physics";
-import { Device, initDevice } from "./render/device/device";
+import { initDevice } from "./render/device/device";
 import { Renderer } from "./render/renderer";
 import type { ColorData } from "./utils/color";
 import { Timer } from "./utils/timer";
+import { createCanvas } from "./utils/utils";
 
 /** 引擎默认配置选项 */
 const defaultOptions = {
@@ -52,14 +53,17 @@ export class App {
   /** 舞台实例，作为渲染的根节点 */
   stage = new Stage();
 
+  constructor() {
+    initDevice();
+  }
+
   /**
    * 初始化并启动引擎
    * @param options - 引擎初始化选项
    * @returns 返回创建或使用的画布元素
    */
   async init(options?: IAppOptions) {
-    initDevice();
-    const canvas = options?.canvas ?? Device.createCanvas();
+    const canvas = options?.canvas ?? createCanvas();
     const params = { canvas, ...defaultOptions, ...options };
     App.pixelRatio = params.pixelRatio;
 

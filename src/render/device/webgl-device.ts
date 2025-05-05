@@ -76,16 +76,6 @@ export class WebGLDevice {
     }
   }
 
-  /**
-   * 创建画布
-   */
-  createCanvas(width = 100, height = 100): HTMLCanvasElement {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    return canvas;
-  }
-
   createShader(type: number, source: string): WebGLShader {
     const gl = this.gl;
     const shader = gl.createShader(type);

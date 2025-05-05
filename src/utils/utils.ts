@@ -10,7 +10,7 @@ let id = 0;
  * 生成一个递增的唯一数字标识符
  * @returns 唯一的数字标识符
  */
-export function getUniqueID(): number {
+export function getUIDNumber(): number {
   return id++;
 }
 

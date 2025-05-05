@@ -2,11 +2,11 @@ import { App } from "../app";
 import { DirtyType } from "../const";
 import type { Bounds } from "../math/bounds";
 import { TextureBuffer } from "../render/buffer/texture-buffer";
-import { Device } from "../render/device/device";
 import { SpriteObject } from "../render/render/sprite-object";
 import { Texture } from "../resource/texture";
 import { RegNode } from "../utils/decorators";
 import { Timer } from "../utils/timer";
+import { createCanvas } from "../utils/utils";
 import type { INodeOptions } from "./node";
 import { type INodePrivateProps, LikoNode } from "./node";
 import type { IRenderable } from "./sprite";
@@ -233,7 +233,7 @@ export class Text extends LikoNode implements IRenderable {
     super();
 
     const pp = this.pp;
-    pp.canvas = Device.createCanvas(100, 20);
+    pp.canvas = createCanvas(100, 20);
     pp.ctx = pp.canvas.getContext("2d") as CanvasRenderingContext2D;
     pp.text = "";
     pp.lines = [];

@@ -48,13 +48,6 @@ export class WebGPUDevice {
     }
   }
 
-  createCanvas(width = 100, height = 100) {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    return canvas;
-  }
-
   createProjectionMatrixBuffer(label: string, data: Float32Array) {
     const { device } = this;
 

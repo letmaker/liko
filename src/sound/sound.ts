@@ -1,5 +1,5 @@
 import { loader } from "../loader";
-import { getUniqueID } from "../utils/utils";
+import { getUIDNumber } from "../utils/utils";
 
 /**
  * 音频处理类，基于Web Audio API
@@ -91,7 +91,7 @@ export class Sound {
     if (this.isPlaying || this.destroyed) return;
 
     this.isPlaying = true;
-    this._playID = getUniqueID();
+    this._playID = getUIDNumber();
     this._offset = offset;
     this._load(this._playID).then((source) => {
       if (source) {

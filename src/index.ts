@@ -30,3 +30,4 @@ export { sound, music } from "./sound/sound-manager";
 
 // 物理引擎
 export { RigidBody } from "./physics/rigidBody";
+export type { IShape, IJoint } from "./physics/rigidBody.interface";

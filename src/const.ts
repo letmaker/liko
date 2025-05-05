@@ -40,8 +40,6 @@ export enum EventType {
 
   /** 节点更改大小时，由 node 派发 */
   resize = "resize",
-  /** 节点旋转、缩放、位移时，由 node 派发，由于 transform 派发比较频繁（任何pos,scale,rotation改变都会触发），使用的时候，注意性能 */
-  transform = "transform",
 
   /** 指针按下时，由 node 派发 */
   pointerdown = "pointerdown",
