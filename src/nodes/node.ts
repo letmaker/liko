@@ -248,8 +248,8 @@ export abstract class LikoNode {
    *
    * @returns 当前节点实例，支持链式调用
    */
-  destroy(): this {
-    if (this.pp.destroyed) return this;
+  destroy(): void {
+    if (this.pp.destroyed) return;
 
     this.pp.destroyed = true;
     this.enabled = false;
@@ -263,7 +263,6 @@ export abstract class LikoNode {
     this.destroyScripts();
     this.destroyFilters();
     this.destroyChildren();
-    return this;
   }
 
   /** 是否已被销毁，销毁后不可再用 */

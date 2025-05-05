@@ -259,10 +259,9 @@ export class Text extends LikoNode implements IRenderable {
    * 释放文本节点占用的资源
    * @returns 当前实例，支持链式调用
    */
-  override destroy(): this {
+  override destroy(): void {
     this.pp.texture.destroy();
     super.destroy();
-    return this;
   }
 
   /**

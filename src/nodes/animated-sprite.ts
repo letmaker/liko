@@ -199,10 +199,9 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
    * 在销毁前会停止动画播放并清空纹理集合
    * @returns 当前实例，支持链式调用
    */
-  override destroy(): this {
+  override destroy(): void {
     this.stop();
     this.textures.length = 0;
     super.destroy();
-    return this;
   }
 }

@@ -152,7 +152,7 @@ export class Stage extends LikoNode {
    * 销毁 Stage 实例及其所有资源，包括计时器、数据存储、渲染器和输入管理器
    * @returns 返回 this 引用，支持链式调用
    */
-  override destroy(): this {
+  override destroy(): void {
     if (!this.destroyed) {
       this.timer.destroy();
       this.store.destroy();
@@ -161,6 +161,5 @@ export class Stage extends LikoNode {
       this.pointer.destroy();
       super.destroy();
     }
-    return this;
   }
 }

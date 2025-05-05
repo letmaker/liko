@@ -126,13 +126,12 @@ export class Scene extends LikoNode implements IScene {
    * 销毁场景实例
    * @returns 当前实例，支持链式调用
    */
-  override destroy(): this {
-    if (this.destroyed) return this;
+  override destroy(): void {
+    if (this.destroyed) return;
 
     this.stop();
     this.json = undefined;
     super.destroy();
-    return this;
   }
 
   /**

@@ -561,10 +561,9 @@ export class Canvas extends LikoNode implements IRenderable {
   /**
    * 销毁 Canvas 实例及其资源
    */
-  override destroy(): this {
+  override destroy(): void {
     this.pp.cmd.length = 0;
     this.pp.texture?.destroy();
     super.destroy();
-    return this;
   }
 }
