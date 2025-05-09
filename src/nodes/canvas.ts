@@ -1,16 +1,16 @@
-import { App } from "../app";
-import { DirtyType, PI2 } from "../const";
-import { Bounds } from "../math/bounds";
-import type { IPoint } from "../math/point";
-import { TextureBuffer } from "../render/buffer/texture-buffer";
-import { SpriteObject } from "../render/render/sprite-object";
-import { Texture } from "../resource/texture";
-import { RegNode } from "../utils/decorators";
-import { Timer } from "../utils/timer";
-import { createCanvas } from "../utils/utils";
-import type { INodeOptions, INodePrivateProps } from "./node";
-import { LikoNode } from "./node";
-import type { IRenderable } from "./sprite";
+import { App } from '../app';
+import { DirtyType, PI2 } from '../const';
+import { Bounds } from '../math/bounds';
+import type { IPoint } from '../math/point';
+import { TextureBuffer } from '../render/buffer/texture-buffer';
+import { SpriteObject } from '../render/render/sprite-object';
+import { Texture } from '../resource/texture';
+import { RegNode } from '../utils/decorators';
+import { Timer } from '../utils/timer';
+import { createCanvas } from '../utils/utils';
+import type { INodeOptions, INodePrivateProps } from './node';
+import { LikoNode } from './node';
+import type { IRenderable } from './sprite';
 
 /** 颜色数据类型，可以是字符串、Canvas 渐变或 Canvas 图案 */
 type ColorData = string | CanvasGradient | CanvasPattern;
@@ -31,7 +31,7 @@ interface ICanvasPrivateProps extends INodePrivateProps {
 /**
  * Canvas 矢量图形绘制类
  */
-@RegNode("Canvas")
+@RegNode('Canvas')
 export class Canvas extends LikoNode implements IRenderable {
   declare pp: ICanvasPrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
@@ -43,7 +43,7 @@ export class Canvas extends LikoNode implements IRenderable {
     pp.bounds = new Bounds();
     pp.cmd = [];
     pp.canvas = createCanvas(1, 1);
-    pp.ctx = pp.canvas.getContext("2d") as CanvasRenderingContext2D;
+    pp.ctx = pp.canvas.getContext('2d') as CanvasRenderingContext2D;
     pp.texture = new Texture();
     pp.changed = false;
     pp.maxLineWidth = 0;
@@ -83,7 +83,7 @@ export class Canvas extends LikoNode implements IRenderable {
    */
   rect(x: number, y: number, width: number, height: number): this {
     console.assert(width >= 0 && height >= 0);
-    this.pp.cmd.push({ type: "rect", params: [x, y, width, height] });
+    this.pp.cmd.push({ type: 'rect', params: [x, y, width, height] });
     this._$addPoint(x, y);
     this._$addPoint(x + width, y + height);
     return this;
@@ -103,9 +103,9 @@ export class Canvas extends LikoNode implements IRenderable {
     y: number,
     width: number,
     height: number,
-    radii?: number | DOMPointInit | (number | DOMPointInit)[],
+    radii?: number | DOMPointInit | (number | DOMPointInit)[]
   ): this {
-    this.pp.cmd.push({ type: "roundRect", params: [x, y, width, height, radii] });
+    this.pp.cmd.push({ type: 'roundRect', params: [x, y, width, height, radii] });
     this._$addPoint(x, y);
     this._$addPoint(x + width, y + height);
     return this;
@@ -119,7 +119,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   circle(centerX: number, centerY: number, radius: number): this {
-    this.pp.cmd.push({ type: "arc", params: [centerX, centerY, radius, 0, PI2] });
+    this.pp.cmd.push({ type: 'arc', params: [centerX, centerY, radius, 0, PI2] });
     this._$addPoint(centerX - radius, centerY - radius);
     this._$addPoint(centerX + radius, centerY + radius);
     return this;
@@ -139,7 +139,7 @@ export class Canvas extends LikoNode implements IRenderable {
    */
   ellipse(centerX: number, centerY: number, radiusX: number, radiusY: number, startAngle = 0, endAngle = PI2): this {
     this.pp.cmd.push({
-      type: "ellipse",
+      type: 'ellipse',
       params: [centerX, centerY, radiusX, radiusY, 0, startAngle, endAngle],
     });
     this._$addPoint(centerX - radiusX, centerY - radiusY);
@@ -172,7 +172,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   moveTo(x: number, y: number): this {
-    this.pp.cmd.push({ type: "moveTo", params: [x, y] });
+    this.pp.cmd.push({ type: 'moveTo', params: [x, y] });
     this._$addPoint(x, y);
     return this;
   }
@@ -184,7 +184,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   lineTo(x: number, y: number): this {
-    this.pp.cmd.push({ type: "lineTo", params: [x, y] });
+    this.pp.cmd.push({ type: 'lineTo', params: [x, y] });
     this._$addPoint(x, y);
     return this;
   }
@@ -199,7 +199,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   arc(x: number, y: number, radius: number, startAngle: number, endAngle: number): this {
-    this.pp.cmd.push({ type: "arc", params: [x, y, radius, startAngle, endAngle] });
+    this.pp.cmd.push({ type: 'arc', params: [x, y, radius, startAngle, endAngle] });
     this._$addPoint(x - radius, y - radius);
     this._$addPoint(x + radius, y + radius);
     return this;
@@ -215,7 +215,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): this {
-    this.pp.cmd.push({ type: "arcTo", params: [x1, y1, x2, y2, radius] });
+    this.pp.cmd.push({ type: 'arcTo', params: [x1, y1, x2, y2, radius] });
     this._$addPoint(x1, y1);
     this._$addPoint(x2, y2);
     return this;
@@ -232,7 +232,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): this {
-    this.pp.cmd.push({ type: "quadraticCurveTo", params: [cpx, cpy, x, y] });
+    this.pp.cmd.push({ type: 'quadraticCurveTo', params: [cpx, cpy, x, y] });
     this._$addPoint(x, y);
     this._$addPoint(cpx, cpy);
     return this;
@@ -251,7 +251,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): this {
-    this.pp.cmd.push({ type: "bezierCurveTo", params: [cp1x, cp1y, cp2x, cp2y, x, y] });
+    this.pp.cmd.push({ type: 'bezierCurveTo', params: [cp1x, cp1y, cp2x, cp2y, x, y] });
     this._$addPoint(x, y);
     this._$addPoint(cp1x, cp1y);
     this._$addPoint(cp2x, cp2y);
@@ -265,7 +265,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   beginPath(): this {
-    this.pp.cmd.push({ type: "beginPath", params: [] });
+    this.pp.cmd.push({ type: 'beginPath', params: [] });
     return this;
   }
 
@@ -274,7 +274,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   closePath(): this {
-    this.pp.cmd.push({ type: "closePath", params: [] });
+    this.pp.cmd.push({ type: 'closePath', params: [] });
     return this;
   }
 
@@ -284,7 +284,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   clip(path?: Path2D): this {
-    this.pp.cmd.push({ type: "clip", params: path ? [path] : [] });
+    this.pp.cmd.push({ type: 'clip', params: path ? [path] : [] });
     this.pp.clipped = true;
     return this;
   }
@@ -329,7 +329,7 @@ export class Canvas extends LikoNode implements IRenderable {
     sourceX?: number,
     sourceY?: number,
     sourceWidth?: number,
-    sourceHeight?: number,
+    sourceHeight?: number
   ): this {
     const source = image instanceof Texture ? (image.buffer as TextureBuffer).bitmap : image;
     const width = destWidth ?? image.width;
@@ -338,16 +338,16 @@ export class Canvas extends LikoNode implements IRenderable {
     const { length } = arguments;
     const { cmd } = this.pp;
     if (length === 3) {
-      cmd.push({ type: "drawImage", params: [source, x, y] });
+      cmd.push({ type: 'drawImage', params: [source, x, y] });
     } else if (length === 5) {
-      cmd.push({ type: "drawImage", params: [source, x, y, destWidth, destHeight] });
+      cmd.push({ type: 'drawImage', params: [source, x, y, destWidth, destHeight] });
     } else if (length === 9) {
       cmd.push({
-        type: "drawImage",
+        type: 'drawImage',
         params: [source, sourceX, sourceY, sourceWidth, sourceHeight, x, y, destWidth, destHeight],
       });
     } else {
-      throw new Error("arguments length error");
+      throw new Error('arguments length error');
     }
 
     this._$addPoint(x, y);
@@ -365,7 +365,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   drawSvg(svgStr: string, destX = 0, destY = 0, scale = 1): this {
-    const blob = new Blob([svgStr], { type: "image/svg+xml" });
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.src = url;
@@ -375,7 +375,7 @@ export class Canvas extends LikoNode implements IRenderable {
     img.onload = () => {
       const width = img.width * scale;
       const height = img.height * scale;
-      this.pp.cmd.push({ type: "drawImage", params: [img, destX, destY, width, height] });
+      this.pp.cmd.push({ type: 'drawImage', params: [img, destX, destY, width, height] });
       this._$addPoint(destX, destY);
       this._$addPoint(destX + width, destY + height);
 
@@ -391,7 +391,7 @@ export class Canvas extends LikoNode implements IRenderable {
    * @returns 当前实例，支持链式调用
    */
   fill(options?: { color: ColorData }): this {
-    this.pp.cmd.push({ type: "fill", params: [options?.color ?? "#FFD700"] });
+    this.pp.cmd.push({ type: 'fill', params: [options?.color ?? '#FFD700'] });
     this._$dirty();
     return this;
   }
@@ -416,10 +416,10 @@ export class Canvas extends LikoNode implements IRenderable {
     dashOffset?: number;
     miterLimit?: number;
   }): this {
-    const params = options ? { width: 1, color: "#FFD700", ...options } : { width: 1, color: "#FFD700" };
+    const params = options ? { width: 1, color: '#FFD700', ...options } : { width: 1, color: '#FFD700' };
     params.width = Math.max(params.width, 0.0001);
     this.pp.cmd.push({
-      type: "stroke",
+      type: 'stroke',
       params: [params.color, params.width, params.cap, params.join, params.dash, params.dashOffset, params.miterLimit],
     });
 
@@ -438,7 +438,7 @@ export class Canvas extends LikoNode implements IRenderable {
     join?: CanvasLineJoin,
     dash?: number[],
     dashOffset?: number,
-    miterLimit?: number,
+    miterLimit?: number
   ) {
     const ctx = this.pp.ctx;
     ctx.strokeStyle = color;
@@ -475,9 +475,9 @@ export class Canvas extends LikoNode implements IRenderable {
         ctx.translate(-offset.x, -offset.y);
 
         for (const c of cmd) {
-          if (c.type === "fill") {
+          if (c.type === 'fill') {
             this._$fill.apply(this, c.params);
-          } else if (c.type === "stroke") {
+          } else if (c.type === 'stroke') {
             this._$stroke.apply(this, c.params);
           } else {
             const fun = (CanvasRenderingContext2D.prototype as any)[c.type];
@@ -489,7 +489,7 @@ export class Canvas extends LikoNode implements IRenderable {
   }
 
   private _$resizeCanvas(offset: IPoint, canvasWidth: number, canvasHeight: number) {
-    console.assert(canvasWidth > 0 && canvasHeight > 0, "canvas width and height must be greater than 0");
+    console.assert(canvasWidth > 0 && canvasHeight > 0, 'canvas width and height must be greater than 0');
     const { canvas, texture, width, height } = this.pp;
 
     const sheet = {

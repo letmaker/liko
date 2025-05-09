@@ -1,15 +1,15 @@
-import { Buffer } from "../buffer/buffer";
+import { Buffer } from '../buffer/buffer';
 
 type UNIFORM_TYPES_SINGLE =
-  | "f32"
-  | "vec2<f32>"
-  | "vec3<f32>"
-  | "vec4<f32>"
-  | "mat2x2<f32>"
-  | "mat3x3<f32>"
-  | "mat4x4<f32>"
-  | "u32";
-type OPTIONAL_SPACE = " " | "";
+  | 'f32'
+  | 'vec2<f32>'
+  | 'vec3<f32>'
+  | 'vec4<f32>'
+  | 'mat2x2<f32>'
+  | 'mat3x3<f32>'
+  | 'mat4x4<f32>'
+  | 'u32';
+type OPTIONAL_SPACE = ' ' | '';
 type UNIFORM_TYPES_ARRAY = `array<${UNIFORM_TYPES_SINGLE},${OPTIONAL_SPACE}${number}>`;
 export type UNIFORM_TYPES = UNIFORM_TYPES_SINGLE | UNIFORM_TYPES_ARRAY;
 export declare const WGSL_TO_STD40_SIZE: Record<string, number>;
@@ -52,9 +52,9 @@ export class UniformGroup {
     for (const key of keys) {
       const data = this._options[key];
       switch (data.type) {
-        case "f32": {
+        case 'f32': {
           const value = data.value;
-          if (typeof value === "number") {
+          if (typeof value === 'number') {
             this.buffer.addFloat32(value);
           } else if (Array.isArray(value)) {
             for (const v of value) {

@@ -1,5 +1,5 @@
-import { Matrix } from "./matrix";
-import { Rectangle } from "./rectangle";
+import { Matrix } from './matrix';
+import { Rectangle } from './rectangle';
 
 export interface BoundsData {
   minX: number;
@@ -92,7 +92,7 @@ export class Bounds {
     minX = Number.POSITIVE_INFINITY,
     minY = Number.POSITIVE_INFINITY,
     maxX = Number.NEGATIVE_INFINITY,
-    maxY = Number.NEGATIVE_INFINITY,
+    maxY = Number.NEGATIVE_INFINITY
   ) {
     this.set(minX, minY, maxX, maxY);
   }

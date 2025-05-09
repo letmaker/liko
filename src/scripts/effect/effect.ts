@@ -1,4 +1,4 @@
-import { Ease, getEase } from "./ease";
+import { Ease, getEase } from './ease';
 
 type PropNumber = number | `+${number}` | `-${number}` | `*${number}`;
 /**
@@ -114,7 +114,7 @@ export class Effect {
     return this._ease;
   }
   set ease(value: ((amount: number) => number) | string) {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       this._ease = getEase(value);
     } else {
       this._ease = value;
@@ -250,7 +250,7 @@ export class Effect {
    */
   private _fromTarget(prop: string, value: PropValue): number | Record<string, number> {
     const val = this.target[prop];
-    if (typeof val === "number") return val;
+    if (typeof val === 'number') return val;
 
     const obj: Record<string, number> = {};
     const keys = Object.keys(value);
@@ -273,10 +273,10 @@ export class Effect {
    * - 对象：包含多个子属性的复合值
    */
   private _formatValue(prop: string, value: PropValue): number | Record<string, number> {
-    if (typeof value === "number") return value;
-    if (typeof value === "string") {
-      if (value.startsWith("*")) {
-        return this.target[prop] * Number.parseFloat(value.replace("*", ""));
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      if (value.startsWith('*')) {
+        return this.target[prop] * Number.parseFloat(value.replace('*', ''));
       }
       return (this.target[prop] as number) + Number.parseFloat(value);
     }
@@ -284,11 +284,11 @@ export class Effect {
     const keys = Object.keys(value);
     for (const key of keys) {
       const keyValue = value[key];
-      if (typeof keyValue === "number") {
+      if (typeof keyValue === 'number') {
         obj[key] = keyValue;
       } else {
-        if (keyValue.startsWith("*")) {
-          obj[key] = this.target[prop][key] * Number.parseFloat(keyValue.replace("*", ""));
+        if (keyValue.startsWith('*')) {
+          obj[key] = this.target[prop][key] * Number.parseFloat(keyValue.replace('*', ''));
         } else {
           obj[key] = (this.target[prop][key] as number) + Number.parseFloat(keyValue);
         }
@@ -310,12 +310,12 @@ export class Effect {
   private _setDiff(
     prop: string,
     fromValue: number | Record<string, number>,
-    toValue: number | Record<string, number>,
+    toValue: number | Record<string, number>
   ): void {
     this._from[prop] = fromValue;
-    if (typeof fromValue === "number" && typeof toValue === "number") {
+    if (typeof fromValue === 'number' && typeof toValue === 'number') {
       this._diff[prop] = toValue - fromValue;
-    } else if (typeof fromValue === "object" && typeof toValue === "object") {
+    } else if (typeof fromValue === 'object' && typeof toValue === 'object') {
       const diff: Record<string, number> = {};
       const keys = Object.keys(fromValue);
       for (const key of keys) {
@@ -365,7 +365,7 @@ export class Effect {
     const keys = Object.keys(this._diff);
     for (const prop of keys) {
       const diff = this._diff[prop];
-      if (typeof diff === "number") {
+      if (typeof diff === 'number') {
         this.target[prop] = (this._from[prop] as number) + diff * progress;
       } else {
         const objProp = this.target[prop];

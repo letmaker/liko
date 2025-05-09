@@ -1,12 +1,12 @@
-import { Matrix } from "../../math/matrix";
-import type { LikoNode } from "../../nodes/node";
-import type { Texture } from "../../resource/texture";
-import { getUID } from "../../utils/utils";
-import { CameraBuffer } from "../buffer/camera-buffer";
-import { RenderTarget } from "../render/render-target";
-import { WebGpuRender } from "../render/webgpu-render";
-import { FilterRender } from "./filter-render";
-import type { UniformGroup } from "./uniform-group";
+import { Matrix } from '../../math/matrix';
+import type { LikoNode } from '../../nodes/node';
+import type { Texture } from '../../resource/texture';
+import { getUID } from '../../utils/utils';
+import { CameraBuffer } from '../buffer/camera-buffer';
+import { RenderTarget } from '../render/render-target';
+import { WebGpuRender } from '../render/webgpu-render';
+import { FilterRender } from './filter-render';
+import type { UniformGroup } from './uniform-group';
 
 export type FilterResource = Record<string, UniformGroup | Texture>;
 /**
@@ -21,8 +21,8 @@ export class Filter {
   _dirty = true;
 
   id = getUID();
-  label = "";
-  shader = "";
+  label = '';
+  shader = '';
   filterRender: FilterRender;
   renderTarget = new RenderTarget();
   resources: FilterResource = {};

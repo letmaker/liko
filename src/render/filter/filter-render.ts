@@ -1,12 +1,12 @@
+import { Texture } from '../../resource/texture';
+import { CameraBuffer } from '../buffer/camera-buffer';
 // @ts-nocheck  TODO: 待实现
-import { type IBindResource, Device } from "../device/device";
-import type { Filter } from "./filter";
-import type { FilterResource } from "./filter";
-import { CameraBuffer } from "../buffer/camera-buffer";
-import type { RenderTarget } from "../render/render-target";
-import { UniformGroup } from "./uniform-group";
-import { Texture } from "../../resource/texture";
-import { getPipelineFromCache } from "../utils/cache-manager";
+import { Device, type IBindResource } from '../device/device';
+import type { RenderTarget } from '../render/render-target';
+import { getPipelineFromCache } from '../utils/cache-manager';
+import type { Filter } from './filter';
+import type { FilterResource } from './filter';
+import { UniformGroup } from './uniform-group';
 
 const clearColor = { r: 0, g: 0, b: 0, a: 0 };
 /**
@@ -24,23 +24,23 @@ export class FilterRender {
     this._pipeline ??= getPipelineFromCache(this.filter.shader, () => {
       const groups = [];
       const layouts = [];
-      const { group, layout } = Device.createGroup("filter-camera", [
+      const { group, layout } = Device.createGroup('filter-camera', [
         {
           binding: 0,
           visibility: GPUShaderStage.VERTEX,
-          type: "Buffer",
+          type: 'Buffer',
           resource: this.camera.buffer,
         },
         {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,
-          type: "TextureView",
+          type: 'TextureView',
           resource: input.buffer.view,
         },
         {
           binding: 2,
           visibility: GPUShaderStage.FRAGMENT,
-          type: "Sampler",
+          type: 'Sampler',
           resource: input.buffer.sampler,
         },
       ]);
@@ -55,7 +55,7 @@ export class FilterRender {
 
       this.groups = groups;
 
-      return Device.createFilterPipeline("filter", layouts, this.filter.shader);
+      return Device.createFilterPipeline('filter', layouts, this.filter.shader);
     });
     return this._pipeline;
   }
@@ -70,28 +70,28 @@ export class FilterRender {
         res.push({
           binding: index,
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          type: "Buffer",
+          type: 'Buffer',
           resource: value.buffer.buffer,
         });
       } else if (value instanceof Texture) {
         res.push({
           binding: index,
           visibility: GPUShaderStage.FRAGMENT,
-          type: "TextureView",
+          type: 'TextureView',
           resource: value.buffer.view,
         });
         index++;
         res.push({
           binding: index,
           visibility: GPUShaderStage.FRAGMENT,
-          type: "Sampler",
+          type: 'Sampler',
           resource: value.buffer.sampler,
         });
         value.buffer.upload();
       }
       index++;
     }
-    return Device.createGroup("filter-resource", res);
+    return Device.createGroup('filter-resource', res);
   }
 
   destroy() {
@@ -113,7 +113,7 @@ export class FilterRender {
       0, height, 0, 1,
       width, height, 1, 1,
     ]);
-    const vertexBuffer = Device.createVertexBuffer("filter", vertexData);
+    const vertexBuffer = Device.createVertexBuffer('filter', vertexData);
     Device.uploadBuffer(vertexBuffer, vertexData);
 
     const command = Device.createCommandEncoder();
@@ -122,8 +122,8 @@ export class FilterRender {
         {
           view: texture.createView(),
           clearValue: clearColor,
-          loadOp: "clear",
-          storeOp: "store",
+          loadOp: 'clear',
+          storeOp: 'store',
         },
       ],
     });

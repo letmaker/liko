@@ -1,5 +1,5 @@
-import { EventType } from "../const";
-import { Dispatcher } from "../utils/dispatcher";
+import { EventType } from '../const';
+import { Dispatcher } from '../utils/dispatcher';
 
 /**
  * 定义资源加载器的接口规范
@@ -79,7 +79,7 @@ export class LoaderManager extends Dispatcher {
 
     // 找不到合适的加载器
     if (!resLoader) {
-      this._error("no loader can load:", url);
+      this._error('no loader can load:', url);
       return Promise.resolve(undefined);
     }
 
@@ -103,8 +103,8 @@ export class LoaderManager extends Dispatcher {
   }
 
   private _getTypeByExt(url: string): string {
-    let ext = url.substring(url.lastIndexOf(".") + 1);
-    if (ext.indexOf("?") !== -1) ext = ext.substring(0, ext.lastIndexOf("?"));
+    let ext = url.substring(url.lastIndexOf('.') + 1);
+    if (ext.indexOf('?') !== -1) ext = ext.substring(0, ext.lastIndexOf('?'));
     return ext.toLowerCase();
   }
 
@@ -128,7 +128,7 @@ export class LoaderManager extends Dispatcher {
 
   private _error(url: string, error: string): void {
     // 和直接 throw 相比，哪个更好：console.error 允许程序继续执行，适合非致命性错误，资源加载失败通常不应该中断整个游戏进程
-    -console.error("Failed to load url:", url, "Error:", error);
+    -console.error('Failed to load url:', url, 'Error:', error);
     delete this._loadingMap[url];
     this._loaded++;
     this.emit(EventType.error, url, error);
@@ -160,8 +160,8 @@ export class LoaderManager extends Dispatcher {
     const res = this.cacheMap[url];
     delete this.cacheMap[url];
     if (res) {
-      if (typeof res.destroy === "function") res.destroy();
-      if (typeof res.dispose === "function") res.dispose();
+      if (typeof res.destroy === 'function') res.destroy();
+      if (typeof res.dispose === 'function') res.dispose();
     }
   }
 

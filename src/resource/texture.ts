@@ -1,8 +1,8 @@
-import { loader } from "../loader";
-import { Rectangle } from "../math/rectangle";
-import type { ITextureBuffer } from "../render/buffer/interface";
-import { groupD8 } from "../render/utils/groupD8";
-import { getUID } from "../utils/utils";
+import { loader } from '../loader';
+import { Rectangle } from '../math/rectangle';
+import type { ITextureBuffer } from '../render/buffer/interface';
+import { groupD8 } from '../render/utils/groupD8';
+import { getUID } from '../utils/utils';
 
 export interface ISheet {
   /** 裁剪后的小图在图集上的位置和大小 */
@@ -27,7 +27,7 @@ export class Texture {
   readonly uvs = { x0: 0, y0: 0, x1: 1, y1: 0, x2: 1, y2: 1, x3: 0, y3: 1 };
 
   /** 纹理的 URL 地址 */
-  url = "";
+  url = '';
 
   private _buffer?: ITextureBuffer;
   private _width = 0;
@@ -84,7 +84,7 @@ export class Texture {
    * @returns 创建的纹理对象，如果加载失败则返回 undefined
    */
   static async createFromUrl(url: string): Promise<Texture | undefined> {
-    return loader.load(url, "image");
+    return loader.load(url, 'image');
   }
 
   /**
@@ -110,7 +110,7 @@ export class Texture {
       this._buffer?.destroy();
       this._buffer = buffer;
       this._sheet = sheet;
-      this.url = url ?? "";
+      this.url = url ?? '';
     }
     if (sheet) {
       this._width = sheet.sourceSize.w;
@@ -122,7 +122,7 @@ export class Texture {
         sheet.spriteSourceSize.y,
         // 修复 adobe 导出显示异常
         sheet.spriteSourceSize.x + sheet.frame.w,
-        sheet.spriteSourceSize.y + sheet.frame.h,
+        sheet.spriteSourceSize.y + sheet.frame.h
       );
       this._updateUvs(sheet);
     } else {

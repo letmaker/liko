@@ -1,7 +1,7 @@
-import { EventType } from "../const";
-import type { LikoNode } from "../nodes/node";
-import type { IScene } from "../nodes/scene";
-import type { Stage } from "../nodes/stage";
+import { EventType } from '../const';
+import type { LikoNode } from '../nodes/node';
+import type { IScene } from '../nodes/scene';
+import type { Stage } from '../nodes/stage';
 
 /**
  * 节点扩展脚本基类，用于扩展 node 的功能
@@ -17,9 +17,9 @@ import type { Stage } from "../nodes/stage";
  */
 export abstract class ScriptBase {
   /** 脚本唯一标识符，通常由编辑器指定 */
-  id = "";
+  id = '';
   /** 脚本标签，用于快速识别和查找 */
-  label = "";
+  label = '';
 
   private _$awaked = false;
   /** 脚本是否已被激活（添加到场景后触发） */
@@ -51,7 +51,7 @@ export abstract class ScriptBase {
   /** 脚本挂载的目标节点，设置后触发 onCreate */
   get target(): LikoNode {
     if (!this._$target) {
-      console.warn("Script target is not set");
+      console.warn('Script target is not set');
     }
     return this._$target as LikoNode;
   }

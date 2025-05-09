@@ -1,6 +1,6 @@
-import { Sprite } from "../../nodes/sprite";
-import { Texture } from "../../resource/texture";
-import { RenderTargetBuffer } from "../buffer/render-target-buffer";
+import { Sprite } from '../../nodes/sprite';
+import { Texture } from '../../resource/texture';
+import { RenderTargetBuffer } from '../buffer/render-target-buffer';
 
 /**
  * 渲染材质

@@ -1,7 +1,7 @@
-import { DirtyType } from "../const";
-import type { Matrix } from "./matrix";
-import { ObservablePoint } from "./observable-point";
-import type { IPoint } from "./point";
+import { DirtyType } from '../const';
+import type { Matrix } from './matrix';
+import { ObservablePoint } from './observable-point';
+import type { IPoint } from './point';
 
 /** 变换选项接口 */
 export interface ITransformOptions {

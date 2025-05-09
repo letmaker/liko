@@ -1,5 +1,5 @@
-import { Device } from "../device/device";
-import type { IBuffer } from "./interface";
+import { Device } from '../device/device';
+import type { IBuffer } from './interface';
 
 export class Buffer implements IBuffer {
   private _array: ArrayBuffer;
@@ -29,7 +29,7 @@ export class Buffer implements IBuffer {
 
   get buffer() {
     if (!this._buffer) {
-      this._buffer = Device.createUniformBuffer("vertex", this.u32Data);
+      this._buffer = Device.createUniformBuffer('vertex', this.u32Data);
     }
     return this._buffer;
   }

@@ -1,20 +1,20 @@
-import { DEG_TO_RAD, DirtyType, EventType, RAD_TO_DEG } from "../const";
-import type { LikoPointerEvent } from "../events/pointer-event";
-import { Bounds } from "../math/bounds";
-import { Matrix } from "../math/matrix";
-import { ObservablePoint } from "../math/observable-point";
-import { type IPoint, Point } from "../math/point";
-import type { RotatingRect } from "../math/rotating-rect";
-import { Transform } from "../math/transform";
-import type { Filter } from "../render/filter/filter";
-import { NodeCache } from "../render/utils/node-cache";
-import type { ScriptBase } from "../scripts/script-base";
-import { Color, type ColorData } from "../utils/color";
-import { Dispatcher } from "../utils/dispatcher";
-import { createFilterInstance, createNodeInstance } from "../utils/register";
-import { createScript, getUID } from "../utils/utils";
-import type { IScene } from "./scene";
-import type { Stage } from "./stage";
+import { DEG_TO_RAD, DirtyType, EventType, RAD_TO_DEG } from '../const';
+import type { LikoPointerEvent } from '../events/pointer-event';
+import { Bounds } from '../math/bounds';
+import { Matrix } from '../math/matrix';
+import { ObservablePoint } from '../math/observable-point';
+import { type IPoint, Point } from '../math/point';
+import type { RotatingRect } from '../math/rotating-rect';
+import { Transform } from '../math/transform';
+import type { Filter } from '../render/filter/filter';
+import { NodeCache } from '../render/utils/node-cache';
+import type { ScriptBase } from '../scripts/script-base';
+import { Color, type ColorData } from '../utils/color';
+import { Dispatcher } from '../utils/dispatcher';
+import { createFilterInstance, createNodeInstance } from '../utils/register';
+import { createScript, getUID } from '../utils/utils';
+import type { IScene } from './scene';
+import type { Stage } from './stage';
 
 /** 节点数据接口，用于序列化和反序列化节点 */
 export interface INodeData {
@@ -195,7 +195,7 @@ export interface INodeOptions {
 export abstract class LikoNode {
   /** @private 私有属性集合，可以读取但不应直接修改 */
   pp: INodePrivateProps = {
-    id: "",
+    id: '',
     userData: defaultData,
     event: defaultEvent,
     children: defaultChildren,
@@ -223,7 +223,7 @@ export abstract class LikoNode {
   /** 是否启用节点，设为 false 时节点不可用且脚本不执行，而 visible 只影响显示 */
   enabled = true;
   /** 节点标签名称，用于快速查找和识别节点 */
-  label = "";
+  label = '';
   /** 是否缓存为静态渲染，对有大量不变子节点的容器可提升渲染效率 */
   cacheEnabled = false;
   /**
@@ -918,7 +918,7 @@ export abstract class LikoNode {
       localBounds.width === Number.POSITIVE_INFINITY ||
       localBounds.height === Number.POSITIVE_INFINITY
     ) {
-      console.warn("localBounds width <=0", this);
+      console.warn('localBounds width <=0', this);
     }
     return localBounds;
   }
@@ -1057,7 +1057,7 @@ export abstract class LikoNode {
     if (props) {
       const keys = Object.keys(props);
       for (const key of keys) {
-        if (key.startsWith("on") && typeof props[key] === "function") {
+        if (key.startsWith('on') && typeof props[key] === 'function') {
           const eventName = key.charAt(2).toLowerCase() + key.slice(3);
           this.on(eventName, props[key] as () => void, this);
         } else if (key in this) {

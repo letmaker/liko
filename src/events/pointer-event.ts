@@ -1,4 +1,4 @@
-import type { LikoNode } from "../nodes/node";
+import type { LikoNode } from '../nodes/node';
 
 // biome-ignore format:
 /** 指针事件类型，包含点击、按下、抬起、移动、进入、离开等事件 */

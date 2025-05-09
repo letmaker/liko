@@ -1,5 +1,5 @@
-import { loader } from "../loader";
-import { getUIDNumber } from "../utils/utils";
+import { loader } from '../loader';
+import { getUIDNumber } from '../utils/utils';
 
 /**
  * 音频处理类，基于Web Audio API
@@ -14,12 +14,12 @@ export class Sound {
    * @returns 音频上下文是否成功激活
    */
   static async ensureAudioContext() {
-    if (Sound.audioContext.state === "suspended") {
+    if (Sound.audioContext.state === 'suspended') {
       try {
         await Sound.audioContext.resume();
         return true;
       } catch (error) {
-        console.error("Failed to resume audio context:", error);
+        console.error('Failed to resume audio context:', error);
         return false;
       }
     }

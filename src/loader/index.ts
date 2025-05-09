@@ -1,8 +1,8 @@
-import { ImageLoader } from "./image-loader";
-import { JsonLoader } from "./json-loader";
-import { LoaderManager } from "./loader-manager";
-import { SheetLoader } from "./sheet-loader";
-import { SoundLoader } from "./sound-loader";
+import { ImageLoader } from './image-loader';
+import { JsonLoader } from './json-loader';
+import { LoaderManager } from './loader-manager';
+import { SheetLoader } from './sheet-loader';
+import { SoundLoader } from './sound-loader';
 
 LoaderManager.regLoader(new ImageLoader());
 LoaderManager.regLoader(new JsonLoader());

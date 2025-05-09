@@ -1,7 +1,7 @@
-import { TextureBuffer } from "../render/buffer/texture-buffer";
-import { type ISheet, Texture } from "../resource/texture";
-import { getPathRoot } from "../utils/utils";
-import type { ILoader, LoaderManager } from "./loader-manager";
+import { TextureBuffer } from '../render/buffer/texture-buffer';
+import { type ISheet, Texture } from '../resource/texture';
+import { getPathRoot } from '../utils/utils';
+import type { ILoader, LoaderManager } from './loader-manager';
 
 interface ISheetData {
   frames: Record<string, ISheet>;

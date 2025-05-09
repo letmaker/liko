@@ -1,12 +1,12 @@
-import { DirtyType, EventType } from "../const";
-import { loader } from "../loader";
-import type { Bounds } from "../math/bounds";
-import { SpriteObject } from "../render/render/sprite-object";
-import { Texture } from "../resource/texture";
-import type { ColorData } from "../utils/color";
-import { RegNode } from "../utils/decorators";
-import type { INodeOptions } from "./node";
-import { type INodePrivateProps, LikoNode } from "./node";
+import { DirtyType, EventType } from '../const';
+import { loader } from '../loader';
+import type { Bounds } from '../math/bounds';
+import { SpriteObject } from '../render/render/sprite-object';
+import { Texture } from '../resource/texture';
+import type { ColorData } from '../utils/color';
+import { RegNode } from '../utils/decorators';
+import type { INodeOptions } from './node';
+import { type INodePrivateProps, LikoNode } from './node';
 
 /** 实现 IRenderable 接口的节点可以渲染图像 */
 export interface IRenderable extends LikoNode {
@@ -35,7 +35,7 @@ interface ISpriteOptions extends INodeOptions {
  *
  * 提供图像显示、纹理管理和事件处理等功能
  */
-@RegNode("Sprite")
+@RegNode('Sprite')
 export class Sprite extends LikoNode implements IRenderable {
   declare pp: ISpritePrivateProps;
   /** 用于渲染精灵的渲染对象 */
@@ -43,7 +43,7 @@ export class Sprite extends LikoNode implements IRenderable {
 
   constructor(options?: Texture | ISpriteOptions) {
     super();
-    this.pp.url = "";
+    this.pp.url = '';
     if (options instanceof Texture) {
       this.texture = options;
     } else {

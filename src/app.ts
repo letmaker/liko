@@ -1,12 +1,12 @@
-import { KeyBoardManager } from "./events/keyboard-manager";
-import { PointerManager } from "./events/pointer-manager";
-import { Stage } from "./nodes/stage";
-import { type PhysicsOptions, createPhysics } from "./physics";
-import { initDevice } from "./render/device/device";
-import { Renderer } from "./render/renderer";
-import type { ColorData } from "./utils/color";
-import { Timer } from "./utils/timer";
-import { createCanvas } from "./utils/utils";
+import { KeyBoardManager } from './events/keyboard-manager';
+import { PointerManager } from './events/pointer-manager';
+import { Stage } from './nodes/stage';
+import { type PhysicsOptions, createPhysics } from './physics';
+import { initDevice } from './render/device/device';
+import { Renderer } from './render/renderer';
+import type { ColorData } from './utils/color';
+import { Timer } from './utils/timer';
+import { createCanvas } from './utils/utils';
 
 /** 引擎默认配置选项 */
 const defaultOptions = {

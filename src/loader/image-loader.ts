@@ -1,6 +1,6 @@
-import { TextureBuffer } from "../render/buffer/texture-buffer";
-import { Texture } from "../resource/texture";
-import type { ILoader } from "./loader-manager";
+import { TextureBuffer } from '../render/buffer/texture-buffer';
+import { Texture } from '../resource/texture';
+import type { ILoader } from './loader-manager';
 
 /**
  * 图片资源加载器

@@ -1,5 +1,5 @@
-import { WebGLDevice } from "./webgl-device";
-import { WebGPUDevice } from "./webgpu-device";
+import { WebGLDevice } from './webgl-device';
+import { WebGPUDevice } from './webgpu-device';
 
 export let Device!: WebGLDevice | WebGPUDevice;
 

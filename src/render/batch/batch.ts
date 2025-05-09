@@ -1,12 +1,12 @@
-import type { Texture } from "../../resource/texture";
-import type { BatchGroup } from "./batch-group";
-import { TextureGroup } from "./texture-group";
+import type { Texture } from '../../resource/texture';
+import type { BatchGroup } from './batch-group';
+import { TextureGroup } from './texture-group';
 
 export class Batch {
   private static readonly _pool: Batch[] = [];
 
   textureGroup: TextureGroup = new TextureGroup();
-  pipeline = "batch";
+  pipeline = 'batch';
   used = true;
   startIndex = 0;
   size = 0;

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "organizeImports": {
     "enabled": true
   },
@@ -9,13 +9,15 @@
       "recommended": true,
       "correctness": {
         "noUnusedImports": "error",
-        "noUnusedVariables": "error"
+        "noUnusedVariables": "error",
+        "noUndeclaredVariables": "error"
       },
       "suspicious": {
-        "noConsoleLog": "info",
-        "noExplicitAny": "warn"
+        "noExplicitAny": "error"
       },
       "style": {
+        "useConst": "error",
+        "useTemplate": "error",
         "useLiteralEnumMembers": "off",
         "noNonNullAssertion": "warn",
         "useImportType": "error",
@@ -26,5 +28,11 @@
   "formatter": {
     "lineWidth": 120,
     "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "es5"
+    }
   }
 }

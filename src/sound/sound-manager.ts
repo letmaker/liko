@@ -1,4 +1,4 @@
-import { Sound } from "./sound";
+import { Sound } from './sound';
 
 /**
  * 音效管理器类，使用对象池管理音效资源

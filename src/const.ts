@@ -30,66 +30,66 @@ export enum DirtyType {
  */
 export enum EventType {
   /** 节点被添加到节点树后，由 node 派发 */
-  added = "added",
+  added = 'added',
   /** 节点被添加到舞台时，这时可以获取 stage，由 node 派发  */
-  addToStage = "addToStage",
+  addToStage = 'addToStage',
   /** 节点从节点树移除后，由 node 派发 */
-  removed = "removed",
+  removed = 'removed',
   /** 节点被销毁时，由 node 派发 */
-  destroyed = "destroyed",
+  destroyed = 'destroyed',
 
   /** 节点更改大小时，由 node 派发 */
-  resize = "resize",
+  resize = 'resize',
 
   /** 指针按下时，由 node 派发 */
-  pointerdown = "pointerdown",
+  pointerdown = 'pointerdown',
   /** 指针抬起时，由 node 派发 */
-  pointerup = "pointerup",
+  pointerup = 'pointerup',
   /** 指针移动时，由 node 派发 */
-  pointermove = "pointermove",
+  pointermove = 'pointermove',
   /** 指针进入节点时，由 node 派发 */
-  pointerover = "pointerover",
+  pointerover = 'pointerover',
   /** 指针离开节点时，由 node 派发 */
-  pointerout = "pointerout",
+  pointerout = 'pointerout',
   /** 指针在 canvas 外抬起时，由 node 派发 */
-  pointerupoutside = "pointerupoutside",
+  pointerupoutside = 'pointerupoutside',
   /** 点击事件，由 node 派发 */
-  click = "click",
+  click = 'click',
 
   /** 自定义信号，由 node 派发 */
-  signal = "signal",
+  signal = 'signal',
   /** 物理碰撞开始时，由 node 派发 */
-  collisionStart = "collisionStart",
+  collisionStart = 'collisionStart',
   /** 物理碰撞结束时，由 node 派发 */
-  collisionEnd = "collisionEnd",
+  collisionEnd = 'collisionEnd',
 
   /** 场景帧更新时，由 scene 派发 */
-  update = "update",
+  update = 'update',
 
   /** 键盘按下时，由 stage 派发 */
-  keydown = "keydown",
+  keydown = 'keydown',
   /** 键盘抬起时，由 stage 派发 */
-  keyup = "keyup",
+  keyup = 'keyup',
   /** 鼠标滚轮滚动时，由 stage 派发 */
-  wheel = "wheel",
+  wheel = 'wheel',
 
   /** 动画开始播放时，由动画类派发 */
-  played = "played",
+  played = 'played',
   /** 动画停止播放时，由动画类派发 */
-  stopped = "stopped",
+  stopped = 'stopped',
   /** 动画播放完成时，由动画类派发 */
-  ended = "ended",
+  ended = 'ended',
   /** 动画暂停时，由动画类派发 */
-  paused = "paused",
+  paused = 'paused',
   /** 动画恢复播放时，由动画类派发 */
-  resumed = "resumed",
+  resumed = 'resumed',
 
   /** 单个资源加载完成时触发 */
-  loaded = "loaded",
+  loaded = 'loaded',
   /** 资源加载进度更新时触发 */
-  progress = "progress",
+  progress = 'progress',
   /** 所有资源加载完成时触发 */
-  complete = "complete",
+  complete = 'complete',
   /** 资源加载失败时触发 */
-  error = "error",
+  error = 'error',
 }

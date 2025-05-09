@@ -1,6 +1,6 @@
-import { PI2 } from "../const";
-import { type IPoint, Point } from "./point";
-import type { Transform } from "./transform";
+import { PI2 } from '../const';
+import { type IPoint, Point } from './point';
+import type { Transform } from './transform';
 
 /**
  * 2D 矩阵类

@@ -8,26 +8,26 @@ const spaces: Space[] = [];
 const padding = 1;
 
 function createSpace() {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = atlasSize;
   canvas.height = atlasSize;
-  const content = canvas.getContext("2d") as CanvasRenderingContext2D;
+  const content = canvas.getContext('2d') as CanvasRenderingContext2D;
 
   // debug
   document.body.append(canvas);
-  canvas.style.backgroundColor = "#efefef";
-  canvas.style.margin = "1px";
+  canvas.style.backgroundColor = '#efefef';
+  canvas.style.margin = '1px';
 
   const freeRects = [{ x: 0, y: 0, width: atlasSize, height: atlasSize }];
   spaces.push({ freeRects, usedRects: [], canvas, content });
-  console.debug("createSpace >>>>>>>>>", spaces.length);
+  console.debug('createSpace >>>>>>>>>', spaces.length);
 }
 createSpace();
 
 export function seekSpace(box: Box): { rect: Rect; canvas: HTMLCanvasElement; content: CanvasRenderingContext2D } {
   const image = { width: box.width + padding * 2, height: box.height + padding * 2 };
   if (image.width > atlasSize || image.height > atlasSize) {
-    throw new Error("box is too big");
+    throw new Error('box is too big');
   }
 
   const boxArea = image.width * image.height;
@@ -93,18 +93,18 @@ export function seekSpace(box: Box): { rect: Rect; canvas: HTMLCanvasElement; co
 }
 
 // test
-document.addEventListener("click", () => {
+document.addEventListener('click', () => {
   const box = {
     width: Math.max(15, Math.round(Math.random() * atlasSize * 0.5)),
     height: Math.max(15, Math.round(Math.random() * atlasSize * 0.2)),
   };
 
-  console.time("------seek------");
+  console.time('------seek------');
   const { rect, content } = seekSpace(box);
-  console.timeEnd("------seek------");
+  console.timeEnd('------seek------');
 
   content.rect(rect.x + padding, rect.y + padding, rect.width - padding * 2, rect.height - padding * 2);
-  content.fillStyle = "#999999";
+  content.fillStyle = '#999999';
   content.fill();
 
   // debugRects();

@@ -1,4 +1,4 @@
-import type { IRectangle } from "./rectangle";
+import type { IRectangle } from './rectangle';
 
 /** 支持旋转的矩形接口，继承自 IRectangle 并添加旋转属性 */
 export interface IRotatingRect extends IRectangle {

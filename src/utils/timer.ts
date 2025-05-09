@@ -1,4 +1,4 @@
-import { Handler } from "./dispatcher";
+import { Handler } from './dispatcher';
 
 class TimerHandler extends Handler {
   nextTime = 0;
@@ -9,7 +9,7 @@ class TimerHandler extends Handler {
     once = false,
     public args?: unknown[],
     public delay = 0,
-    public useFrame = false,
+    public useFrame = false
   ) {
     super(callback, caller, once);
   }
@@ -174,7 +174,7 @@ export class Timer {
     caller: unknown,
     args?: unknown[],
     useFrame?: boolean,
-    once?: boolean,
+    once?: boolean
   ) {
     if (this._destroyed) return;
     let delayNum = delay;

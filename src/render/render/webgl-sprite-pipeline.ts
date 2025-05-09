@@ -1,9 +1,9 @@
-import type { Batch } from "../batch/batch";
-import { Device } from "../device/device";
-import type { WebGLDevice, GLBuffer, GLTexture } from "../device/webgl-device";
-import type { IWebGLRenderPipe } from "./webgl-render";
-import VertShader from "./sprite.vert?raw";
-import FragShader from "./sprite.frag?raw";
+import type { Batch } from '../batch/batch';
+import { Device } from '../device/device';
+import type { GLBuffer, GLTexture, WebGLDevice } from '../device/webgl-device';
+import FragShader from './sprite.frag?raw';
+import VertShader from './sprite.vert?raw';
+import type { IWebGLRenderPipe } from './webgl-render';
 
 export class WebGLSpritePipeline implements IWebGLRenderPipe {
   gl: WebGL2RenderingContext;
@@ -22,11 +22,11 @@ export class WebGLSpritePipeline implements IWebGLRenderPipe {
     const gl = device.gl;
     const program = device.createProgram(VertShader, FragShader);
 
-    this.aPosLocation = gl.getAttribLocation(program, "aPos");
-    this.aColorLocation = gl.getAttribLocation(program, "aColor");
-    this.aUVLocation = gl.getAttribLocation(program, "aUV");
-    this.aTextureIdLocation = gl.getAttribLocation(program, "aTextureId");
-    this.uTexturesLocation = gl.getUniformLocation(program, "uTextures");
+    this.aPosLocation = gl.getAttribLocation(program, 'aPos');
+    this.aColorLocation = gl.getAttribLocation(program, 'aColor');
+    this.aUVLocation = gl.getAttribLocation(program, 'aUV');
+    this.aTextureIdLocation = gl.getAttribLocation(program, 'aTextureId');
+    this.uTexturesLocation = gl.getUniformLocation(program, 'uTextures');
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

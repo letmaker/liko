@@ -1,11 +1,11 @@
-import type { Bounds } from "../math/bounds";
-import { RegNode } from "../utils/decorators";
-import { LikoNode } from "./node";
+import type { Bounds } from '../math/bounds';
+import { RegNode } from '../utils/decorators';
+import { LikoNode } from './node';
 
 /**
  * 容器节点类，用于包含和管理多个子节点
  */
-@RegNode("Container")
+@RegNode('Container')
 export class Container extends LikoNode {
   /**
    * 重写命中测试方法

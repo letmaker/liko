@@ -1,5 +1,5 @@
-import { Dispatcher } from "./dispatcher";
-import { cloneJson } from "./utils";
+import { Dispatcher } from './dispatcher';
+import { cloneJson } from './utils';
 
 /**
  * 数据仓库
@@ -16,7 +16,7 @@ export class Store extends Dispatcher {
     for (const key of keys) {
       const value = json[key];
       const type = typeof value;
-      if (type !== "object") this._data[key] = value;
+      if (type !== 'object') this._data[key] = value;
       else this._data[key] = cloneJson(value as Record<string, unknown>);
     }
   }
@@ -38,7 +38,7 @@ export class Store extends Dispatcher {
   set(key: string, value: unknown): void {
     if (this._data[key] !== value) {
       this._data[key] = value;
-      this.emit("changed", key, value);
+      this.emit('changed', key, value);
     }
   }
 

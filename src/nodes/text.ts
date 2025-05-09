@@ -1,20 +1,20 @@
-import { App } from "../app";
-import { DirtyType } from "../const";
-import type { Bounds } from "../math/bounds";
-import { TextureBuffer } from "../render/buffer/texture-buffer";
-import { SpriteObject } from "../render/render/sprite-object";
-import { Texture } from "../resource/texture";
-import { RegNode } from "../utils/decorators";
-import { Timer } from "../utils/timer";
-import { createCanvas } from "../utils/utils";
-import type { INodeOptions } from "./node";
-import { type INodePrivateProps, LikoNode } from "./node";
-import type { IRenderable } from "./sprite";
+import { App } from '../app';
+import { DirtyType } from '../const';
+import type { Bounds } from '../math/bounds';
+import { TextureBuffer } from '../render/buffer/texture-buffer';
+import { SpriteObject } from '../render/render/sprite-object';
+import { Texture } from '../resource/texture';
+import { RegNode } from '../utils/decorators';
+import { Timer } from '../utils/timer';
+import { createCanvas } from '../utils/utils';
+import type { INodeOptions } from './node';
+import { type INodePrivateProps, LikoNode } from './node';
+import type { IRenderable } from './sprite';
 
 // biome-ignore format:
 type FontWeight = "normal" | "bold" | "bolder" | "lighter" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900";
-type TextAlign = "left" | "center" | "right";
-type FontStyle = "normal" | "italic" | "oblique";
+type TextAlign = 'left' | 'center' | 'right';
+type FontStyle = 'normal' | 'italic' | 'oblique';
 
 interface ITextPrivateProps extends INodePrivateProps {
   canvas: HTMLCanvasElement;
@@ -62,7 +62,7 @@ interface ITextOptions extends INodeOptions {
 /**
  * 文本渲染节点，用于在场景中显示文本内容
  */
-@RegNode("Text")
+@RegNode('Text')
 export class Text extends LikoNode implements IRenderable {
   declare pp: ITextPrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
@@ -84,7 +84,7 @@ export class Text extends LikoNode implements IRenderable {
     const pp = this.pp;
     if (pp.text !== value) {
       pp.text = value;
-      pp.lines = pp.text.split("\n");
+      pp.lines = pp.text.split('\n');
       this._$dirty();
     }
   }
@@ -234,17 +234,17 @@ export class Text extends LikoNode implements IRenderable {
 
     const pp = this.pp;
     pp.canvas = createCanvas(100, 20);
-    pp.ctx = pp.canvas.getContext("2d") as CanvasRenderingContext2D;
-    pp.text = "";
+    pp.ctx = pp.canvas.getContext('2d') as CanvasRenderingContext2D;
+    pp.text = '';
     pp.lines = [];
-    pp.textColor = "#efefef";
-    pp.textStrokeColor = "";
+    pp.textColor = '#efefef';
+    pp.textStrokeColor = '';
     pp.textStrokeWidth = 0;
-    pp.fontFamily = "Arial";
+    pp.fontFamily = 'Arial';
     pp.fontSize = 12;
-    pp.fontWeight = "normal";
-    pp.fontStyle = "normal";
-    pp.textAlign = "left";
+    pp.fontWeight = 'normal';
+    pp.fontStyle = 'normal';
+    pp.textAlign = 'left';
     pp.lineHeight = 0;
     pp.measureWidth = 0;
     pp.measureHeight = 0;
@@ -276,8 +276,8 @@ export class Text extends LikoNode implements IRenderable {
 
   private _$resetStyle() {
     const { ctx, fontStyle, fontWeight, fontSize, fontFamily, textColor, textAlign, textStrokeColor } = this.pp;
-    ctx.textBaseline = "alphabetic";
-    ctx.font = `${fontStyle ? `${fontStyle} ` : ""}${fontWeight} ${fontSize}px ${fontFamily}`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = `${fontStyle ? `${fontStyle} ` : ''}${fontWeight} ${fontSize}px ${fontFamily}`;
     ctx.fillStyle = textColor;
     ctx.textAlign = textAlign;
     ctx.strokeStyle = textStrokeColor;
@@ -295,7 +295,7 @@ export class Text extends LikoNode implements IRenderable {
     this.pp.measureWidth = maxWidth;
     this.pp.measureHeight = this.lineHeight * lines.length;
 
-    const metrics = ctx.measureText("|ÉqÅM");
+    const metrics = ctx.measureText('|ÉqÅM');
     return {
       /** 上升界到文本基线的距离 */
       ascent: metrics.actualBoundingBoxAscent,
@@ -342,7 +342,7 @@ export class Text extends LikoNode implements IRenderable {
       this._$resetStyle();
 
       // 根据对齐方式计算 x 坐标
-      const x = textAlign === "left" ? 0 : textAlign === "right" ? this.pp.measureWidth : this.pp.measureWidth * 0.5;
+      const x = textAlign === 'left' ? 0 : textAlign === 'right' ? this.pp.measureWidth : this.pp.measureWidth * 0.5;
       // 计算文本行高
       const textLineHeight = this.lineHeight;
       // 计算行间距和度量出来的字体高度之间的距离，用于垂直居中

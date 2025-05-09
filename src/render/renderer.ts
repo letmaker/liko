@@ -1,8 +1,8 @@
-import type { LikoNode } from "../nodes/node";
-import type { ColorData } from "../utils/color";
-import { CameraBuffer } from "./buffer/camera-buffer";
-import { Device } from "./device/device";
-import type { WebGpuRender } from "./render/webgpu-render";
+import type { LikoNode } from '../nodes/node';
+import type { ColorData } from '../utils/color';
+import { CameraBuffer } from './buffer/camera-buffer';
+import { Device } from './device/device';
+import type { WebGpuRender } from './render/webgpu-render';
 
 export interface RenderOptions {
   canvas: HTMLCanvasElement;

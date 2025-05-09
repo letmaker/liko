@@ -1,10 +1,10 @@
-import { EventType } from "../const";
-import { loader } from "../loader";
-import { RegNode } from "../utils/decorators";
-import { createNodeInstance } from "../utils/register";
-import { cloneJson, getUID } from "../utils/utils";
-import type { INodeData, INodeOptions, INodePrivateProps } from "./node";
-import { LikoNode } from "./node";
+import { EventType } from '../const';
+import { loader } from '../loader';
+import { RegNode } from '../utils/decorators';
+import { createNodeInstance } from '../utils/register';
+import { cloneJson, getUID } from '../utils/utils';
+import type { INodeData, INodeOptions, INodePrivateProps } from './node';
+import { LikoNode } from './node';
 
 export interface IAnimation extends LikoNode {
   /** 播放动画 */
@@ -70,7 +70,7 @@ interface ISceneOptions extends INodeOptions {
  * 场景类，用于管理场景内的节点、动画、脚本等内容
  * 所有动画、脚本、动效均由所在的场景统一驱动
  */
-@RegNode("Scene")
+@RegNode('Scene')
 export class Scene extends LikoNode implements IScene {
   declare pp: IScenePrivateProps;
   /** 场景数据，用于实现节点克隆 */
@@ -111,7 +111,7 @@ export class Scene extends LikoNode implements IScene {
   constructor(options?: ISceneOptions) {
     super();
     const pp = this.pp;
-    pp.url = "";
+    pp.url = '';
     pp.currentTime = 0;
     pp.isPlaying = false;
     pp.paused = false;

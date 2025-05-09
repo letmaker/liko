@@ -28,7 +28,7 @@ export class Color {
   static readonly Default = new Color(0xffffff);
 
   private _color = new Float32Array([1, 1, 1, 1]);
-  private _value: ColorData = "#ffffff";
+  private _value: ColorData = '#ffffff';
 
   /** WebGPU 使用的颜色值，ARGB 格式的整数 */
   argb = 0;
@@ -60,16 +60,16 @@ export class Color {
   private _parseColor(value: ColorData) {
     let [r, g, b, a] = [0, 0, 0, 1];
     switch (typeof value) {
-      case "number": {
+      case 'number': {
         const uint = value;
         r = (uint >> 16) & 0xff;
         g = (uint >> 8) & 0xff;
         b = uint & 0xff;
         break;
       }
-      case "string": {
+      case 'string': {
         // 匹配 'rgba(r, g, b, a)' 格式
-        if (value.startsWith("rgba")) {
+        if (value.startsWith('rgba')) {
           const rgbaMatch = value.match(RGBA_PATTERN);
           if (rgbaMatch) {
             r = Number(rgbaMatch[1]);
@@ -77,7 +77,7 @@ export class Color {
             b = Number(rgbaMatch[3]);
             a = Number(rgbaMatch[4]);
           }
-        } else if (value.startsWith("rgb")) {
+        } else if (value.startsWith('rgb')) {
           // 匹配 'rgb(r, g, b)' 格式
           const rgbMatch = value.match(RGB_PATTERN);
           if (rgbMatch) {
@@ -85,7 +85,7 @@ export class Color {
             g = Number(rgbMatch[2]);
             b = Number(rgbMatch[3]);
           }
-        } else if (value.startsWith("#") || value.startsWith("0x")) {
+        } else if (value.startsWith('#') || value.startsWith('0x')) {
           // 匹配 '#rrggbb' 或 '0xrrggbb' 格式
           const hexMatch = value.match(HEX_PATTERN);
           if (hexMatch) {

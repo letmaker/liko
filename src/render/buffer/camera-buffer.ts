@@ -1,6 +1,6 @@
-import { Device } from "../device/device";
-import type { IBuffer } from "./interface";
-import { Matrix } from "../../math/matrix";
+import { Matrix } from '../../math/matrix';
+import { Device } from '../device/device';
+import type { IBuffer } from './interface';
 
 /**
  * 摄像机数据
@@ -20,7 +20,7 @@ export class CameraBuffer implements IBuffer {
   destroyed = false;
 
   constructor() {
-    const { group, buffer } = Device.createProjectionMatrixBuffer("uProjection", this.data);
+    const { group, buffer } = Device.createProjectionMatrixBuffer('uProjection', this.data);
     this.group = group;
     this.buffer = buffer;
   }

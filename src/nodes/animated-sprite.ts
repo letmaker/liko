@@ -1,13 +1,13 @@
-import { DirtyType, EventType } from "../const";
-import { loader } from "../loader";
-import type { Bounds } from "../math/bounds";
-import { SpriteObject } from "../render/render/sprite-object";
-import type { Texture } from "../resource/texture";
-import { RegNode } from "../utils/decorators";
-import type { INodeOptions } from "./node";
-import { type INodePrivateProps, LikoNode } from "./node";
-import type { IAnimation } from "./scene";
-import type { IRenderable } from "./sprite";
+import { DirtyType, EventType } from '../const';
+import { loader } from '../loader';
+import type { Bounds } from '../math/bounds';
+import { SpriteObject } from '../render/render/sprite-object';
+import type { Texture } from '../resource/texture';
+import { RegNode } from '../utils/decorators';
+import type { INodeOptions } from './node';
+import { type INodePrivateProps, LikoNode } from './node';
+import type { IAnimation } from './scene';
+import type { IRenderable } from './sprite';
 
 interface IAnimatedSpritePrivateProps extends INodePrivateProps {
   url: string;
@@ -36,7 +36,7 @@ interface IAnimatedSpriteOptions extends INodeOptions {
 /**
  * 精灵动画类，用于播放序列帧动画
  */
-@RegNode("AnimatedSprite")
+@RegNode('AnimatedSprite')
 export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation {
   declare pp: IAnimatedSpritePrivateProps;
   renderObject: SpriteObject = new SpriteObject(this);
@@ -112,7 +112,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   constructor(options?: IAnimatedSpriteOptions) {
     super();
 
-    this.pp.url = "";
+    this.pp.url = '';
     this.pp.currentFrame = 0;
     this.pp.textures = [];
 
@@ -128,7 +128,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     if (this.pp.url !== url) {
       this.pp.url = url;
 
-      const textures = await loader.load<Texture[]>(url, "sheet");
+      const textures = await loader.load<Texture[]>(url, 'sheet');
       if (this.destroyed || !textures) return;
       console.assert(textures.length > 0);
 
@@ -158,7 +158,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   play() {
     if (!this.isPlaying) {
       this.isPlaying = true;
-      console.assert(this.stage !== undefined, "please add to stage first before play");
+      console.assert(this.stage !== undefined, 'please add to stage first before play');
 
       this.stage?.timer.setInterval(1 / this.frameRate, this._$update, this);
       this.emit(EventType.played);

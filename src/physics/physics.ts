@@ -1,10 +1,10 @@
-import * as planck from "planck";
-import { type IPoint, type Rectangle, Timer } from "../";
-import type { RigidBody } from "./rigidBody";
+import * as planck from 'planck';
+import { type IPoint, type Rectangle, Timer } from '../';
+import type { RigidBody } from './rigidBody';
 
 interface FixtureUserData {
   /** 允许穿透的边界方向 */
-  crossSide?: "left" | "right" | "top" | "bottom" | "none";
+  crossSide?: 'left' | 'right' | 'top' | 'bottom' | 'none';
 }
 
 /**
@@ -52,21 +52,21 @@ export class Physics {
     const world = this.world;
 
     // 处理碰撞穿透
-    world.on("pre-solve", (contact: planck.Contact) => {
+    world.on('pre-solve', (contact: planck.Contact) => {
       const data = contact.getFixtureA().getUserData() as FixtureUserData;
       if (data?.crossSide) {
         const normal = contact.getManifold().localNormal;
         switch (data.crossSide) {
-          case "left":
+          case 'left':
             if (normal.x < -0.5) contact.setEnabled(false);
             break;
-          case "right":
+          case 'right':
             if (normal.x > 0.5) contact.setEnabled(false);
             break;
-          case "top":
+          case 'top':
             if (normal.y < -0.5) contact.setEnabled(false);
             break;
-          case "bottom":
+          case 'bottom':
             if (normal.y > 0.5) contact.setEnabled(false);
             break;
         }
@@ -74,8 +74,8 @@ export class Physics {
     });
 
     // 处理碰撞
-    world.on("begin-contact", (contact) => this._onContact(0, contact));
-    world.on("end-contact", (contact) => this._onContact(1, contact));
+    world.on('begin-contact', (contact) => this._onContact(0, contact));
+    world.on('end-contact', (contact) => this._onContact(1, contact));
   }
 
   private _onContact(type: number, contact: planck.Contact): void {
@@ -238,7 +238,7 @@ export class Physics {
     if (!category) return 1;
     if (!this._categoryMap[category]) {
       if (this._categoryBitCount >= 31) {
-        console.error("物理引擎分类已达到最大数量(30)，无法创建新分类");
+        console.error('物理引擎分类已达到最大数量(30)，无法创建新分类');
         return 1; // 返回默认值
       }
       this._categoryMap[category] = 2 ** this._categoryBitCount;
@@ -275,7 +275,7 @@ export class Physics {
 
     // 处理所有碰撞事件
     for (let i = 0; i < contacts.length; i += 2) {
-      const type = contacts[i] ? "collisionEnd" : "collisionStart";
+      const type = contacts[i] ? 'collisionEnd' : 'collisionStart';
       const contact = contacts[i + 1] as planck.Contact;
 
       const rigidBodyA = contact.getFixtureA()?.getBody().getUserData() as RigidBody;
@@ -306,17 +306,17 @@ export class Physics {
    * @returns 当前物理引擎实例，支持链式调用
    */
   debug() {
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/planck/dist/planck-with-testbed.min.js";
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/planck/dist/planck-with-testbed.min.js';
     script.onload = () => {
       const Testbed = (window as any).planck.Testbed;
       const testbed = Testbed.mount();
       testbed.start(this.world);
 
       const canvas = testbed.canvas;
-      canvas.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-      canvas.style.transform = "scaleY(-1)";
-      canvas.style.pointerEvents = "none";
+      canvas.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      canvas.style.transform = 'scaleY(-1)';
+      canvas.style.pointerEvents = 'none';
     };
     document.body.appendChild(script);
     return this;

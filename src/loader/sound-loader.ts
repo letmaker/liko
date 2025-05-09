@@ -1,5 +1,5 @@
-import { Sound } from "../sound/sound";
-import type { ILoader } from "./loader-manager";
+import { Sound } from '../sound/sound';
+import type { ILoader } from './loader-manager';
 
 /**
  * 音频加载器，用于加载和解码音频文件

@@ -1,11 +1,11 @@
 // @ts-nocheck TODO: 待实现
-import type { Matrix } from "../../math/matrix";
-import type { LikoNode } from "../../nodes/node";
-import type { Batch } from "../batch/batch";
-import { BatchGroup } from "../batch/batch-group";
-import type { CameraBuffer } from "../buffer/camera-buffer";
-import { Device } from "../device/device";
-import { WebGLSpritePipeline } from "./webgl-sprite-pipeline";
+import type { Matrix } from '../../math/matrix';
+import type { LikoNode } from '../../nodes/node';
+import type { Batch } from '../batch/batch';
+import { BatchGroup } from '../batch/batch-group';
+import type { CameraBuffer } from '../buffer/camera-buffer';
+import { Device } from '../device/device';
+import { WebGLSpritePipeline } from './webgl-sprite-pipeline';
 
 export interface IWebGLRenderPipe {
   render: (batch: Batch) => void;
@@ -28,7 +28,7 @@ export class WebGLRender {
   }
 
   constructor() {
-    WebGLRender.addPipeline("batch", new WebGLSpritePipeline());
+    WebGLRender.addPipeline('batch', new WebGLSpritePipeline());
   }
 
   batchGroup = new BatchGroup();
@@ -48,7 +48,7 @@ export class WebGLRender {
     // let batchCount = 0;
     for (let i = 0; i < count; i++) {
       const batch = batches[i];
-      if ("textureGroup" in batch) {
+      if ('textureGroup' in batch) {
         const pipeline = WebGLRender.getPipeline(batch.pipeline);
         console.assert(pipeline !== undefined, `pipeline ${batch.pipeline} is null`);
         pipeline.render(batch);

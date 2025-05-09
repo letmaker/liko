@@ -1,6 +1,6 @@
-import { EventType } from "../../const";
-import type { LikoNode } from "../../nodes/node";
-import { BatchGroup } from "../batch/batch-group";
+import { EventType } from '../../const';
+import type { LikoNode } from '../../nodes/node';
+import { BatchGroup } from '../batch/batch-group';
 
 const groups: Map<LikoNode, BatchGroup> = new Map();
 export function getBatchGroupFromCache(node: LikoNode): BatchGroup {

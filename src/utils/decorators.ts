@@ -1,4 +1,4 @@
-import { regNode, regScript } from "./register";
+import { regNode, regScript } from './register';
 
 type Constructor = new (...args: any[]) => any;
 

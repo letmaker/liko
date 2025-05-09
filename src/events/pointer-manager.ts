@@ -1,17 +1,17 @@
-import { App } from "../app";
-import type { IPoint } from "../math/point";
-import type { LikoNode } from "../nodes/node";
-import type { Stage } from "../nodes/stage";
-import { LikoPointerEvent } from "./pointer-event";
+import { App } from '../app';
+import type { IPoint } from '../math/point';
+import type { LikoNode } from '../nodes/node';
+import type { Stage } from '../nodes/stage';
+import { LikoPointerEvent } from './pointer-event';
 
 const eventMap = {
-  down: new LikoPointerEvent("pointerdown"),
-  up: new LikoPointerEvent("pointerup"),
-  move: new LikoPointerEvent("pointermove"),
-  over: new LikoPointerEvent("pointerover"),
-  out: new LikoPointerEvent("pointerout"),
-  upOutside: new LikoPointerEvent("pointerupoutside"),
-  click: new LikoPointerEvent("click"),
+  down: new LikoPointerEvent('pointerdown'),
+  up: new LikoPointerEvent('pointerup'),
+  move: new LikoPointerEvent('pointermove'),
+  over: new LikoPointerEvent('pointerover'),
+  out: new LikoPointerEvent('pointerout'),
+  upOutside: new LikoPointerEvent('pointerupoutside'),
+  click: new LikoPointerEvent('click'),
 };
 
 type EventType = keyof typeof eventMap;
@@ -30,31 +30,31 @@ export class PointerManager {
 
   constructor(public root: Stage) {
     this._canvas = root.canvas;
-    this._canvas.addEventListener("pointerdown", this._downHandler, { capture: true, passive: true });
+    this._canvas.addEventListener('pointerdown', this._downHandler, { capture: true, passive: true });
     // 监听 globalThis 是为了实现画布外拖动和鼠标抬起
-    globalThis.addEventListener("pointermove", this._moveHandler, { capture: true, passive: true });
-    globalThis.addEventListener("pointerup", this._upHandler, { capture: true, passive: true });
+    globalThis.addEventListener('pointermove', this._moveHandler, { capture: true, passive: true });
+    globalThis.addEventListener('pointerup', this._upHandler, { capture: true, passive: true });
   }
 
   /**
    * 销毁事件管理器，移除所有事件监听
    */
   destroy() {
-    this._canvas.removeEventListener("pointerdown", this._downHandler, true);
-    globalThis.removeEventListener("pointermove", this._moveHandler, true);
-    globalThis.removeEventListener("pointerup", this._upHandler, true);
+    this._canvas.removeEventListener('pointerdown', this._downHandler, true);
+    globalThis.removeEventListener('pointermove', this._moveHandler, true);
+    globalThis.removeEventListener('pointerup', this._upHandler, true);
 
     this._lastOver = undefined;
   }
 
   private _onPointerDown(e: PointerEvent): void {
-    const downEvent = this._convertEvent(e, "down");
+    const downEvent = this._convertEvent(e, 'down');
     this.hitTest(this.root, downEvent.pointer, downEvent.path);
     this._emitEvent(downEvent);
   }
 
   private _onPointerUp(e: PointerEvent): void {
-    const upEvent = this._convertEvent(e, "up");
+    const upEvent = this._convertEvent(e, 'up');
     const downPath = eventMap.down.path;
 
     // 判断是否在 canvas 外部
@@ -64,7 +64,7 @@ export class PointerManager {
 
       // 如果没有被 preventDefault，则触发 click 事件
       if (!upEvent.preventDefaulted) {
-        const clickEvent = this._cloneEvent(upEvent, "click");
+        const clickEvent = this._cloneEvent(upEvent, 'click');
         const clickPath = clickEvent.path;
         // 判断 down 和 up 的交集，派发 click 事件
         for (const target of upEvent.path) {
@@ -76,7 +76,7 @@ export class PointerManager {
       }
     } else {
       // 画布外，派发 upOutside 事件
-      const outsizeUpEvent = this._cloneEvent(upEvent, "upOutside");
+      const outsizeUpEvent = this._cloneEvent(upEvent, 'upOutside');
       outsizeUpEvent.path.push(...downPath);
       this._emitEvent(outsizeUpEvent);
     }
@@ -86,15 +86,15 @@ export class PointerManager {
     // TODO 需要处理防抖吗
 
     // 处理指针移动事件
-    const moveEvent = this._convertEvent(e, "move");
+    const moveEvent = this._convertEvent(e, 'move');
     this.hitTest(this.root, moveEvent.pointer, moveEvent.path);
     if (moveEvent.path.length < 1) return;
     this._emitEvent(moveEvent);
 
     // 处理 pointerover 和 pointerout 事件
     const pointerTarget = moveEvent.path[0];
-    const overEvent = this._cloneEvent(moveEvent, "over");
-    const outEvent = this._cloneEvent(moveEvent, "out");
+    const overEvent = this._cloneEvent(moveEvent, 'over');
+    const outEvent = this._cloneEvent(moveEvent, 'out');
     if (this._lastOver !== pointerTarget) {
       if (this._lastOver) {
         this._getPathByTarget(this._lastOver, outEvent.path);

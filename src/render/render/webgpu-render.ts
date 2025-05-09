@@ -1,12 +1,12 @@
-import type { Matrix } from "../../math/matrix";
-import type { LikoNode } from "../../nodes/node";
-import { Color, type ColorData } from "../../utils/color";
-import type { Batch } from "../batch/batch";
-import { BatchGroup } from "../batch/batch-group";
-import type { CameraBuffer } from "../buffer/camera-buffer";
-import { Device } from "../device/device";
-import type { WebGPUDevice } from "../device/webgpu-device";
-import { WebGPUSpritePipeline } from "./webgpu-sprite-pipeline";
+import type { Matrix } from '../../math/matrix';
+import type { LikoNode } from '../../nodes/node';
+import { Color, type ColorData } from '../../utils/color';
+import type { Batch } from '../batch/batch';
+import { BatchGroup } from '../batch/batch-group';
+import type { CameraBuffer } from '../buffer/camera-buffer';
+import { Device } from '../device/device';
+import type { WebGPUDevice } from '../device/webgpu-device';
+import { WebGPUSpritePipeline } from './webgpu-sprite-pipeline';
 
 export interface IRenderPipe {
   render: (batch: Batch, renderPass: GPURenderPassEncoder) => void;
@@ -34,7 +34,7 @@ export class WebGpuRender {
     const color = new Color(bgColor);
     this._color = { r: color.red, g: color.green, b: color.blue, a: color.alpha };
 
-    WebGpuRender.addPipeline("batch", new WebGPUSpritePipeline());
+    WebGpuRender.addPipeline('batch', new WebGPUSpritePipeline());
   }
 
   batchGroup = new BatchGroup();
@@ -49,8 +49,8 @@ export class WebGpuRender {
           {
             view: texture.createView(),
             clearValue: this._color,
-            loadOp: "clear",
-            storeOp: "store",
+            loadOp: 'clear',
+            storeOp: 'store',
           },
         ],
       });
@@ -66,7 +66,7 @@ export class WebGpuRender {
     // let batchCount = 0;
     for (let i = 0; i < count; i++) {
       const batch = batches[i];
-      if ("textureGroup" in batch) {
+      if ('textureGroup' in batch) {
         const pipeline = WebGpuRender.getPipeline(batch.pipeline);
         console.assert(pipeline !== undefined, `pipeline ${batch.pipeline} is null`);
         pipeline.render(batch, renderPass);

@@ -1,6 +1,6 @@
-import { Bounds } from "../../math/bounds";
-import { RotatingRect } from "../../math/rotating-rect";
-import type { LikoNode } from "../../nodes/node";
+import { Bounds } from '../../math/bounds';
+import { RotatingRect } from '../../math/rotating-rect';
+import type { LikoNode } from '../../nodes/node';
 
 export class NodeCache<T> {
   static gloBounds = new NodeCache(Bounds);

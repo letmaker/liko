@@ -1,12 +1,12 @@
-import type { Body } from "planck";
-import type { IPoint } from "../math/point";
-import type { LikoNode } from "../nodes/node";
-import type { ICollision } from "../scripts/script";
+import type { Body } from 'planck';
+import type { IPoint } from '../math/point';
+import type { LikoNode } from '../nodes/node';
+import type { ICollision } from '../scripts/script';
 
 /** 物理刚体类型：静态、运动学或动态 */
-export type RigidType = "static" | "kinematic" | "dynamic";
+export type RigidType = 'static' | 'kinematic' | 'dynamic';
 /** 可穿透的边界方向 */
-export type CrossSide = "left" | "right" | "top" | "bottom";
+export type CrossSide = 'left' | 'right' | 'top' | 'bottom';
 
 /**
  * 物理形状接口，定义刚体的碰撞区域
@@ -33,23 +33,23 @@ export interface IBaseShape {
 }
 
 export interface IBoxShape extends IBaseShape {
-  shapeType: "box";
+  shapeType: 'box';
   width?: number;
   height?: number;
 }
 
 export interface ICircleShape extends IBaseShape {
-  shapeType: "circle";
+  shapeType: 'circle';
   radius?: number;
 }
 
 export interface IChainShape extends IBaseShape {
-  shapeType: "chain";
+  shapeType: 'chain';
   vertices: IPoint[];
 }
 
 export interface IPolygonShape extends IBaseShape {
-  shapeType: "polygon";
+  shapeType: 'polygon';
   vertices: IPoint[];
 }
 
@@ -69,7 +69,7 @@ export type IShape = IBoxShape | ICircleShape | IChainShape | IPolygonShape;
  */
 export interface IRevoluteJoint {
   /** 关节类型，旋转关节 */
-  jointType: "revolute";
+  jointType: 'revolute';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */
@@ -106,7 +106,7 @@ export interface IRevoluteJoint {
  */
 export interface IDistanceJoint {
   /** 关节类型，距离关节 */
-  jointType: "distance";
+  jointType: 'distance';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */
@@ -135,7 +135,7 @@ export interface IDistanceJoint {
  */
 export interface IFixedJoint {
   /** 关节类型，固定关节 */
-  jointType: "fixed";
+  jointType: 'fixed';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */
@@ -164,7 +164,7 @@ export interface IFixedJoint {
  */
 export interface IPrismaticJoint {
   /** 关节类型，棱柱关节 */
-  jointType: "prismatic";
+  jointType: 'prismatic';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */
@@ -203,7 +203,7 @@ export interface IPrismaticJoint {
  */
 export interface IWheelJoint {
   /** 关节类型，轮子关节 */
-  jointType: "wheel";
+  jointType: 'wheel';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */
@@ -240,7 +240,7 @@ export interface IWheelJoint {
  */
 export interface IRopeJoint {
   /** 关节类型，绳索关节 */
-  jointType: "rope";
+  jointType: 'rope';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */
@@ -267,7 +267,7 @@ export interface IRopeJoint {
  */
 export interface IMotorJoint {
   /** 关节类型，马达关节 */
-  jointType: "motor";
+  jointType: 'motor';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */
@@ -300,7 +300,7 @@ export interface IMotorJoint {
  */
 export interface IPulleyJoint {
   /** 关节类型，滑轮关节 */
-  jointType: "pulley";
+  jointType: 'pulley';
   /** 关节标签，方便用来销毁 */
   label?: string;
   /** 目标刚体 */

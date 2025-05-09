@@ -1,12 +1,12 @@
-import { getUID } from "../../utils/utils";
-import { Device } from "../device/device";
-import type { ITextureBuffer } from "./interface";
+import { getUID } from '../../utils/utils';
+import { Device } from '../device/device';
+import type { ITextureBuffer } from './interface';
 
 /**
  * Texture 数据
  */
 export class TextureBuffer implements ITextureBuffer {
-  uid = getUID("TextureBuffer");
+  uid = getUID('TextureBuffer');
   readonly width: number = 0;
   readonly height: number = 0;
   readonly bitmap: ImageBitmap | HTMLCanvasElement;
@@ -25,7 +25,7 @@ export class TextureBuffer implements ITextureBuffer {
     this.width = width;
     this.height = height;
 
-    this.texture = Device.createTexture("texture", width, height);
+    this.texture = Device.createTexture('texture', width, height);
     this.sampler = Device.defaultSampler;
     this.view = this.texture.createView();
   }
@@ -53,7 +53,7 @@ export class TextureBuffer implements ITextureBuffer {
   }
 
   dirty() {
-    this.uid = getUID("TextureBuffer");
+    this.uid = getUID('TextureBuffer');
     this.loaded = false;
   }
 }

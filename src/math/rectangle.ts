@@ -1,6 +1,6 @@
-import type { Bounds } from "./bounds";
-import type { Matrix } from "./matrix";
-import { Point } from "./point";
+import type { Bounds } from './bounds';
+import type { Matrix } from './matrix';
+import { Point } from './point';
 
 export interface IRectangle {
   x: number;

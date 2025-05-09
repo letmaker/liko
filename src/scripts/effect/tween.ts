@@ -1,6 +1,6 @@
-import { Timer } from "../../utils/timer";
-import { Ease } from "./ease";
-import { Effect, type EffectProps, type EffectTarget } from "./effect";
+import { Timer } from '../../utils/timer';
+import { Ease } from './ease';
+import { Effect, type EffectProps, type EffectTarget } from './effect';
 
 /** 缓动动画配置选项 */
 interface TweenOption {

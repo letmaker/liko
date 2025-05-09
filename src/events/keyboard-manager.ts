@@ -1,5 +1,5 @@
-import { EventType } from "../const";
-import type { Stage } from "../nodes/stage";
+import { EventType } from '../const';
+import type { Stage } from '../nodes/stage';
 
 /**
  * 键盘管理器
@@ -11,15 +11,15 @@ export class KeyBoardManager {
   private _keyMap: Record<string, boolean> = {};
 
   constructor(public stage: Stage) {
-    globalThis.addEventListener("keydown", this._keydownHandler, { capture: true, passive: true });
-    globalThis.addEventListener("keyup", this._keyupHandler, { capture: true, passive: true });
-    stage.canvas.addEventListener("wheel", this._wheelHandler, { capture: true, passive: false });
+    globalThis.addEventListener('keydown', this._keydownHandler, { capture: true, passive: true });
+    globalThis.addEventListener('keyup', this._keyupHandler, { capture: true, passive: true });
+    stage.canvas.addEventListener('wheel', this._wheelHandler, { capture: true, passive: false });
   }
 
   destroy() {
-    globalThis.removeEventListener("keydown", this._keydownHandler, true);
-    globalThis.removeEventListener("keyup", this._keyupHandler, true);
-    this.stage.canvas.removeEventListener("wheel", this._wheelHandler, false);
+    globalThis.removeEventListener('keydown', this._keydownHandler, true);
+    globalThis.removeEventListener('keyup', this._keyupHandler, true);
+    this.stage.canvas.removeEventListener('wheel', this._wheelHandler, false);
   }
 
   private _onKeydown(e: KeyboardEvent) {

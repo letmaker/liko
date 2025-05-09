@@ -1,34 +1,34 @@
 // @ts-nocheck  TODO: 待实现
-import { WebGLRender } from "../render/webgl-render";
-import type { WebGpuRender } from "../render/webgpu-render";
-import type { RenderOptions } from "../renderer";
-import type { IBindResource } from "./webgpu-device";
+import { WebGLRender } from '../render/webgl-render';
+import type { WebGpuRender } from '../render/webgpu-render';
+import type { RenderOptions } from '../renderer';
+import type { IBindResource } from './webgpu-device';
 
 export class GLBuffer {
   constructor(
     public data: WebGLBuffer,
     private gl: WebGL2RenderingContext,
-    public label: string,
+    public label: string
   ) {}
   destroy() {
-    console.error("todo");
+    console.error('todo');
   }
 }
 
 export class GLUniform {
   constructor(public label: string) {}
   destroy() {
-    console.error("todo");
+    console.error('todo');
   }
 }
 
 export class GLTexture {
   constructor(
     public data: WebGLTexture,
-    private gl: WebGL2RenderingContext,
+    private gl: WebGL2RenderingContext
   ) {}
   destroy() {
-    console.error("todo");
+    console.error('todo');
   }
   createView() {
     return {} as unknown as GPUTextureView;
@@ -49,18 +49,18 @@ export class WebGLDevice {
    * 初始化 WebGL 设备
    */
   init(options: RenderOptions) {
-    this.gl = options.canvas.getContext("webgl2", {
+    this.gl = options.canvas.getContext('webgl2', {
       antialias: false,
       alpha: false,
       depth: false,
       premultipliedAlpha: true,
     }) as WebGL2RenderingContext;
     if (!this.gl) {
-      throw new Error("Failed to initialize WebGL context");
+      throw new Error('Failed to initialize WebGL context');
     }
 
     if (this.debug) {
-      console.log("WebGL context initialized");
+      console.log('WebGL context initialized');
     }
 
     return {
@@ -72,14 +72,14 @@ export class WebGLDevice {
   setViewport(width: number, height: number) {
     this.gl.viewport(0, 0, width, height);
     if (this.debug) {
-      console.log("setViewport", width, height);
+      console.log('setViewport', width, height);
     }
   }
 
   createShader(type: number, source: string): WebGLShader {
     const gl = this.gl;
     const shader = gl.createShader(type);
-    if (!shader) throw new Error("Failed to create shader");
+    if (!shader) throw new Error('Failed to create shader');
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
@@ -87,7 +87,7 @@ export class WebGLDevice {
       throw new Error(`Shader compile error: ${gl.getShaderInfoLog(shader)}`);
     }
     if (this.debug) {
-      console.log("createShader", type, source);
+      console.log('createShader', type, source);
     }
     return shader;
   }
@@ -98,7 +98,7 @@ export class WebGLDevice {
     const fragmentShader = this.createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
 
     const program = gl.createProgram();
-    if (!program) throw new Error("Failed to create program");
+    if (!program) throw new Error('Failed to create program');
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
@@ -111,7 +111,7 @@ export class WebGLDevice {
     this.program = program;
     gl.useProgram(program);
     if (this.debug) {
-      console.log("createProgram");
+      console.log('createProgram');
     }
     return program;
   }
@@ -131,7 +131,7 @@ export class WebGLDevice {
     // 设置 uniform 值
     gl.uniformMatrix4fv(uProjectionMatrixLocation, false, data);
     if (this.debug) {
-      console.log("uploadUniform", locationLabel, data);
+      console.log('uploadUniform', locationLabel, data);
     }
   }
 
@@ -143,7 +143,7 @@ export class WebGLDevice {
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
 
     if (this.debug) {
-      console.log("createVertexBuffer", label, data);
+      console.log('createVertexBuffer', label, data);
     }
 
     return new GLBuffer(buffer, gl, label) as unknown as GPUBuffer;
@@ -157,7 +157,7 @@ export class WebGLDevice {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
 
     if (this.debug) {
-      console.log("createIndexBuffer", label, data);
+      console.log('createIndexBuffer', label, data);
     }
 
     return new GLBuffer(buffer, gl, label) as unknown as GPUBuffer;
@@ -171,7 +171,7 @@ export class WebGLDevice {
     gl.uniformMatrix4fv(uProjectionMatrixLocation, false, data);
 
     if (this.debug) {
-      console.log("createUniformBuffer", locationLabel, data);
+      console.log('createUniformBuffer', locationLabel, data);
     }
     return {} as unknown as GPUBuffer;
   }
@@ -184,7 +184,7 @@ export class WebGLDevice {
     gl.bufferSubData(type, 0, data);
 
     if (this.debug) {
-      console.log("uploadBuffer", buffer.label);
+      console.log('uploadBuffer', buffer.label);
     }
   }
 
@@ -197,7 +197,7 @@ export class WebGLDevice {
 
     const texture = gl.createTexture();
     if (!texture) {
-      throw new Error("Failed to create texture");
+      throw new Error('Failed to create texture');
     }
 
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -206,7 +206,7 @@ export class WebGLDevice {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
     if (this.debug) {
-      console.log("createTexture", label, width, height);
+      console.log('createTexture', label, width, height);
     }
 
     return new GLTexture(texture, gl) as unknown as GPUTexture;
@@ -219,7 +219,7 @@ export class WebGLDevice {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
 
     if (this.debug) {
-      console.log("uploadTexture");
+      console.log('uploadTexture');
     }
   }
 }

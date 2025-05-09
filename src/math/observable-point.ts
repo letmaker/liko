@@ -1,5 +1,5 @@
-import { DirtyType } from "../const";
-import type { IPoint } from "./point";
+import { DirtyType } from '../const';
+import type { IPoint } from './point';
 
 export interface Observer {
   markDirty: (type: DirtyType) => void;

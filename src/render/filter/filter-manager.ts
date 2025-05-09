@@ -1,5 +1,5 @@
-import type { LikoNode } from "../../nodes/node";
-import type { Filter } from "./filter";
+import type { LikoNode } from '../../nodes/node';
+import type { Filter } from './filter';
 
 export class FilterManager {
   private static _instance: FilterManager;
@@ -29,6 +29,6 @@ export class FilterManager {
     outputTarget.position = root.position;
     outputTarget.width = root.width;
     outputTarget.height = root.height;
-    return outputTarget!;
+    return outputTarget;
   }
 }

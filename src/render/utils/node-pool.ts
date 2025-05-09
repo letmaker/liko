@@ -1,5 +1,5 @@
-import { Matrix } from "../../math/matrix";
-import { Point } from "../../math/point";
+import { Matrix } from '../../math/matrix';
+import { Point } from '../../math/point';
 
 export class NodePool<T> {
   static points = new NodePool(Point);

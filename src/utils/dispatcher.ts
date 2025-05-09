@@ -13,7 +13,7 @@ export class Handler {
   constructor(
     public callback?: (...args: unknown[]) => void,
     public caller?: unknown,
-    public once = false,
+    public once = false
   ) {}
 
   /**

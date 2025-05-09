@@ -1,6 +1,6 @@
-import type { Fixture } from "planck";
-import type { RigidBody } from "./rigidBody";
-import type { IShape } from "./rigidBody.interface";
+import type { Fixture } from 'planck';
+import type { RigidBody } from './rigidBody';
+import type { IShape } from './rigidBody.interface';
 
 /**
  * 添加物理形状到刚体
@@ -34,13 +34,13 @@ export function addShape(rigidBody: RigidBody, shape: IShape): void {
   const offsetX = toPh(shape.offset?.x ?? 0);
   const offsetY = toPh(shape.offset?.y ?? 0);
   switch (shape.shapeType) {
-    case "box": {
+    case 'box': {
       const hw = toPh(shape.width ?? rect.width) / 2;
       const hh = toPh(shape.height ?? rect.height) / 2;
       fixture = body.createFixture(new pl.Box(hw, hh, { x: hw + offsetX, y: hh + offsetY }), options);
       break;
     }
-    case "circle": {
+    case 'circle': {
       const radius = toPh(shape.radius ?? rect.height / 2);
       // 修正圆心位置，确保与物体中心对齐
       const centerX = offsetX + radius;
@@ -48,18 +48,18 @@ export function addShape(rigidBody: RigidBody, shape: IShape): void {
       fixture = body.createFixture(new pl.Circle({ x: centerX, y: centerY }, radius), options);
       break;
     }
-    case "chain": {
+    case 'chain': {
       const vertices = shape.vertices.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
       // 检查顶点数量是否合法
-      console.assert(vertices.length >= 2, "Chain shape must have at least 2 vertices");
+      console.assert(vertices.length >= 2, 'Chain shape must have at least 2 vertices');
       if (vertices.length < 2) return;
       fixture = body.createFixture(new pl.Chain(vertices, false), options);
       break;
     }
-    case "polygon": {
+    case 'polygon': {
       const vertices = shape.vertices.map((point) => toPhPos({ x: point.x + offsetX, y: point.y + offsetY }));
       // 检查顶点数量是否合法
-      console.assert(vertices.length >= 3 && vertices.length <= 8, "Polygon shape must have 3-8 vertices");
+      console.assert(vertices.length >= 3 && vertices.length <= 8, 'Polygon shape must have 3-8 vertices');
       if (vertices.length < 3 || vertices.length > 8) return;
       fixture = body.createFixture(new pl.Polygon(vertices), options);
       break;

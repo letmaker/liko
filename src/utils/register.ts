@@ -1,6 +1,6 @@
-import type { LikoNode } from "../nodes/node";
-import type { Filter } from "../render/filter/filter";
-import type { ScriptBase } from "../scripts/script-base";
+import type { LikoNode } from '../nodes/node';
+import type { Filter } from '../render/filter/filter';
+import type { ScriptBase } from '../scripts/script-base';
 
 /**
  * 注册器相关工具函数，用于管理脚本、节点和滤镜的注册与实例化

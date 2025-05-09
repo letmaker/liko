@@ -1,7 +1,7 @@
-import type { INodeData, IScriptData } from "../nodes/node";
-import type { ScriptBase } from "../scripts/script-base";
-import { createNodeInstance, createScriptInstance } from "./register";
-import { Timer } from "./timer";
+import type { INodeData, IScriptData } from '../nodes/node';
+import type { ScriptBase } from '../scripts/script-base';
+import { createNodeInstance, createScriptInstance } from './register';
+import { Timer } from './timer';
 
 /** 用于生成唯一标识符的递增计数器 */
 let id = 0;
@@ -19,15 +19,15 @@ export function getUIDNumber(): number {
  * @param type - 标识符前缀
  * @returns 格式为 `${type}${递增ID}${随机字符串}` 的唯一标识符
  */
-export function getUID(type = ""): string {
+export function getUID(type = ''): string {
   id++;
   return `${type}${id}${Math.random().toString(36).substring(2, 9)}`;
 }
 
-const canvas = document.createElement("canvas");
+const canvas = document.createElement('canvas');
 canvas.width = 1;
 canvas.height = 1;
-const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
 /**
  * 创建一个可重复的图案
@@ -35,7 +35,7 @@ const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
  * @param repetition - 图案的重复方式
  * @returns 创建的 Canvas 图案对象
  */
-export function createPattern(img: CanvasImageSource, repetition: "no-repeat" | "repeat" | "repeat-x" | "repeat-y") {
+export function createPattern(img: CanvasImageSource, repetition: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y') {
   return ctx.createPattern(img, repetition) as CanvasPattern;
 }
 
@@ -45,11 +45,11 @@ export function createPattern(img: CanvasImageSource, repetition: "no-repeat" | 
  * @param repetition - 图案的重复方式
  * @returns Promise，解析为创建的 Canvas 图案对象
  */
-export function createPatternFromUrl(url: string, repetition: "no-repeat" | "repeat" | "repeat-x" | "repeat-y") {
+export function createPatternFromUrl(url: string, repetition: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y') {
   return new Promise<CanvasPattern>((resolve) => {
     const img = new Image();
     img.src = url;
-    img.crossOrigin = "anonymous";
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
       resolve(ctx.createPattern(img, repetition) as CanvasPattern);
     };
@@ -64,7 +64,7 @@ export function createPatternFromUrl(url: string, repetition: "no-repeat" | "rep
  */
 export function createLinearGradient(
   position: { startX: number; startY: number; endX: number; endY: number },
-  colorStops: { offset: number; color: string }[],
+  colorStops: { offset: number; color: string }[]
 ) {
   const grd = ctx.createLinearGradient(position.startX, position.startY, position.endX, position.endY);
   for (const color of colorStops) {
@@ -81,7 +81,7 @@ export function createLinearGradient(
  */
 export function createRadialGradient(
   position: { startX: number; startY: number; startRadius: number; endX: number; endY: number; endRadius: number },
-  colorStops: { offset: number; color: string }[],
+  colorStops: { offset: number; color: string }[]
 ) {
   const grd = ctx.createRadialGradient(
     position.startX,
@@ -89,7 +89,7 @@ export function createRadialGradient(
     position.startRadius,
     position.endX,
     position.endY,
-    position.endRadius,
+    position.endRadius
   );
   for (const color of colorStops) {
     grd.addColorStop(color.offset, color.color);
@@ -104,7 +104,7 @@ export function createRadialGradient(
  * @returns 新创建的 Canvas 元素
  */
 export function createCanvas(width = 100, height = 100): HTMLCanvasElement {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   return canvas;
@@ -116,9 +116,9 @@ export function createCanvas(width = 100, height = 100): HTMLCanvasElement {
  * @returns 以斜杠结尾的根路径字符串
  */
 export function getPathRoot(url: string): string {
-  const arr = url.split("/");
+  const arr = url.split('/');
   arr.pop();
-  return `${arr.join("/")}/`;
+  return `${arr.join('/')}/`;
 }
 
 /**

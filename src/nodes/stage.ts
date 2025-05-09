@@ -1,13 +1,13 @@
-import { App } from "../app";
-import type { KeyBoardManager } from "../events/keyboard-manager";
-import type { PointerManager } from "../events/pointer-manager";
-import type { Bounds } from "../math/bounds";
-import type { IPoint } from "../math/point";
-import type { Renderer } from "../render/renderer";
-import { Store } from "../utils/store";
-import { Timer } from "../utils/timer";
-import { type INodeData, LikoNode } from "./node";
-import { Scene } from "./scene";
+import { App } from '../app';
+import type { KeyBoardManager } from '../events/keyboard-manager';
+import type { PointerManager } from '../events/pointer-manager';
+import type { Bounds } from '../math/bounds';
+import type { IPoint } from '../math/point';
+import type { Renderer } from '../render/renderer';
+import { Store } from '../utils/store';
+import { Timer } from '../utils/timer';
+import { type INodeData, LikoNode } from './node';
+import { Scene } from './scene';
 
 /**
  * 舞台类，作为渲染的根节点，管理场景和输入事件
@@ -30,7 +30,7 @@ export class Stage extends LikoNode {
     super();
     this.pp.stage = this;
     this.pointerEnabled = true;
-    this.label = "Stage";
+    this.label = 'Stage';
   }
 
   /**

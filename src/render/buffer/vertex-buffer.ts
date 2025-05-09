@@ -1,6 +1,6 @@
-import { Device } from "../device/device";
-import { fastCopy } from "../utils/utils";
-import type { IBuffer } from "./interface";
+import { Device } from '../device/device';
+import { fastCopy } from '../utils/utils';
+import type { IBuffer } from './interface';
 
 export class VertexBuffer implements IBuffer {
   private _array: ArrayBuffer;
@@ -13,7 +13,7 @@ export class VertexBuffer implements IBuffer {
   destroyed = false;
   loaded = false;
 
-  constructor(public label = "vertex") {
+  constructor(public label = 'vertex') {
     this.size = 1;
     this._array = new ArrayBuffer(this.size * 4);
     this.f32Data = new Float32Array(this._array);

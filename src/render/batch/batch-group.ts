@@ -1,15 +1,15 @@
-import { DirtyType } from "../../const";
-import type { Matrix } from "../../math/matrix";
-import type { LikoNode } from "../../nodes/node";
-import type { IRenderable, Sprite } from "../../nodes/sprite";
-import { Color } from "../../utils/color";
-import type { CameraBuffer } from "../buffer/camera-buffer";
-import { IndexBuffer } from "../buffer/index-buffer";
-import { VertexBuffer } from "../buffer/vertex-buffer";
-import { FilterManager } from "../filter/filter-manager";
-import type { SpriteObject } from "../render/sprite-object";
-import { getBatchGroupFromCache } from "../utils/cache-manager";
-import { Batch } from "./batch";
+import { DirtyType } from '../../const';
+import type { Matrix } from '../../math/matrix';
+import type { LikoNode } from '../../nodes/node';
+import type { IRenderable, Sprite } from '../../nodes/sprite';
+import { Color } from '../../utils/color';
+import type { CameraBuffer } from '../buffer/camera-buffer';
+import { IndexBuffer } from '../buffer/index-buffer';
+import { VertexBuffer } from '../buffer/vertex-buffer';
+import { FilterManager } from '../filter/filter-manager';
+import type { SpriteObject } from '../render/sprite-object';
+import { getBatchGroupFromCache } from '../utils/cache-manager';
+import { Batch } from './batch';
 
 export type BatchData = Batch | BatchGroup;
 
@@ -18,9 +18,9 @@ export class BatchGroup {
   batches: BatchData[] = [];
   nodes: LikoNode[] = [];
 
-  posBuffer = new VertexBuffer("position");
-  colorBuffer = new VertexBuffer("color");
-  uvBuffer = new VertexBuffer("uv");
+  posBuffer = new VertexBuffer('position');
+  colorBuffer = new VertexBuffer('color');
+  uvBuffer = new VertexBuffer('uv');
   indexBuffer = new IndexBuffer();
   vertexSize = 0;
   colorSize = 0;
@@ -88,7 +88,7 @@ export class BatchGroup {
 
       // TODO： texture的检查是否必须？
       // 检查节点是否有 texture 和 renderObject
-      if ("renderObject" in node && (node as Sprite).texture) {
+      if ('renderObject' in node && (node as Sprite).texture) {
         const renderObject = node.renderObject as SpriteObject;
 
         if (tfDirty || dirty & DirtyType.size) {
@@ -127,7 +127,7 @@ export class BatchGroup {
     }
 
     this.nodes.push(node);
-    if ("texture" in node && node.texture) {
+    if ('texture' in node && node.texture) {
       this._add(node as unknown as IRenderable);
     }
 

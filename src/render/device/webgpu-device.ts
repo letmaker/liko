@@ -1,10 +1,10 @@
-import { WebGpuRender } from "../render/webgpu-render";
-import type { RenderOptions } from "../renderer";
+import { WebGpuRender } from '../render/webgpu-render';
+import type { RenderOptions } from '../renderer';
 
 export interface IBindResource {
   binding: number;
   visibility: number;
-  type: "Buffer" | "Sampler" | "TextureView";
+  type: 'Buffer' | 'Sampler' | 'TextureView';
   resource: GPUBuffer | GPUSampler | GPUTextureView;
 }
 /**
@@ -22,29 +22,29 @@ export class WebGPUDevice {
   async init(options: RenderOptions) {
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
-      throw new Error("Failed to initialize webgpu adapter");
+      throw new Error('Failed to initialize webgpu adapter');
     }
 
     this.device = (await adapter?.requestDevice()) as GPUDevice;
     if (!this.device) {
-      throw new Error("Failed to initialize webgpu device");
+      throw new Error('Failed to initialize webgpu device');
     }
 
     this.format = navigator.gpu.getPreferredCanvasFormat();
 
-    const context = options.canvas.getContext("webgpu") as GPUCanvasContext;
+    const context = options.canvas.getContext('webgpu') as GPUCanvasContext;
     context.configure({
       device: this.device,
       format: navigator.gpu.getPreferredCanvasFormat(),
     });
 
-    this.defaultSampler = this.createSampler("default");
+    this.defaultSampler = this.createSampler('default');
     return { context, gpuRender: new WebGpuRender(options.bgColor) };
   }
 
   setViewport(width: number, height: number) {
     if (this.debug) {
-      console.log("setViewport", width, height);
+      console.log('setViewport', width, height);
     }
   }
 
@@ -69,7 +69,7 @@ export class WebGPUDevice {
       entries: [{ binding: 0, resource: { buffer: buffer } }],
     });
 
-    if (this.debug) console.log("createUniformGroup", label);
+    if (this.debug) console.log('createUniformGroup', label);
 
     return { buffer, group };
   }
@@ -83,7 +83,7 @@ export class WebGPUDevice {
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    if (this.debug) console.log("createBuffer", label);
+    if (this.debug) console.log('createBuffer', label);
 
     return buffer;
   }
@@ -97,7 +97,7 @@ export class WebGPUDevice {
       usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
     });
 
-    if (this.debug) console.log("createBuffer", label);
+    if (this.debug) console.log('createBuffer', label);
 
     return buffer;
   }
@@ -111,20 +111,20 @@ export class WebGPUDevice {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
-    if (this.debug) console.log("createBuffer", label);
+    if (this.debug) console.log('createBuffer', label);
 
     return buffer;
   }
 
   uploadUniform(buffer: GPUBuffer, data: BufferSource | SharedArrayBuffer) {
     this.device.queue.writeBuffer(buffer, 0, data);
-    if (this.debug) console.log("uploadUniform", buffer.label);
+    if (this.debug) console.log('uploadUniform', buffer.label);
   }
 
   uploadBuffer(buffer: GPUBuffer, data: BufferSource | SharedArrayBuffer) {
     this.device.queue.writeBuffer(buffer, 0, data);
 
-    if (this.debug) console.log("uploadBuffer", buffer.label);
+    if (this.debug) console.log('uploadBuffer', buffer.label);
   }
 
   createGroup(label: string, entries: IBindResource[]) {
@@ -140,9 +140,9 @@ export class WebGPUDevice {
         const entry = {
           binding: item.binding,
           visibility: item.visibility,
-          buffer: type === "Buffer" ? {} : undefined,
-          sampler: type === "Sampler" ? {} : undefined,
-          texture: type === "TextureView" ? {} : undefined,
+          buffer: type === 'Buffer' ? {} : undefined,
+          sampler: type === 'Sampler' ? {} : undefined,
+          texture: type === 'TextureView' ? {} : undefined,
         };
         return entry;
       }),
@@ -158,19 +158,19 @@ export class WebGPUDevice {
         const { resource } = item;
         const entry = {
           binding: item.binding,
-          resource: item.type === "Buffer" ? { buffer: resource as GPUBuffer } : (resource as GPUSampler),
+          resource: item.type === 'Buffer' ? { buffer: resource as GPUBuffer } : (resource as GPUSampler),
         };
         return entry;
       }),
     });
 
-    if (this.debug) console.log("createGroup", label);
+    if (this.debug) console.log('createGroup', label);
 
     return { layout, group };
   }
 
   createFilterPipeline(label: string, layouts: GPUBindGroupLayout[], shader: string) {
-    if (this.debug) console.log("createFilterPipeline", label);
+    if (this.debug) console.log('createFilterPipeline', label);
 
     const { device } = this;
     return device.createRenderPipeline({
@@ -178,33 +178,33 @@ export class WebGPUDevice {
       layout: device.createPipelineLayout({ bindGroupLayouts: layouts }),
       vertex: {
         module: device.createShaderModule({ code: shader }),
-        entryPoint: "vert_main",
+        entryPoint: 'vert_main',
         buffers: [
           {
             arrayStride: 4 * 4,
-            stepMode: "vertex",
+            stepMode: 'vertex',
             attributes: [
-              { shaderLocation: 0, format: "float32x2", offset: 0 },
-              { shaderLocation: 1, format: "float32x2", offset: 2 * 4 },
+              { shaderLocation: 0, format: 'float32x2', offset: 0 },
+              { shaderLocation: 1, format: 'float32x2', offset: 2 * 4 },
             ],
           },
         ],
       },
       fragment: {
         module: device.createShaderModule({ code: shader }),
-        entryPoint: "frag_main",
+        entryPoint: 'frag_main',
         targets: [
           {
             format: this.format,
           },
         ],
       },
-      primitive: { topology: "triangle-strip" },
+      primitive: { topology: 'triangle-strip' },
     });
   }
 
   createTexture(label: string, width: number, height: number) {
-    if (this.debug) console.log("createTexture", label);
+    if (this.debug) console.log('createTexture', label);
 
     return this.device.createTexture({
       label: `${label}-texture`,
@@ -214,8 +214,8 @@ export class WebGPUDevice {
     });
   }
 
-  createSampler(label: string, minFilter: GPUFilterMode = "linear", magFilter: GPUFilterMode = "linear") {
-    if (this.debug) console.log("createSampler", label);
+  createSampler(label: string, minFilter: GPUFilterMode = 'linear', magFilter: GPUFilterMode = 'linear') {
+    if (this.debug) console.log('createSampler', label);
 
     return this.device.createSampler({
       label: `${label}-sampler`,
@@ -225,7 +225,7 @@ export class WebGPUDevice {
   }
 
   uploadTexture(bitmap: ImageBitmap | HTMLCanvasElement, texture: GPUTexture) {
-    if (this.debug) console.log("uploadTexture");
+    if (this.debug) console.log('uploadTexture');
     // premultipliedAlpha: true
     this.device.queue.copyExternalImageToTexture({ source: bitmap }, { texture }, [bitmap.width, bitmap.height]);
   }

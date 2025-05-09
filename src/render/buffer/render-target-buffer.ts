@@ -1,12 +1,12 @@
-import { getUID } from "../../utils/utils";
-import { Device } from "../device/device";
-import type { ITextureBuffer } from "./interface";
+import { getUID } from '../../utils/utils';
+import { Device } from '../device/device';
+import type { ITextureBuffer } from './interface';
 
 /**
  * RenderTarget 数据
  */
 export class RenderTargetBuffer implements ITextureBuffer {
-  readonly uid = getUID("RenderTargetBuffer");
+  readonly uid = getUID('RenderTargetBuffer');
   readonly loaded: boolean = true;
   readonly width: number = 0;
   readonly height: number = 0;
@@ -20,7 +20,7 @@ export class RenderTargetBuffer implements ITextureBuffer {
     this.width = width;
     this.height = height;
 
-    this.texture = Device.createTexture("renderTarget", width, height);
+    this.texture = Device.createTexture('renderTarget', width, height);
     this.sampler = Device.defaultSampler;
     this.view = this.texture.createView();
   }

@@ -1,7 +1,7 @@
-import { EventType } from "../const";
-import type { LikoPointerEvent } from "../events/pointer-event";
-import type { RigidBody } from "../physics/rigidBody";
-import { ScriptBase } from "./script-base";
+import { EventType } from '../const';
+import type { LikoPointerEvent } from '../events/pointer-event';
+import type { RigidBody } from '../physics/rigidBody';
+import { ScriptBase } from './script-base';
 
 /** 物理碰撞事件信息 */
 export interface ICollision {

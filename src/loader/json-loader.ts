@@ -1,4 +1,4 @@
-import type { ILoader } from "./loader-manager";
+import type { ILoader } from './loader-manager';
 
 /**
  * JSON 加载器，用于加载和解析 JSON 格式的资源文件

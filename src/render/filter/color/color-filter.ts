@@ -1,6 +1,6 @@
-import { Filter } from "../filter";
-import { UniformGroup } from "../uniform-group";
-import shader from "./color.wgsl?raw";
+import { Filter } from '../filter';
+import { UniformGroup } from '../uniform-group';
+import shader from './color.wgsl?raw';
 
 export type ArrayFixed<T, L extends number> = [T, ...Array<T>] & { length: L };
 export type ColorMatrix = ArrayFixed<number, 20>;
@@ -16,20 +16,20 @@ export class ColorFilter extends Filter {
             0, 0, 1, 0, 0,
             0, 0, 0, 1, 0,
         ],
-        type: "f32",
+        type: 'f32',
         size: 20,
       },
-      uAlpha: { value: 1, type: "f32" },
+      uAlpha: { value: 1, type: 'f32' },
     });
     super({ shader, resources: { filterUniforms } });
   }
 
   get matrix(): ColorMatrix {
-    return (this.resources.filterUniforms as UniformGroup).getValue("uColorMatrix");
+    return (this.resources.filterUniforms as UniformGroup).getValue('uColorMatrix');
   }
   set matrix(value: ColorMatrix) {
     this._dirty = true;
-    (this.resources.filterUniforms as UniformGroup).setValue("uColorMatrix", value);
+    (this.resources.filterUniforms as UniformGroup).setValue('uColorMatrix', value);
   }
 
   /**

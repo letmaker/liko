@@ -1,8 +1,8 @@
-import { RenderTarget } from "../render/render-target";
-import { Device } from "../device/device";
-import type { Texture } from "../../resource/texture";
-import type { ITextureBuffer } from "../buffer/interface";
-import type { IBindResource } from "../device/webgpu-device";
+import type { Texture } from '../../resource/texture';
+import type { ITextureBuffer } from '../buffer/interface';
+import { Device } from '../device/device';
+import type { IBindResource } from '../device/webgpu-device';
+import { RenderTarget } from '../render/render-target';
 
 const max = 16;
 const defaultTexture: RenderTarget = new RenderTarget();
@@ -10,7 +10,7 @@ const defaultTexture: RenderTarget = new RenderTarget();
 export class TextureGroup {
   private _group!: GPUBindGroup;
   private _binds: IBindResource[] = [];
-  private _cacheKey = "";
+  private _cacheKey = '';
 
   map: Map<string, number> = new Map();
   buffers: ITextureBuffer[] = [];
@@ -25,13 +25,13 @@ export class TextureGroup {
       this._binds.push({
         binding: i * 2,
         visibility: GPUShaderStage.FRAGMENT,
-        type: "TextureView",
+        type: 'TextureView',
         resource: defaultView,
       });
       this._binds.push({
         binding: i * 2 + 1,
         visibility: GPUShaderStage.FRAGMENT,
-        type: "Sampler",
+        type: 'Sampler',
         resource: defaultSampler,
       });
     }
@@ -58,7 +58,7 @@ export class TextureGroup {
     const count = buffers.length;
     const binds = this._binds;
 
-    let cacheKey = "";
+    let cacheKey = '';
     for (let i = 0; i < 16; i++) {
       const textureBind = this._binds[i * 2];
       const samplerBind = this._binds[i * 2 + 1];
@@ -75,7 +75,7 @@ export class TextureGroup {
 
     if (cacheKey !== this._cacheKey) {
       this._cacheKey = cacheKey;
-      const { group } = Device.createGroup("texture", binds);
+      const { group } = Device.createGroup('texture', binds);
       return group;
     }
     return this._group;

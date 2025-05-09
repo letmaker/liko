@@ -1,5 +1,5 @@
-import { Effect } from "./effect/effect";
-import { ScriptBase } from "./script-base";
+import { Effect } from './effect/effect';
+import { ScriptBase } from './script-base';
 
 /** 动画效果配置接口 */
 interface IEffect {
@@ -76,10 +76,10 @@ export class Animator extends ScriptBase {
         this._effectList.push(effect);
 
         effect.onStart = () => {
-          this.signal("animator.startEffect", effect);
+          this.signal('animator.startEffect', effect);
         };
         effect.onEnd = () => {
-          this.signal("animator.endEffect", effect);
+          this.signal('animator.endEffect', effect);
         };
       }
     }
@@ -114,7 +114,7 @@ export class Animator extends ScriptBase {
    * 组件唤醒时调用，当动画控制器被添加到场景中并首次激活时触发。
    */
   override onAwake(): void {
-    this.signal("animator.awake");
+    this.signal('animator.awake');
   }
 
   /**
@@ -131,12 +131,12 @@ export class Animator extends ScriptBase {
     }
 
     if (this.currentTime >= this.duration) {
-      this.signal("animator.end");
+      this.signal('animator.end');
       this._repeatTimes++;
       if (this._repeatTimes < this.repeat) {
         this.currentTime = this.currentTime % this.duration;
       } else {
-        this.signal("animator.complete");
+        this.signal('animator.complete');
       }
     }
   }

@@ -1,6 +1,6 @@
-import { Device } from "../device/device";
-import { fastCopy } from "../utils/utils";
-import type { IBuffer } from "./interface";
+import { Device } from '../device/device';
+import { fastCopy } from '../utils/utils';
+import type { IBuffer } from './interface';
 
 export class IndexBuffer implements IBuffer {
   private _array: ArrayBuffer;
@@ -39,7 +39,7 @@ export class IndexBuffer implements IBuffer {
 
   get buffer() {
     if (!this._buffer) {
-      this._buffer = Device.createIndexBuffer("index", this.data);
+      this._buffer = Device.createIndexBuffer('index', this.data);
     }
     return this._buffer;
   }

@@ -1,8 +1,8 @@
-import type { IRenderable } from "../../nodes/sprite";
-import type { Batch } from "../batch/batch";
-import type { IndexBuffer } from "../buffer/index-buffer";
-import type { VertexBuffer } from "../buffer/vertex-buffer";
-import { useWebGpu } from "../device/device";
+import type { IRenderable } from '../../nodes/sprite';
+import type { Batch } from '../batch/batch';
+import type { IndexBuffer } from '../buffer/index-buffer';
+import type { VertexBuffer } from '../buffer/vertex-buffer';
+import { useWebGpu } from '../device/device';
 
 export class SpriteObject {
   readonly vertexSize = 4 * 2;

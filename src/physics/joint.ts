@@ -1,6 +1,6 @@
-import type { Joint } from "planck";
-import type { RigidBody } from "./rigidBody";
-import type { IJoint } from "./rigidBody.interface";
+import type { Joint } from 'planck';
+import type { RigidBody } from './rigidBody';
+import type { IJoint } from './rigidBody.interface';
 
 export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
   if (!rigidBody.awaked) {
@@ -11,7 +11,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
   const { pl, world, toPhPos, toPh } = physics;
 
   switch (joint.jointType) {
-    case "revolute": {
+    case 'revolute': {
       const { localAnchorA, localAnchorB } = getLocalAnchorAB(rigidBody, joint);
       const revoluteJointDef = {
         bodyA: body,
@@ -28,7 +28,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       };
       return world.createJoint(new pl.RevoluteJoint(revoluteJointDef));
     }
-    case "distance": {
+    case 'distance': {
       const { localAnchorA, localAnchorB } = getLocalAnchorAB(rigidBody, joint);
       const distanceJointDef = {
         bodyA: body,
@@ -42,7 +42,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       };
       return world.createJoint(new pl.DistanceJoint(distanceJointDef));
     }
-    case "fixed": {
+    case 'fixed': {
       const { localAnchorA, localAnchorB } = getLocalAnchorAB(rigidBody, joint);
       const fixedJointDef = {
         bodyA: body,
@@ -55,7 +55,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       };
       return world.createJoint(new pl.WeldJoint(fixedJointDef));
     }
-    case "prismatic": {
+    case 'prismatic': {
       const { localAnchorA, localAnchorB } = getLocalAnchorAB(rigidBody, joint);
       const prismaticJointDef = {
         bodyA: body,
@@ -73,7 +73,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       };
       return world.createJoint(new pl.PrismaticJoint(prismaticJointDef));
     }
-    case "wheel": {
+    case 'wheel': {
       const { localAnchorA, localAnchorB } = getLocalAnchorAB(rigidBody, joint);
       const wheelJointDef = {
         bodyA: body,
@@ -90,7 +90,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       };
       return world.createJoint(new pl.WheelJoint(wheelJointDef));
     }
-    case "rope": {
+    case 'rope': {
       const { localAnchorA, localAnchorB } = getLocalAnchorAB(rigidBody, joint);
       const ropeJointDef = {
         bodyA: body,
@@ -102,7 +102,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       };
       return world.createJoint(new pl.RopeJoint(ropeJointDef));
     }
-    case "motor": {
+    case 'motor': {
       const motorJointDef = {
         bodyA: body,
         bodyB: joint.targetBody.body,
@@ -116,7 +116,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
       };
       return world.createJoint(new pl.MotorJoint(motorJointDef));
     }
-    case "pulley": {
+    case 'pulley': {
       const targetB = joint.targetBody.target;
       const localA = { x: joint.localAnchorA.x + target.pivot.x, y: joint.localAnchorA.y + target.pivot.y };
       const localB = { x: joint.localAnchorB.x + targetB.pivot.x, y: joint.localAnchorB.y + targetB.pivot.y };
@@ -142,7 +142,7 @@ export function addJoint(rigidBody: RigidBody, joint: IJoint): Joint | null {
 }
 
 function getLocalAnchorAB(rigidBody: RigidBody, joint: IJoint) {
-  if ("localAnchor" in joint) {
+  if ('localAnchor' in joint) {
     const { physics, target } = rigidBody;
     const localA = { x: joint.localAnchor.x + target.pivot.x, y: joint.localAnchor.y + target.pivot.y };
     const localB = joint.targetBody.target.worldToLocal(target.localToWorld(localA));

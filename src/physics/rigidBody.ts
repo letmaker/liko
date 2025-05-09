@@ -1,12 +1,12 @@
-import type { Body, Joint } from "planck";
-import { EventType, PI2 } from "../const";
-import { type IPoint, Point } from "../math/point";
-import type { ICollision } from "../scripts/script";
-import { ScriptBase } from "../scripts/script-base";
-import { RegScript } from "../utils/decorators";
-import { addJoint } from "./joint";
-import type { IJoint, IShape, RigidBodyOptions, RigidType } from "./rigidBody.interface";
-import { addShape } from "./shape";
+import type { Body, Joint } from 'planck';
+import { EventType, PI2 } from '../const';
+import { type IPoint, Point } from '../math/point';
+import type { ICollision } from '../scripts/script';
+import { ScriptBase } from '../scripts/script-base';
+import { RegScript } from '../utils/decorators';
+import { addJoint } from './joint';
+import type { IJoint, IShape, RigidBodyOptions, RigidType } from './rigidBody.interface';
+import { addShape } from './shape';
 
 /**
  * 物理刚体组件，实现物理属性描述和碰撞区域定义。
@@ -16,7 +16,7 @@ import { addShape } from "./shape";
  *
  * 注意：RigidBody 为一个脚本，挂载到节点后，需要添加到场景中才能被激活
  */
-@RegScript("RigidBody")
+@RegScript('RigidBody')
 export class RigidBody extends ScriptBase {
   private _tempPos2D: IPoint = { x: 0, y: 0 };
   private _joints: Joint[] = [];
@@ -27,13 +27,13 @@ export class RigidBody extends ScriptBase {
   body: Body;
 
   /** 物理类型，static(静态)、kinematic(运动学) 或 dynamic(动态)，至少一个物体为 dynamic 才能产生碰撞 */
-  rigidType: RigidType = "static";
+  rigidType: RigidType = 'static';
   /** 物理形状列表，描述碰撞区域，为空则默认使用与节点同大小的矩形 */
   shapes: IShape[] = [];
   /** 关节列表，描述刚体之间的连接关系 */
   joints: IJoint[] = [];
   /** 物理分类，用于碰撞检测 */
-  category = "";
+  category = '';
   /** 是否为传感器，传感器只检测碰撞但不产生物理反馈 */
   isSensor = false;
   /** 摩擦系数，范围 0-1，默认为 0.2 */
@@ -52,7 +52,7 @@ export class RigidBody extends ScriptBase {
     return this._categoryAccepted;
   }
   set categoryAccepted(value: string | string[] | undefined) {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       this._categoryAccepted = value.split(/[,，]/);
     } else {
       this._categoryAccepted = value;
@@ -138,8 +138,8 @@ export class RigidBody extends ScriptBase {
 
   constructor(options?: RigidBodyOptions) {
     super();
-    console.assert(this.physics !== undefined, "physics not init");
-    this.body = this.physics.world.createBody({ active: false, type: "kinematic", fixedRotation: true });
+    console.assert(this.physics !== undefined, 'physics not init');
+    this.body = this.physics.world.createBody({ active: false, type: 'kinematic', fixedRotation: true });
     if (options) {
       this.setProps(options as Record<string, any>);
     }
@@ -154,15 +154,15 @@ export class RigidBody extends ScriptBase {
     const body = this.body;
     const target = this.target;
 
-    if (this.rigidType === "dynamic") body.setDynamic();
-    else if (this.rigidType === "static") body.setStatic();
+    if (this.rigidType === 'dynamic') body.setDynamic();
+    else if (this.rigidType === 'static') body.setStatic();
 
     if (this.shapes.length) {
       for (const shape of this.shapes) {
         addShape(this, shape);
       }
     } else {
-      addShape(this, { shapeType: "box" });
+      addShape(this, { shapeType: 'box' });
     }
 
     const tempPoint = Point.TEMP.set(0, 0);
@@ -200,7 +200,7 @@ export class RigidBody extends ScriptBase {
    * 同步物理引擎计算结果到游戏对象，并检测边界。如果物体超出边界则销毁
    */
   override onUpdate(): void {
-    if (this.rigidType === "static") return;
+    if (this.rigidType === 'static') return;
     const target = this.target;
     const position = this.body.getPosition();
 
@@ -264,7 +264,7 @@ export class RigidBody extends ScriptBase {
     }
 
     this.body.setPosition(this.physics.toPhPos(worldPos));
-    if (this.rigidType !== "static") this.body.setAwake(true);
+    if (this.rigidType !== 'static') this.body.setAwake(true);
   }
 
   /**
@@ -291,7 +291,7 @@ export class RigidBody extends ScriptBase {
   setRotation(rotation: number): void {
     this.body.setAngle(rotation);
     this.target.rotation = rotation;
-    if (this.rigidType !== "static") this.body.setAwake(true);
+    if (this.rigidType !== 'static') this.body.setAwake(true);
   }
 
   /**
@@ -313,7 +313,7 @@ export class RigidBody extends ScriptBase {
    */
   applyLinearImpulse(impulse: IPoint, point: IPoint = { x: 0, y: 0 }): void {
     // TODO 换成错误 throw 出来更好？
-    console.assert(this.rigidType === "dynamic", "applyLinearImpulse only works on dynamic bodies");
+    console.assert(this.rigidType === 'dynamic', 'applyLinearImpulse only works on dynamic bodies');
     this.body.applyLinearImpulse(impulse, point, true);
   }
 
@@ -326,7 +326,7 @@ export class RigidBody extends ScriptBase {
    * @param point - 作用点，默认为物体原点，相对于物体中心的偏移
    */
   applyForce(force: IPoint, point: IPoint = { x: 0, y: 0 }): void {
-    console.assert(this.rigidType === "dynamic", "applyForce only works on dynamic bodies");
+    console.assert(this.rigidType === 'dynamic', 'applyForce only works on dynamic bodies');
     this.body.applyForce(force, point, true);
   }
 
@@ -338,7 +338,7 @@ export class RigidBody extends ScriptBase {
    * @param force - 力向量
    */
   applyForceToCenter(force: IPoint): void {
-    console.assert(this.rigidType === "dynamic", "applyForceToCenter only works on dynamic bodies");
+    console.assert(this.rigidType === 'dynamic', 'applyForceToCenter only works on dynamic bodies');
     this.body.applyForceToCenter(force, true);
   }
 
@@ -351,8 +351,8 @@ export class RigidBody extends ScriptBase {
    */
   applyTorque(torque: number): void {
     console.assert(
-      this.rigidType === "dynamic" && this.allowRotation,
-      "applyTorque only works on dynamic bodies with allowRotation enabled",
+      this.rigidType === 'dynamic' && this.allowRotation,
+      'applyTorque only works on dynamic bodies with allowRotation enabled'
     );
     this.body.applyTorque(torque, true);
   }
@@ -366,8 +366,8 @@ export class RigidBody extends ScriptBase {
    */
   applyAngularImpulse(impulse: number): void {
     console.assert(
-      this.rigidType === "dynamic" && this.allowRotation,
-      "applyAngularImpulse only works on dynamic bodies with allowRotation enabled",
+      this.rigidType === 'dynamic' && this.allowRotation,
+      'applyAngularImpulse only works on dynamic bodies with allowRotation enabled'
     );
     this.body.applyAngularImpulse(impulse, true);
   }
