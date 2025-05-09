@@ -1,26 +1,42 @@
 {
   "compilerOptions": {
+    // 目标版本
     "target": "ES2020",
+    // 使用 define 来初始化类字段
     "useDefineForClassFields": true,
+    // 模块类型
     "module": "ESNext",
+    // 库
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    // 跳过库检查
     "skipLibCheck": true,
-    /* Bundler mode */
+    // 模块解析
     "moduleResolution": "bundler",
-    // "allowImportingTsExtensions": true,
+    // 隔离模块
     "isolatedModules": false,
+    // 模块检测
     "moduleDetection": "force",
-    // noEmit: true
-    /* Linting */
+    // 严格模式
     "strict": true,
+    // 未使用局部变量
     "noUnusedLocals": true,
+    // 未使用参数
     "noUnusedParameters": true,
+    // 禁止 switch 的 fallthrough
     "noFallthroughCasesInSwitch": true,
+    // 未检查的副作用
     "noUncheckedSideEffectImports": true,
+    // 禁止隐式重写
     "noImplicitOverride": true,
-    /* 启用装饰器 */
+    // 禁止隐式返回
+    "noImplicitReturns": true,
+    // 禁止隐式 any
+    "noImplicitAny": true,
+    // 启用装饰器
     "experimentalDecorators": true,
+    // 启用装饰器元数据
     "emitDecoratorMetadata": true,
+    // 类型根
     "typeRoots": ["./node_modules/@webgpu/types", "./node_modules/@types"]
   },
   "include": ["src"]

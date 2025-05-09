@@ -13,9 +13,7 @@ export default defineConfig({
     rollupOptions: {
       external: ['@webgpu/types'],
       output: {
-        globals: {
-          planck: 'planck',
-        },
+        globals: { planck: 'planck' },
         chunkFileNames: 'liko.[name].[format].js',
       },
     },
