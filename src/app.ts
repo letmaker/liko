@@ -24,7 +24,7 @@ export interface IAppOptions {
   height?: number;
   /** 背景颜色 */
   bgColor?: ColorData;
-  /** 画布容器 ID，如果提供则必须存在于 DOM 中 */
+  /** 画布容器 ID，用来添加画布到指定容器中，如果提供则必须存在于 DOM 中 */
   container?: string;
   /** 自定义画布元素 */
   canvas?: HTMLCanvasElement;
