@@ -67,7 +67,7 @@ export class LoaderManager extends Dispatcher {
 
     // 如果有缓存，则优先从缓存获取
     const res = this.get(url);
-    if (res) return Promise.resolve(res);
+    if (res) return Promise.resolve(res as T);
 
     // 同一个 url 只会加载一次
     const promise = this._loadingMap[url];
@@ -139,7 +139,7 @@ export class LoaderManager extends Dispatcher {
    * @param url - 资源的 URL 地址
    * @param res - 要缓存的资源对象
    */
-  cache(url: string, res: unknown) {
+  cache(url: string, res: unknown): void {
     if (res !== undefined) this.cacheMap[url] = res;
   }
 
@@ -148,15 +148,15 @@ export class LoaderManager extends Dispatcher {
    * @param url - 资源的 URL 地址
    * @returns 返回缓存的资源，如果不存在则返回 undefined
    */
-  get(url: string) {
-    return this.cacheMap[url];
+  get<T>(url: string): T | undefined {
+    return this.cacheMap[url] as T | undefined;
   }
 
   /**
    * 卸载并释放相关资源
    * @param url - 要卸载的资源 URL 地址
    */
-  unload(url: string) {
+  unload(url: string): void {
     const res = this.cacheMap[url];
     delete this.cacheMap[url];
     if (res) {
@@ -168,7 +168,7 @@ export class LoaderManager extends Dispatcher {
   /**
    * 清空所有已缓存的资源并重置加载状态
    */
-  clear() {
+  clear(): void {
     for (const url of Object.keys(this.cacheMap)) {
       this.unload(url);
     }
@@ -180,7 +180,7 @@ export class LoaderManager extends Dispatcher {
   /**
    * 重置加载计数器，用于重新开始加载进度的计算
    */
-  resetCount() {
+  resetCount(): void {
     this._total -= this._loaded;
     this._loaded = 0;
   }

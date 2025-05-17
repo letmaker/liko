@@ -1,5 +1,6 @@
 import { TextureBuffer } from '../render/buffer/texture-buffer';
 import { Texture } from '../resource/texture';
+import { system } from '../utils/system';
 import type { ILoader } from './loader-manager';
 
 /**
@@ -26,8 +27,7 @@ export class ImageLoader implements ILoader {
    */
   async load(url: string) {
     try {
-      const res = await fetch(url);
-      const blob = await res.blob();
+      const blob = await system.loadBlob(url);
       const bitmap = await createImageBitmap(blob);
       return Texture.createFormBuffer(new TextureBuffer(bitmap), url);
     } catch (e) {

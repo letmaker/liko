@@ -1,3 +1,4 @@
+import { system } from '../utils/system';
 import type { ILoader } from './loader-manager';
 
 /**
@@ -24,8 +25,7 @@ export class JsonLoader implements ILoader {
    */
   async load(url: string) {
     try {
-      const res = await fetch(url);
-      return await res.json();
+      return await system.loadJson(url);
     } catch (e) {
       console.error(`Error loading JSON from ${url}:`, e);
       return undefined;

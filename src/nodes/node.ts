@@ -798,19 +798,11 @@ export abstract class LikoNode {
    * @param script - 要添加的脚本实例
    * @returns 当前节点实例，支持链式调用
    */
-  addScript<T extends ScriptBase>(script: T | IScriptData): this {
-    let s = undefined;
-    if (typeof script !== 'function') {
-      s = createScript(script as IScriptData) as T;
-      if (!s) return this;
-    } else {
-      s = script as T;
-    }
-
+  addScript<T extends ScriptBase>(script: T): this {
     const pp = this.pp;
     if (pp.scripts === defaultScripts) pp.scripts = [];
-    pp.scripts.push(s);
-    s.target = this;
+    pp.scripts.push(script);
+    script.target = this;
     return this;
   }
 

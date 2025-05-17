@@ -1,4 +1,5 @@
 import { Sound } from '../sound/sound';
+import { system } from '../utils/system';
 import type { ILoader } from './loader-manager';
 
 /**
@@ -25,8 +26,7 @@ export class SoundLoader implements ILoader {
    */
   async load(url: string) {
     try {
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
+      const arrayBuffer = await system.loadArrayBuffer(url);
       const audioBuffer = await Sound.audioContext.decodeAudioData(arrayBuffer);
       return audioBuffer;
     } catch (e) {

@@ -1,5 +1,6 @@
 import { TextureBuffer } from '../render/buffer/texture-buffer';
 import { type ISheet, Texture } from '../resource/texture';
+import { system } from '../utils/system';
 import { getPathRoot } from '../utils/utils';
 import type { ILoader, LoaderManager } from './loader-manager';
 
@@ -33,14 +34,12 @@ export class SheetLoader implements ILoader {
    */
   async load(url: string, manager: LoaderManager) {
     try {
-      const res = await fetch(url);
-      const json = (await res.json()) as ISheetData;
+      const json = await system.loadJson<ISheetData>(url);
 
       // 加载图集图片
       const rootPath = getPathRoot(url);
       const imageUrl = rootPath + json.meta.image;
-      const imageRes = await fetch(imageUrl);
-      const bitmap = await createImageBitmap(await imageRes.blob());
+      const bitmap = await createImageBitmap(await system.loadBlob(imageUrl));
       const buffer = new TextureBuffer(bitmap);
 
       // 创建并缓存纹理

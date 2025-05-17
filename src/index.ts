@@ -1,6 +1,7 @@
 export { EventType } from './const';
 export * as register from './utils/register';
 export * as utils from './utils/utils';
+export { system } from './utils/system';
 export { Dispatcher } from './utils/dispatcher';
 export { Timer } from './utils/timer';
 export { App, type IAppOptions } from './app';
