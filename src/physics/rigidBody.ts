@@ -138,7 +138,9 @@ export class RigidBody extends ScriptBase {
 
   constructor(options?: RigidBodyOptions) {
     super();
-    console.assert(this.physics !== undefined, 'physics not init');
+    if (!this.physics) {
+      throw new Error('physics not init, please enable the physics system in app.init');
+    }
     this.body = this.physics.world.createBody({ active: false, type: 'kinematic', fixedRotation: true });
     if (options) {
       this.setProps(options as Record<string, any>);

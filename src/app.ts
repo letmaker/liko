@@ -18,6 +18,8 @@ const defaultOptions = {
 
 /** 引擎初始化选项接口 */
 export interface IAppOptions {
+  /** 应用标题 */
+  title?: string;
   /** 画布宽度（逻辑像素），必须为正数 */
   width?: number;
   /** 画布高度（逻辑像素），必须为正数 */
@@ -144,7 +146,7 @@ export class App {
    */
   destroy() {
     cancelAnimationFrame(this._frameHandle);
-    this._renderHandler = () => {};
+    this._renderHandler = () => { };
     this.stage.destroy();
     this.renderer.destroy();
   }
