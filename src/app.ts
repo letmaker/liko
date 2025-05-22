@@ -91,7 +91,7 @@ export class App {
       this.stage.autoResize();
     }
 
-    if (params.physics) {
+    if (params.physics?.enabled) {
       const physics = await createPhysics();
       physics.init({ timer: this.stage.timer, ...params.physics });
     }
