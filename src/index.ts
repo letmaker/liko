@@ -1,4 +1,4 @@
-export { EventType } from './const';
+export { EventType ,DirtyType } from './const';
 export * as register from './utils/register';
 export * as utils from './utils/utils';
 export { system } from './utils/system';
@@ -16,7 +16,7 @@ export { Texture } from './resource/texture';
 export { TextureBuffer } from './render/buffer/texture-buffer';
 export { Canvas } from './nodes/canvas';
 export { Container } from './nodes/container';
-export { LikoNode, type INodeData, type IScriptData, type IFilterData } from './nodes/node';
+export { LikoNode, type INodeData, type IScriptData, type IFilterData} from './nodes/node';
 export { Scene } from './nodes/scene';
 export { Sprite } from './nodes/sprite';
 export { AnimatedSprite } from './nodes/animated-sprite';
