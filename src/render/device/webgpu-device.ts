@@ -121,7 +121,7 @@ export class WebGPUDevice {
     if (this.debug) console.log('uploadUniform', buffer.label);
   }
 
-  uploadBuffer(buffer: GPUBuffer, data: BufferSource | SharedArrayBuffer) {
+  uploadBuffer(buffer: GPUBuffer, data: BufferSource | SharedArrayBuffer, _index = false) {
     this.device.queue.writeBuffer(buffer, 0, data);
 
     if (this.debug) console.log('uploadBuffer', buffer.label);

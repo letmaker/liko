@@ -1,7 +1,8 @@
 import { Texture } from '../../resource/texture';
 import { CameraBuffer } from '../buffer/camera-buffer';
 // @ts-nocheck  TODO: 待实现
-import { Device, type IBindResource } from '../device/device';
+import { Device } from '../device/device';
+import type { IBindResource } from '../device/webgpu-device';
 import type { RenderTarget } from '../render/render-target';
 import { getPipelineFromCache } from '../utils/cache-manager';
 import type { Filter } from './filter';
@@ -18,7 +19,7 @@ export class FilterRender {
   camera: CameraBuffer = new CameraBuffer();
   groups: GPUBindGroup[] = [];
 
-  constructor(public filter: Filter) {}
+  constructor(public filter: Filter) { }
 
   getPipeline(input: RenderTarget) {
     this._pipeline ??= getPipelineFromCache(this.filter.shader, () => {
@@ -108,7 +109,7 @@ export class FilterRender {
     // biome-ignore format:
     const vertexData = new Float32Array([
       // x,y,u,v 
-      0,0,0,0,
+      0, 0, 0, 0,
       width, 0, 1, 0,
       0, height, 0, 1,
       width, height, 1, 1,
@@ -116,7 +117,7 @@ export class FilterRender {
     const vertexBuffer = Device.createVertexBuffer('filter', vertexData);
     Device.uploadBuffer(vertexBuffer, vertexData);
 
-    const command = Device.createCommandEncoder();
+    const command = Device.device.createCommandEncoder();
     const renderPass = command.beginRenderPass({
       colorAttachments: [
         {
@@ -138,6 +139,6 @@ export class FilterRender {
 
     renderPass.draw(4, 1);
     renderPass.end();
-    Device.submit([command.finish()]);
+    Device.device.queue.submit([command.finish()]);
   }
 }

@@ -18,7 +18,7 @@ export class WebGLSpritePipeline implements IWebGLRenderPipe {
   vao!: WebGLVertexArrayObject;
 
   constructor() {
-    const device = Device as WebGLDevice;
+    const device = Device as unknown as WebGLDevice;
     const gl = device.gl;
     const program = device.createProgram(VertShader, FragShader);
 

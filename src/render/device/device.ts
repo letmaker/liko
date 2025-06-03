@@ -1,14 +1,13 @@
-import { WebGLDevice } from './webgl-device';
 import { WebGPUDevice } from './webgpu-device';
 
-export let Device!: WebGLDevice | WebGPUDevice;
+export let Device!: WebGPUDevice;
 
 export const useWebGpu = true;
 
 export function initDevice() {
-  if (useWebGpu) {
-    Device = new WebGPUDevice();
-  } else {
-    Device = new WebGLDevice();
-  }
+  // if (useWebGpu) {
+  Device = new WebGPUDevice();
+  // } else {
+  //   Device = new WebGLDevice();
+  // }
 }
