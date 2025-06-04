@@ -262,6 +262,8 @@ export class Canvas extends LikoNode implements IRenderable {
   /**
    * 开始一个新的路径
    *
+   * 注意：连续调用 fill 或者 stroke 绘制多个图案叠加时，需要手动调用 beginPath，否则会自动闭合路径，导致图案叠加不正确
+   *
    * 绘制闭环路径时，需要调用 beginPath 和 closePath
    * @returns 当前实例，支持链式调用
    */
