@@ -34,5 +34,8 @@
   },
   "[glsl]": {
     "editor.defaultFormatter": "raczzalan.webgl-glsl-editor"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
   }
 }

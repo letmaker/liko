@@ -54,6 +54,7 @@ export class Canvas extends LikoNode implements IRenderable {
 
   /** 获取渲染纹理对象，在需要时自动更新画布内容 */
   get texture(): Texture {
+    if (this.pp.cmd.length === 0) return Texture.BLANK;
     if (this.pp.changed) this._$drawCanvas();
     return this.pp.texture;
   }

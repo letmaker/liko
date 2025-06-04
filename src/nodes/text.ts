@@ -72,6 +72,7 @@ export class Text extends LikoNode implements IRenderable {
 
   /** 获取渲染纹理，如果文本内容已更改则重新绘制 */
   get texture(): Texture {
+    if (!this.pp.text) return Texture.BLANK;
     if (this.pp.changed) this._$drawText();
     return this.pp.texture;
   }

@@ -1,6 +1,8 @@
 import { loader } from '../loader';
 import { Rectangle } from '../math/rectangle';
 import type { ITextureBuffer } from '../render/buffer/interface';
+import { RenderTargetBuffer } from '../render/buffer/render-target-buffer';
+import { TextureBuffer } from '../render/buffer/texture-buffer';
 import { groupD8 } from '../render/utils/groupD8';
 import { getUID } from '../utils/utils';
 
@@ -21,6 +23,15 @@ export interface ISheet {
  * 纹理类，由图像源和 UV 坐标组成
  */
 export class Texture {
+  private static _blank?: Texture;
+  /** 空纹理 */
+  static get BLANK() {
+    if (!Texture._blank) {
+      Texture._blank = new Texture().setBuffer(new RenderTargetBuffer(1, 1));
+    }
+    return Texture._blank;
+  }
+
   /** 唯一标识符 */
   readonly uid = getUID();
   /** UV 坐标集合，用于纹理映射 */
@@ -85,6 +96,15 @@ export class Texture {
    */
   static async createFromUrl(url: string): Promise<Texture | undefined> {
     return loader.load(url, 'image');
+  }
+
+  /**
+   * 从 HTMLCanvasElement 创建纹理
+   * @param canvas - 画布元素
+   * @returns 创建的纹理对象
+   */
+  static createFromCanvas(canvas: HTMLCanvasElement): Texture {
+    return new Texture().setBuffer(new TextureBuffer(canvas));
   }
 
   /**
