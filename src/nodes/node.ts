@@ -1059,15 +1059,19 @@ export abstract class LikoNode {
     if (props) {
       const keys = Object.keys(props);
       for (const key of keys) {
-        if (key.startsWith('on') && typeof props[key] === 'function') {
-          const eventName = key.charAt(2).toLowerCase() + key.slice(3);
-          this.on(eventName, props[key] as () => void, this);
-        } else if (key in this) {
-          (this as Record<string, unknown>)[key] = props[key];
-        }
+        this._$setProp(key, props[key]);
       }
     }
     return this;
+  }
+
+  protected _$setProp(key: string, value: unknown): void {
+    if (key.startsWith('on') && typeof value === 'function') {
+      const eventName = key.charAt(2).toLowerCase() + key.slice(3);
+      this.on(eventName, value as () => void, this);
+    } else if (key in this) {
+      (this as Record<string, unknown>)[key] = value;
+    }
   }
 
   /**
