@@ -3,8 +3,9 @@ import type { Batch } from '../batch/batch';
 import type { IndexBuffer } from '../buffer/index-buffer';
 import type { VertexBuffer } from '../buffer/vertex-buffer';
 import { useWebGpu } from '../device/device';
+import type { IRenderObject } from './render-object';
 
-export class SpriteObject {
+export class SpriteObject implements IRenderObject {
   readonly vertexSize = 4 * 2;
   readonly indexSize = 6;
   readonly colorSize = 4 * 1;
@@ -84,7 +85,7 @@ export class SpriteObject {
     const { colorStart } = this;
     const { node } = this;
     const { u32Data } = vertexBuffer;
-    const color = node.pp.tintColor.argb;
+    const color = node.pp.tintColor.abgr;
 
     // color
     u32Data[colorStart] = color;

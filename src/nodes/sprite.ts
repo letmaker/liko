@@ -1,7 +1,7 @@
 import { DirtyType, EventType } from '../const';
 import { loader } from '../loader';
 import type { Bounds } from '../math/bounds';
-import type { ShapeObject } from '../render/render/shape-object';
+import type { IRenderObject } from '../render/render/render-object';
 import { SpriteObject } from '../render/render/sprite-object';
 import { Texture } from '../resource/texture';
 import type { ColorData } from '../utils/color';
@@ -11,7 +11,7 @@ import { type INodePrivateProps, LikoNode } from './node';
 
 /** 实现 IRenderable 接口的节点可以渲染图像 */
 export interface IRenderable extends LikoNode {
-  renderObject: SpriteObject | ShapeObject;
+  renderObject: IRenderObject;
   texture: Texture;
 }
 
