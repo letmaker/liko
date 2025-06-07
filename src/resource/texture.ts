@@ -24,12 +24,30 @@ export interface ISheet {
  */
 export class Texture {
   private static _blank?: Texture;
+  private static _white?: Texture;
+
   /** 空纹理 */
   static get BLANK() {
     if (!Texture._blank) {
       Texture._blank = new Texture().setBuffer(new RenderTargetBuffer(1, 1));
     }
     return Texture._blank;
+  }
+
+  /** 白色纹理，专用于形状渲染 */
+  static get WHITE() {
+    if (!Texture._white) {
+      // 创建一个1x1的白色画布
+      const canvas = document.createElement('canvas');
+      canvas.width = 1;
+      canvas.height = 1;
+      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, 1, 1);
+
+      Texture._white = Texture.createFromCanvas(canvas);
+    }
+    return Texture._white;
   }
 
   /** 唯一标识符 */

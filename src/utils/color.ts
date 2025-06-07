@@ -30,8 +30,8 @@ export class Color {
   private _color = new Float32Array([1, 1, 1, 1]);
   private _value: ColorData = '#ffffff';
 
-  /** WebGPU 使用的颜色值，ARGB 格式的整数 */
-  argb = 0;
+  /** WebGPU 使用的颜色值，ABGR 格式的整数 */
+  abgr = 0;
 
   constructor(value?: ColorData) {
     this.value = value ?? 0xffffff;
@@ -105,7 +105,7 @@ export class Color {
 
     // TODO 这里应该 round 吗
     const intAlpha = Math.round(a * 255);
-    this.argb = (intAlpha << 24) | (r << 16) | (g << 8) | b;
+    this.abgr = (intAlpha << 24) | (b << 16) | (g << 8) | r;
   }
 
   /** 获取红色值，范围：0 - 1 */
@@ -148,6 +148,6 @@ export class Color {
     const g = Math.round(this._color[1] * 255);
     const b = Math.round(this._color[2] * 255);
     const a = Math.round(alpha * 255);
-    this.argb = (a << 24) | (r << 16) | (g << 8) | b;
+    this.abgr = (a << 24) | (b << 16) | (g << 8) | r;
   }
 }
