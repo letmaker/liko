@@ -40,7 +40,7 @@ interface ISpriteOptions extends INodeOptions {
 export class Sprite extends LikoNode implements IRenderable {
   declare pp: ISpritePrivateProps;
   /** 用于渲染精灵的渲染对象 */
-  renderObject: SpriteObject = new SpriteObject(this);
+  readonly renderObject: SpriteObject = new SpriteObject(this);
 
   constructor(options?: Texture | ISpriteOptions) {
     super();

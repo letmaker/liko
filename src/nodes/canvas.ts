@@ -34,7 +34,7 @@ interface ICanvasPrivateProps extends INodePrivateProps {
 @RegNode('Canvas')
 export class Canvas extends LikoNode implements IRenderable {
   declare pp: ICanvasPrivateProps;
-  renderObject: SpriteObject = new SpriteObject(this);
+  readonly renderObject: SpriteObject = new SpriteObject(this);
 
   constructor(options?: INodeOptions) {
     super(options);

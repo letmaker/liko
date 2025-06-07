@@ -65,7 +65,7 @@ interface ITextOptions extends INodeOptions {
 @RegNode('Text')
 export class Text extends LikoNode implements IRenderable {
   declare pp: ITextPrivateProps;
-  renderObject: SpriteObject = new SpriteObject(this);
+  readonly renderObject: SpriteObject = new SpriteObject(this);
 
   /** 文本边距，防止文本在某些情况下绘制不完整 */
   padding = 4;

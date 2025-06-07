@@ -39,7 +39,7 @@ interface IAnimatedSpriteOptions extends INodeOptions {
 @RegNode('AnimatedSprite')
 export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation {
   declare pp: IAnimatedSpritePrivateProps;
-  renderObject: SpriteObject = new SpriteObject(this);
+  readonly renderObject: SpriteObject = new SpriteObject(this);
 
   /** 标识动画是否正在播放 */
   isPlaying = false;
