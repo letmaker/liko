@@ -1,4 +1,5 @@
 import { DirtyType } from '../const';
+import { Bounds } from '../math/bounds';
 import type { IPoint } from '../math/point';
 import { ShapeObject } from '../render/render/shape-object';
 import { Texture } from '../resource/texture';
@@ -141,6 +142,7 @@ interface IShapePrivateProps extends INodePrivateProps {
   drawEllipse?: IEllipseOptions;
   drawRoundedRect?: IRoundedRectOptions;
   drawPolygon?: IPolygonOptions;
+  bounds: Bounds;
 }
 
 /**
@@ -175,6 +177,7 @@ export class Shape extends LikoNode implements IRenderable {
 
   constructor(options?: IShapeOptions) {
     super();
+    this.pp.bounds = new Bounds();
     this.setProps(options as Record<string, unknown>);
   }
 
@@ -314,7 +317,61 @@ export class Shape extends LikoNode implements IRenderable {
   }
 
   private _markGeometryDirty(): void {
+    this.pp.boundsDirty = true;
     this.renderObject.markGeometryDirty();
     this.markDirty(DirtyType.child);
+  }
+
+  private _updateBounds(): void {
+    if (!this.pp.boundsDirty) return;
+
+    this.pp.bounds.reset();
+    const { drawLine, drawRect, drawCircle, drawEllipse, drawRoundedRect, drawPolygon } = this.pp;
+    if (drawLine) {
+      const { points } = drawLine;
+      for (const point of points) {
+        this._addPoint(point.x, point.y);
+      }
+    }
+    if (drawRect) {
+      const { x, y, width, height } = drawRect;
+      this._addPoint(x, y);
+      this._addPoint(x + width, y + height);
+    }
+    if (drawCircle) {
+      const { x, y, radius } = drawCircle;
+      this._addPoint(x - radius, y - radius);
+      this._addPoint(x + radius, y + radius);
+    }
+    if (drawEllipse) {
+      const { x, y, radiusX, radiusY } = drawEllipse;
+      this._addPoint(x - radiusX, y - radiusY);
+      this._addPoint(x + radiusX, y + radiusY);
+    }
+    if (drawRoundedRect) {
+      const { x, y, width, height } = drawRoundedRect;
+      this._addPoint(x, y);
+      this._addPoint(x + width, y + height);
+    }
+    if (drawPolygon) {
+      const { points } = drawPolygon;
+      for (const point of points) {
+        this._addPoint(point.x, point.y);
+      }
+    }
+  }
+
+  private _addPoint(x: number, y: number): void {
+    const { bounds } = this.pp;
+    if (x < bounds.minX) bounds.minX = x;
+    if (x > bounds.maxX) bounds.maxX = x;
+    if (y < bounds.minY) bounds.minY = y;
+    if (y > bounds.maxY) bounds.maxY = y;
+  }
+
+  protected override _customLocalBounds(bounds: Bounds): void {
+    this._updateBounds();
+    const { bounds: b } = this.pp;
+    bounds.addFrame(b.minX, b.minY, b.maxX, b.maxY);
   }
 }

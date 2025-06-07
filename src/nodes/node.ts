@@ -137,6 +137,7 @@ export interface INodePrivateProps {
   stage?: Stage;
   parent?: LikoNode;
   localBounds: Bounds;
+  boundsDirty: boolean;
 }
 
 /** 节点初始化选项接口，用于创建节点时的配置 */
@@ -517,8 +518,11 @@ export abstract class LikoNode {
         // 子节点标脏
         pp.children.length && this._$dirtyChildren(type);
       } else if (type === DirtyType.child) {
+        pp.boundsDirty = true;
         // 父节点标脏
         return this._$dirtyParent(type);
+      } else if (type === DirtyType.size) {
+        pp.boundsDirty = true;
       }
       this._$dirtyParent(DirtyType.parent);
     }
@@ -897,16 +901,17 @@ export abstract class LikoNode {
    * @returns 返回本地边界对象
    */
   getLocalBounds(): Bounds {
-    const { dirty, width, height, localBounds } = this.pp;
+    const { width, height, localBounds, boundsDirty } = this.pp;
 
     // 子节点和显示没有变化时，直接返回之前的结果
-    if ((dirty & DirtyType.size) === 0 && (dirty & DirtyType.child) === 0) return localBounds;
+    if (!boundsDirty) return localBounds;
 
     localBounds.reset();
 
     // 如果有宽高，直接返回
     if (width >= 0 && height >= 0) {
       localBounds.addFrame(0, 0, width, height);
+      this.pp.boundsDirty = false;
       return localBounds;
     }
 
@@ -922,6 +927,7 @@ export abstract class LikoNode {
     ) {
       console.warn('localBounds width <=0', this);
     }
+    this.pp.boundsDirty = false;
     return localBounds;
   }
 

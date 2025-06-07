@@ -29,7 +29,9 @@ interface ICanvasPrivateProps extends INodePrivateProps {
 }
 
 /**
- * Canvas 矢量图形绘制类
+ * Canvas 矢量图形绘制类，api 类似 canvas 2d
+ * 对比 Shape 类，使用 GPU 渲染性能更好，但功能少，canvas 功能齐全，抗锯齿效果好，但频繁更新性能差。
+ * 不经常变化对效果有更高要求的，建议使用 canvas 类，对性能要求比较高的或频繁变化的，建议使用 Shape 类。
  */
 @RegNode('Canvas')
 export class Canvas extends LikoNode implements IRenderable {
