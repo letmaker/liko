@@ -13,6 +13,7 @@
     "url": "git+https://github.com/letmaker/liko.git"
   },
   "scripts": {
+    "start": "vite",
     "dev": "vite",
     "build": "vite build",
     "test": "vitest",
