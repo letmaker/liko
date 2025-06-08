@@ -70,8 +70,7 @@ export class SpriteObject implements IRenderObject {
     const { indexStart } = this;
     const { data: indexData } = indexBuffer;
 
-    // 索引
-    const indexOffset = (indexStart / this.indexSize) * 4;
+    const indexOffset = this.vertexStart * 0.5;
     indexData[indexStart] = indexOffset + 0;
     indexData[indexStart + 1] = indexOffset + 1;
     indexData[indexStart + 2] = indexOffset + 2;
