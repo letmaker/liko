@@ -221,6 +221,7 @@ export abstract class LikoNode {
     stage: undefined,
     parent: undefined,
     localBounds: new Bounds(),
+    boundsDirty: true,
   };
 
   /** 是否启用节点，设为 false 时节点不可用且脚本不执行，而 visible 只影响显示 */

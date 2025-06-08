@@ -521,6 +521,7 @@ export class Canvas extends LikoNode implements IRenderable {
 
     // 适应轴心点变化
     if (width === -1 && height === -1) {
+      this.pp.boundsDirty = true;
       this.anchor = this.anchor;
     }
   }

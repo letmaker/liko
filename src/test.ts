@@ -1,22 +1,19 @@
 // 测试专用，不会放到类库中
-import { App, Shape } from '.';
+import { App, Text } from '.';
 
 async function test() {
   const app = new App();
-  await app.init({ width: 800, height: 800, bgColor: 0x333333 });
+  await app.init({ width: 800, height: 800 });
 
-  new Shape({
-    label: 'rect',
-    drawLine: {
-      points: [
-        { x: 50, y: 50 },
-        { x: 250, y: 250 },
-      ],
-      color: 0x000000,
-      lineWidth: 10,
-    },
-    position: { x: 200, y: 0 },
+  new Text({
+    text: 'Hello World \n上下键盘切换 demo',
+    textColor: '#ff0000',
+    fontSize: 30,
+    position: { x: 400, y: 400 },
     parent: app.stage,
+    anchor: { x: 0.5, y: 0.5 },
+    lineHeight: 100,
+    textAlign: 'center',
   });
 }
 

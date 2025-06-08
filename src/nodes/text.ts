@@ -404,6 +404,8 @@ export class Text extends LikoNode implements IRenderable {
 
     // 适应轴心点变化，确保渲染位置正确
     if (width === -1 && height === -1) {
+      // 确保 boundsDirty 被设置为 true，这样后续调用 getLocalBounds 时会重新计算
+      this.pp.boundsDirty = true;
       this.anchor = this.anchor;
     }
   }
