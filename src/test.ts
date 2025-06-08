@@ -1,5 +1,5 @@
-// 测试专用，不会放到正式代码中
-import { App, Shape, Sprite } from '.';
+// 测试专用，不会放到类库中
+import { App, Shape } from '.';
 
 async function test() {
   const app = new App();
@@ -7,41 +7,15 @@ async function test() {
 
   new Shape({
     label: 'rect',
-    drawRect: {
-      x: 50,
-      y: 50,
-      width: 100,
-      height: 100,
-      fill: '#00ff00',
-      stroke: '#0000ff',
-      strokeWidth: 2,
+    drawLine: {
+      points: [
+        { x: 50, y: 50 },
+        { x: 250, y: 250 },
+      ],
+      color: 0x000000,
+      lineWidth: 10,
     },
     position: { x: 200, y: 0 },
-    parent: app.stage,
-  });
-
-  new Shape({
-    label: 'roundedRect',
-    drawRoundedRect: {
-      x: 50,
-      y: 50,
-      width: 100,
-      height: 100,
-      cornerRadius: 10,
-      fill: '#00ff00',
-      stroke: '#0000ff',
-      strokeWidth: 2,
-    },
-    position: { x: 400, y: 0 },
-    parent: app.stage,
-  });
-
-  new Sprite({
-    label: 'apple',
-    url: 'assets/apple.png',
-    scale: { x: 0.5, y: 0.5 },
-    anchor: { x: 0.5, y: 0.5 },
-    position: { x: 400, y: 400 },
     parent: app.stage,
   });
 }
