@@ -1,3 +1,4 @@
+// 测试专用，不会放到正式代码中
 import { App, Shape, Sprite } from '.';
 
 async function test() {
