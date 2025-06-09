@@ -1,5 +1,5 @@
+import { BaseScript } from './base-script';
 import { Effect } from './effect/effect';
-import { ScriptBase } from './script-base';
 
 /** 动画效果配置接口 */
 interface IEffect {
@@ -31,7 +31,7 @@ interface IEffect {
  * 用于管理和播放多个动画效果，支持动画的暂停、恢复和时间控制。
  * 可以通过设置 effects 属性来配置多个动画效果，通常由编辑器生成。
  */
-export class Animator extends ScriptBase {
+export class Animator extends BaseScript {
   /** 动画总持续时间，一般由编辑器设定，以秒为单位 */
   duration = 0;
   /** 时间缩放因子，控制动画播放速度 */

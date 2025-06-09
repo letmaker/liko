@@ -23,7 +23,7 @@ export { Sprite } from './nodes/sprite';
 export { AnimatedSprite } from './nodes/animated-sprite';
 export { Stage } from './nodes/stage';
 export { Text } from './nodes/text';
-export { ScriptBase } from './scripts/script-base';
+export { BaseScript } from './scripts/base-script';
 export { Script, type ICollision } from './scripts/script';
 export { Tween } from './scripts/effect/tween';
 export { Ease } from './scripts/effect/ease';

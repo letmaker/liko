@@ -1,7 +1,7 @@
 import { EventType } from '../const';
 import type { LikoPointerEvent } from '../events/pointer-event';
 import type { RigidBody } from '../physics/rigidBody';
-import { ScriptBase } from './script-base';
+import { BaseScript } from './base-script';
 
 /** 物理碰撞事件信息 */
 export interface ICollision {
@@ -14,13 +14,13 @@ export interface ICollision {
 /**
  * 游戏对象行为脚本基类，提供事件处理和生命周期管理
  *
- * 继承自 ScriptBase，为游戏对象添加事件响应能力，包括：
+ * 继承自 BaseScript，为游戏对象添加事件响应能力，包括：
  * - 指针事件（点击、按下、抬起、移动）
  * - 物理碰撞事件（开始碰撞、结束碰撞）
  * - 场景间通信事件（signal）
  * - 全局输入事件（键盘按键）
  */
-export class Script extends ScriptBase {
+export class Script extends BaseScript {
   override _$awake(): void {
     if (!this.awaked) {
       this._$regEvent();

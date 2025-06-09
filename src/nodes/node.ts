@@ -8,7 +8,7 @@ import type { RotatingRect } from '../math/rotating-rect';
 import { Transform } from '../math/transform';
 import type { Filter } from '../render/filter/filter';
 import { NodeCache } from '../render/utils/node-cache';
-import type { ScriptBase } from '../scripts/script-base';
+import type { BaseScript } from '../scripts/base-script';
 import { Color, type ColorData } from '../utils/color';
 import { Dispatcher } from '../utils/dispatcher';
 import { createFilterInstance, createNodeInstance } from '../utils/register';
@@ -112,7 +112,7 @@ const defaultTF = new Transform();
 const defaultData: Record<string, any> = {};
 const defaultChildren: LikoNode[] = [];
 const defaultFilters: Filter[] = [];
-const defaultScripts: ScriptBase[] = [];
+const defaultScripts: BaseScript[] = [];
 const defaultEvent = new Dispatcher();
 
 export interface INodePrivateProps {
@@ -121,7 +121,7 @@ export interface INodePrivateProps {
   event: Dispatcher;
   children: LikoNode[];
   filters: Filter[];
-  scripts: ScriptBase[];
+  scripts: BaseScript[];
   transform: Transform;
   tintColor: Color;
   alpha: number;
@@ -173,7 +173,7 @@ export interface INodeOptions {
   /** 父节点，指定节点的父级 */
   parent?: LikoNode;
   /** 脚本列表，为节点添加行为逻辑 */
-  scripts?: ScriptBase[];
+  scripts?: BaseScript[];
 
   /** 点击事件回调函数 */
   onClick?: (e: LikoPointerEvent) => void;
@@ -308,10 +308,10 @@ export abstract class LikoNode {
   }
 
   /** 脚本列表，可直接读取但不应直接修改此数组 */
-  get scripts(): ScriptBase[] {
+  get scripts(): BaseScript[] {
     return this.pp.scripts;
   }
-  set scripts(value: ScriptBase[]) {
+  set scripts(value: BaseScript[]) {
     this.destroyScripts();
     for (const script of value) {
       this.addScript(script);
@@ -803,7 +803,7 @@ export abstract class LikoNode {
    * @param script - 要添加的脚本实例
    * @returns 当前节点实例，支持链式调用
    */
-  addScript<T extends ScriptBase>(script: T): this {
+  addScript<T extends BaseScript>(script: T): this {
     const pp = this.pp;
     if (pp.scripts === defaultScripts) pp.scripts = [];
     pp.scripts.push(script);
@@ -819,7 +819,7 @@ export abstract class LikoNode {
    * @param options - 筛选条件，可包含 id、label 和 Class 选项
    * @returns 返回匹配的脚本实例，如果未找到则返回 undefined
    */
-  findScript<T extends ScriptBase>(options: { id?: string; label?: string; Class?: typeof ScriptBase }): T | undefined {
+  findScript<T extends BaseScript>(options: { id?: string; label?: string; Class?: typeof BaseScript }): T | undefined {
     const { id, label, Class } = options;
     const { scripts } = this.pp;
 

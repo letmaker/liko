@@ -15,7 +15,7 @@ import type { Stage } from '../nodes/stage';
  *
  * 当 enable 状态改变时，会触发 onEnable 或 onDisable
  */
-export abstract class ScriptBase {
+export abstract class BaseScript {
   /** 脚本唯一标识符，通常由编辑器指定 */
   id = '';
   /** 脚本标签，用于快速识别和查找 */

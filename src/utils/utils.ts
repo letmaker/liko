@@ -1,5 +1,5 @@
 import type { INodeData, IScriptData } from '../nodes/node';
-import type { ScriptBase } from '../scripts/script-base';
+import type { BaseScript } from '../scripts/base-script';
 import { createNodeInstance, createScriptInstance } from './register';
 import { Timer } from './timer';
 
@@ -157,7 +157,7 @@ export function cloneJson<T>(json: T): T {
  * @param data - 包含脚本配置的数据对象
  * @returns 创建的脚本实例，如果创建失败则返回 undefined
  */
-export function createScript(data: IScriptData): ScriptBase | undefined {
+export function createScript(data: IScriptData): BaseScript | undefined {
   const script = createScriptInstance(data.script);
   if (script) {
     script.id = data.id;

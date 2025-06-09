@@ -1,8 +1,8 @@
 import type { Body, Joint } from 'planck';
 import { EventType, PI2 } from '../const';
 import { type IPoint, Point } from '../math/point';
+import { BaseScript } from '../scripts/base-script';
 import type { ICollision } from '../scripts/script';
-import { ScriptBase } from '../scripts/script-base';
 import { RegScript } from '../utils/decorators';
 import { addJoint } from './joint';
 import type { IJoint, IShape, RigidBodyOptions, RigidType } from './rigidBody.interface';
@@ -17,7 +17,7 @@ import { addShape } from './shape';
  * 注意：RigidBody 为一个脚本，挂载到节点后，需要添加到场景中才能被激活
  */
 @RegScript('RigidBody')
-export class RigidBody extends ScriptBase {
+export class RigidBody extends BaseScript {
   private _tempPos2D: IPoint = { x: 0, y: 0 };
   private _joints: Joint[] = [];
 

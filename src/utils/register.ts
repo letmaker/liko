@@ -1,13 +1,13 @@
 import type { LikoNode } from '../nodes/node';
 import type { Filter } from '../render/filter/filter';
-import type { ScriptBase } from '../scripts/script-base';
+import type { BaseScript } from '../scripts/base-script';
 
 /**
  * 注册器相关工具函数，用于管理脚本、节点和滤镜的注册与实例化
  */
 
 /** 存储已注册的脚本类型映射 */
-const scriptMap: Record<string, typeof ScriptBase> = {};
+const scriptMap: Record<string, typeof BaseScript> = {};
 /** 存储已注册的节点类型映射 */
 const nodeMap: Record<string, typeof LikoNode> = {};
 /** 存储已注册的滤镜类型映射 */
@@ -18,7 +18,7 @@ const filterMap: Record<string, typeof Filter> = {};
  * @param name - 脚本的唯一标识名称
  * @param script - 要注册的脚本类
  */
-export function regScript(name: string, script: typeof ScriptBase): void {
+export function regScript(name: string, script: typeof BaseScript): void {
   scriptMap[name] = script;
 }
 
@@ -27,13 +27,13 @@ export function regScript(name: string, script: typeof ScriptBase): void {
  * @param name - 已注册的脚本名称
  * @returns 创建的脚本实例，如果未找到对应名称则返回 undefined
  */
-export function createScriptInstance(name: string): ScriptBase | undefined {
+export function createScriptInstance(name: string): BaseScript | undefined {
   const Class: any = scriptMap[name];
   if (Class === undefined) {
     console.error(`can not create script: ${name}`);
     return undefined;
   }
-  return new Class() as ScriptBase;
+  return new Class() as BaseScript;
 }
 
 /**
