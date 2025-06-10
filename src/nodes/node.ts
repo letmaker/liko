@@ -425,9 +425,11 @@ export abstract class LikoNode {
 
     const { pivot } = this.transform;
     const { width, height } = this.getLocalBounds();
-    pivot.x = width * value.x;
-    pivot.y = height * value.y;
-    this.markDirty(DirtyType.transform);
+    if (width > 0 && height > 0) {
+      pivot.x = width * value.x;
+      pivot.y = height * value.y;
+      this.markDirty(DirtyType.transform);
+    }
   }
 
   /** 节点叠加颜色，用于调整节点的颜色 */
@@ -927,6 +929,7 @@ export abstract class LikoNode {
       localBounds.height === Number.POSITIVE_INFINITY
     ) {
       console.warn('localBounds width <=0', this);
+      return new Bounds(0, 0, 1, 1);
     }
     this.pp.boundsDirty = false;
     return localBounds;

@@ -56,6 +56,9 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     this.pp.textures = value;
     this._$renderFrame(0);
     this.markDirty(DirtyType.child);
+
+    // 重新设置一下anchor
+    this.anchor = this.anchor;
   }
 
   /** 当前显示的纹理对象 */

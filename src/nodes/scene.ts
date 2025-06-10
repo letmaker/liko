@@ -82,6 +82,9 @@ export class Scene extends LikoNode implements IScene {
   /** 场景的摄像机 */
   camera: Camera = new Camera();
 
+  /** 场景更新时的回调，delta单位为秒 */
+  onUpdate?: (delta: number) => void;
+
   /**
    * 获取当前场景实例
    */
@@ -270,6 +273,7 @@ export class Scene extends LikoNode implements IScene {
     // 遍历所有子节点，执行脚本
     this._$updateScripts(this, scaleDelta);
     this.emit(EventType.update, scaleDelta);
+    this.onUpdate?.(scaleDelta);
 
     return this;
   }
