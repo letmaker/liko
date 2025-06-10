@@ -1,5 +1,6 @@
 import { EventType } from '../const';
 import { loader } from '../loader';
+import { Camera } from '../scripts/node/camera';
 import { RegNode } from '../utils/decorators';
 import { createNodeInstance } from '../utils/register';
 import { cloneJson, getUID } from '../utils/utils';
@@ -78,6 +79,9 @@ export class Scene extends LikoNode implements IScene {
   /** 时间缩放比率，控制场景播放速度 */
   timeScale = 1;
 
+  /** 场景的摄像机 */
+  camera: Camera = new Camera();
+
   /**
    * 获取当前场景实例
    */
@@ -119,6 +123,7 @@ export class Scene extends LikoNode implements IScene {
     this.on(EventType.addToStage, this.play, this);
     this.on(EventType.removed, this.stop, this);
 
+    this.addScript(this.camera);
     this.setProps(options as Record<string, any>);
   }
 
