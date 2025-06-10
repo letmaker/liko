@@ -67,6 +67,10 @@ export class Texture {
   private _trim: Rectangle = new Rectangle();
   private _sheet?: ISheet;
 
+  get repeat() {
+    return this._buffer?.repeat ?? false;
+  }
+
   /** 纹理的宽度 */
   get width() {
     return this._width;

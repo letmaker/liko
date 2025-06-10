@@ -94,6 +94,11 @@ export class SpriteObject implements IRenderObject {
   }
 
   packUV(vertexBuffer: VertexBuffer) {
+    if (this.node.texture.repeat) {
+      this.packTilingUV(vertexBuffer);
+      return;
+    }
+
     // TODO: 更换 f16？
     const { node, uvStart, textureId } = this;
     const { f32Data, u32Data } = vertexBuffer;
@@ -115,6 +120,54 @@ export class SpriteObject implements IRenderObject {
 
     f32Data[uvStart + 9] = uvs.x3;
     f32Data[uvStart + 10] = uvs.y3;
+    textureData[uvStart + 11] = textureId;
+  }
+
+  packTilingUV(vertexBuffer: VertexBuffer) {
+    // TODO: 更换 f16？
+    const { node, uvStart, textureId } = this;
+    const { f32Data, u32Data } = vertexBuffer;
+    const uvs = node.texture.uvs;
+    const textureData = useWebGpu ? u32Data : f32Data;
+
+    // 如果启用了平铺，需要重新计算UV坐标
+    const { width: nodeWidth, height: nodeHeight } = node.getLocalBounds();
+    const { width: textureWidth, height: textureHeight } = node.texture;
+
+    // 根据节点尺寸和纹理尺寸自动计算平铺倍数
+    const tilesX = textureWidth > 0 ? nodeWidth / textureWidth : 1;
+    const tilesY = textureHeight > 0 ? nodeHeight / textureHeight : 1;
+
+    // 基于原始UV坐标计算平铺后的UV坐标
+    const baseWidth = uvs.x1 - uvs.x0;
+    const baseHeight = uvs.y3 - uvs.y0;
+
+    const finalUvs = {
+      x0: uvs.x0,
+      y0: uvs.y0,
+      x1: uvs.x0 + baseWidth * tilesX,
+      y1: uvs.y0,
+      x2: uvs.x0 + baseWidth * tilesX,
+      y2: uvs.y0 + baseHeight * tilesY,
+      x3: uvs.x0,
+      y3: uvs.y0 + baseHeight * tilesY,
+    };
+
+    // u,v,id
+    f32Data[uvStart] = finalUvs.x0;
+    f32Data[uvStart + 1] = finalUvs.y0;
+    textureData[uvStart + 2] = textureId;
+
+    f32Data[uvStart + 3] = finalUvs.x1;
+    f32Data[uvStart + 4] = finalUvs.y1;
+    textureData[uvStart + 5] = textureId;
+
+    f32Data[uvStart + 6] = finalUvs.x2;
+    f32Data[uvStart + 7] = finalUvs.y2;
+    textureData[uvStart + 8] = textureId;
+
+    f32Data[uvStart + 9] = finalUvs.x3;
+    f32Data[uvStart + 10] = finalUvs.y3;
     textureData[uvStart + 11] = textureId;
   }
 }

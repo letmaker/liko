@@ -16,8 +16,9 @@ export class TextureBuffer implements ITextureBuffer {
 
   destroyed = false;
   loaded = false;
+  repeat = false;
 
-  constructor(bitmap: ImageBitmap | HTMLCanvasElement) {
+  constructor(bitmap: ImageBitmap | HTMLCanvasElement, repeat = false) {
     const { width, height } = bitmap;
     console.assert(width >= 0 && height >= 0);
 
@@ -26,7 +27,8 @@ export class TextureBuffer implements ITextureBuffer {
     this.height = height;
 
     this.texture = Device.createTexture('texture', width, height);
-    this.sampler = Device.defaultSampler;
+    this.repeat = repeat;
+    this.sampler = repeat ? Device.defaultRepeatSampler : Device.defaultSampler;
     this.view = this.texture.createView();
   }
 

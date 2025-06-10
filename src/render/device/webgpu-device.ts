@@ -15,6 +15,7 @@ export class WebGPUDevice {
   format!: GPUTextureFormat;
   device!: GPUDevice;
   defaultSampler!: GPUSampler;
+  defaultRepeatSampler!: GPUSampler;
 
   /**
    * 初始化 gpu 设备
@@ -39,6 +40,7 @@ export class WebGPUDevice {
     });
 
     this.defaultSampler = this.createSampler('default');
+    this.defaultRepeatSampler = this.createSampler('defaultRepeat', 'linear', 'linear', 'repeat', 'repeat');
     return { context, gpuRender: new WebGpuRender(options.bgColor) };
   }
 
@@ -214,13 +216,21 @@ export class WebGPUDevice {
     });
   }
 
-  createSampler(label: string, minFilter: GPUFilterMode = 'linear', magFilter: GPUFilterMode = 'linear') {
+  createSampler(
+    label: string,
+    minFilter: GPUFilterMode = 'linear',
+    magFilter: GPUFilterMode = 'linear',
+    addressModeU: GPUAddressMode = 'clamp-to-edge',
+    addressModeV: GPUAddressMode = 'clamp-to-edge'
+  ) {
     if (this.debug) console.log('createSampler', label);
 
     return this.device.createSampler({
       label: `${label}-sampler`,
       minFilter,
       magFilter,
+      addressModeU,
+      addressModeV,
     });
   }
 

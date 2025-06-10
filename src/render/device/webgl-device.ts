@@ -188,7 +188,7 @@ export class WebGLDevice {
     }
   }
 
-  createGroup(label: string, entries: IBindResource[]) {
+  createGroup(_label: string, _entries: IBindResource[]) {
     return { layout: {} as unknown as GPUBindGroupLayout, group: {} as unknown as GPUBindGroup };
   }
 

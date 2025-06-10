@@ -1,6 +1,9 @@
+import { utils } from '../..';
 import { getUID } from '../../utils/utils';
 import { Device } from '../device/device';
 import type { ITextureBuffer } from './interface';
+
+const defaultCanvas = utils.createCanvas(1, 1);
 
 /**
  * RenderTarget 数据
@@ -13,8 +16,10 @@ export class RenderTargetBuffer implements ITextureBuffer {
   readonly texture: GPUTexture;
   readonly sampler: GPUSampler;
   readonly view: GPUTextureView;
+  readonly bitmap: ImageBitmap | HTMLCanvasElement = defaultCanvas;
 
   destroyed = false;
+  repeat = false;
 
   constructor(width: number, height: number) {
     this.width = width;

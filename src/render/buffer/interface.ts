@@ -12,11 +12,13 @@ export interface IBuffer {
  */
 export interface ITextureBuffer extends IBuffer {
   uid: string;
+  bitmap: ImageBitmap | HTMLCanvasElement;
   texture: GPUTexture;
   view: GPUTextureView;
   sampler: GPUSampler;
   width: number;
   height: number;
+  repeat: boolean;
   upload: () => void;
   dirty: () => void;
 }

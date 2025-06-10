@@ -1,6 +1,7 @@
 import { DirtyType, EventType } from '../const';
 import { loader } from '../loader';
 import type { Bounds } from '../math/bounds';
+import { TextureBuffer } from '../render/buffer/texture-buffer';
 import type { IRenderObject } from '../render/render/render-object';
 import { SpriteObject } from '../render/render/sprite-object';
 import { Texture } from '../resource/texture';
@@ -18,6 +19,7 @@ export interface IRenderable extends LikoNode {
 interface ISpritePrivateProps extends INodePrivateProps {
   url: string;
   texture: Texture;
+  repeat: boolean;
 }
 
 interface ISpriteOptions extends INodeOptions {
@@ -29,15 +31,22 @@ interface ISpriteOptions extends INodeOptions {
   tintColor?: ColorData;
   /** 精灵加载完成后的回调函数 */
   onLoaded?: () => void;
+  /** 平铺模式 */
+  repeat?: boolean;
 }
 
 /**
  * 精灵类，使用图片作为渲染对象
  *
  * 提供图像显示、纹理管理和事件处理等功能
+ *
+ * 使用示例：
+ * ```typescript
+ * const sprite = new Sprite({ url: 'tile.png', width: 400, height: 300 });
+ * ```
  */
 @RegNode('Sprite')
-export class Sprite extends LikoNode implements IRenderable {
+export class Sprite extends LikoNode {
   declare pp: ISpritePrivateProps;
   /** 用于渲染精灵的渲染对象 */
   readonly renderObject: SpriteObject = new SpriteObject(this);
@@ -45,6 +54,7 @@ export class Sprite extends LikoNode implements IRenderable {
   constructor(options?: Texture | ISpriteOptions) {
     super();
     this.pp.url = '';
+    this.pp.repeat = false;
     if (options instanceof Texture) {
       this.texture = options;
     } else {
@@ -58,7 +68,12 @@ export class Sprite extends LikoNode implements IRenderable {
   }
   set texture(value: Texture) {
     if (this.pp.texture !== value) {
-      this.pp.texture = value;
+      if (this.pp.repeat && !value.repeat) {
+        this.pp.texture = new Texture().setBuffer(new TextureBuffer(value.buffer.bitmap, true));
+      } else {
+        this.pp.texture = value;
+      }
+
       this.emit(EventType.resize);
 
       // TODO 针对 texture 切换，要专门优化，重新组织 batch
@@ -114,6 +129,21 @@ export class Sprite extends LikoNode implements IRenderable {
     const texture = this.pp.texture;
     if (texture) {
       bounds.addFrame(0, 0, texture.width, texture.height);
+    }
+  }
+
+  /** 平铺模式 */
+  get repeat(): boolean {
+    return this.pp.repeat;
+  }
+  set repeat(value: boolean) {
+    if (this.pp.repeat !== value) {
+      this.pp.repeat = value;
+
+      const texture = this.pp.texture;
+      if (texture) {
+        this.texture = new Texture().setBuffer(new TextureBuffer(texture.buffer.bitmap, value));
+      }
     }
   }
 }
