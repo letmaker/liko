@@ -134,7 +134,8 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
       this.pp.url = url;
 
       const textures = await loader.load<Texture[]>(url, 'sheet');
-      if (this.destroyed || !textures) return;
+      // 检查是否仍然需要这个 URL 的结果（防止竞态条件）
+      if (this.destroyed || !textures || this.pp.url !== url) return;
       console.assert(textures.length > 0);
 
       this.textures = textures;
