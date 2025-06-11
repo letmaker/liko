@@ -40,13 +40,13 @@ export class Script<T extends LikoNode = LikoNode> extends BaseScript<T> {
         target.on(EventType.click, this.onClick, this);
       }
       if (this.onPointerDown !== onPointerDown) {
-        target.on(EventType.pointerdown, this.onPointerDown, this);
+        target.on(EventType.pointerDown, this.onPointerDown, this);
       }
       if (this.onPointerUp !== onPointerUp) {
-        target.on(EventType.pointerup, this.onPointerUp, this);
+        target.on(EventType.pointerUp, this.onPointerUp, this);
       }
       if (this.onPointerMove !== onPointerMove) {
-        target.on(EventType.pointermove, this.onPointerMove, this);
+        target.on(EventType.pointerMove, this.onPointerMove, this);
       }
 
       // 物理事件
@@ -71,13 +71,13 @@ export class Script<T extends LikoNode = LikoNode> extends BaseScript<T> {
           stage.on(EventType.click, this.onStageClick, this);
         }
         if (this.onStagePointerDown !== onStagePointerDown) {
-          stage.on(EventType.pointerdown, this.onStagePointerDown, this);
+          stage.on(EventType.pointerDown, this.onStagePointerDown, this);
         }
         if (this.onStagePointerUp !== onStagePointerUp) {
-          stage.on(EventType.pointerup, this.onStagePointerUp, this);
+          stage.on(EventType.pointerUp, this.onStagePointerUp, this);
         }
         if (this.onStagePointerMove !== onStagePointerMove) {
-          stage.on(EventType.pointermove, this.onStagePointerMove, this);
+          stage.on(EventType.pointerMove, this.onStagePointerMove, this);
         }
 
         // 键盘事件

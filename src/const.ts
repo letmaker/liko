@@ -42,17 +42,17 @@ export enum EventType {
   resize = 'resize',
 
   /** 指针按下时，由 node 派发 */
-  pointerdown = 'pointerdown',
+  pointerDown = 'pointerdown',
   /** 指针抬起时，由 node 派发 */
-  pointerup = 'pointerup',
+  pointerUp = 'pointerup',
   /** 指针移动时，由 node 派发 */
-  pointermove = 'pointermove',
+  pointerMove = 'pointermove',
   /** 指针进入节点时，由 node 派发 */
-  pointerover = 'pointerover',
+  pointerOver = 'pointerover',
   /** 指针离开节点时，由 node 派发 */
-  pointerout = 'pointerout',
+  pointerOut = 'pointerout',
   /** 指针在 canvas 外抬起时，由 node 派发 */
-  pointerupoutside = 'pointerupoutside',
+  pointerUpOutside = 'pointerupoutside',
   /** 点击事件，由 node 派发 */
   click = 'click',
 

@@ -61,23 +61,76 @@ interface ITextOptions extends INodeOptions {
 
 /**
  * 文本渲染节点，用于在场景中显示文本内容
+ *
+ * 支持多行文本、字体样式设置、颜色填充、描边效果、文本对齐等功能。
+ *
+ * @example
+ * ```typescript
+ * // 创建基本文本
+ * const text = new Text({
+ *   text: 'Hello World',
+ *   fontSize: 24,
+ *   textColor: 'white'
+ * });
+ *
+ * // 创建多行文本
+ * const multiLineText = new Text({
+ *   text: 'Line 1\nLine 2\nLine 3',
+ *   fontSize: 16,
+ *   lineHeight: 20,
+ *   textAlign: 'center'
+ * });
+ *
+ * // 创建带描边的文本
+ * const strokeText = new Text({
+ *   text: 'Outlined Text',
+ *   fontSize: 32,
+ *   textColor: 'yellow',
+ *   textStrokeColor: 'black',
+ *   textStrokeWidth: 2
+ * });
+ *
+ * // 动态修改文本属性
+ * text.text = 'Updated Text';
+ * text.fontSize = 18;
+ * text.fontWeight = 'bold';
+ * text.textAlign = 'right';
+ *
+ * // 设置自定义字体
+ * const customFont = new Text({
+ *   text: 'Custom Font',
+ *   fontFamily: 'Arial, sans-serif',
+ *   fontStyle: 'italic',
+ *   fontWeight: '600'
+ * });
+ * ```
+ *
+ * @注意事项
+ * - 文本内容支持换行符(\n)自动分行
+ * - 修改任何样式属性都会触发重绘，频繁修改可能影响性能
+ * - 画布会根据文本内容自动调整大小，包含内边距和描边宽度
+ * - 当 width 和 height 为 -1 时，会自动适应文本实际大小
+ * - 支持 CanvasGradient 和 CanvasPattern 作为文本颜色
+ * - 文本对齐基于文本的测量宽度，不是节点的 width 属性
+ * - lineHeight 为 0 时会使用 fontSize 作为行高
+ * - 描边会增加文本的实际显示尺寸
  */
 @RegNode('Text')
 export class Text extends LikoNode implements IRenderable {
   declare pp: ITextPrivateProps;
   readonly renderObject: SpriteObject = new SpriteObject(this);
 
-  /** 文本边距，防止文本在某些情况下绘制不完整 */
+  /** 文本边距，防止文本在某些情况下绘制不完整，特别是斜体字或特殊字符 */
   padding = 4;
 
-  /** 获取渲染纹理，如果文本内容已更改则重新绘制 */
+  /** 获取渲染纹理，如果文本内容已更改则重新绘制。空文本返回空白纹理 */
   get texture(): Texture {
     if (!this.pp.text) return Texture.BLANK;
     if (this.pp.changed) this._$drawText();
     return this.pp.texture;
   }
 
-  /** 获取或设置文本内容，设置时会自动按换行符分割成多行 */
+  /** 获取或设置文本内容，设置时会自动按换行符(\n)分割成多行，触发重绘 */
   get text() {
     return this.pp.text;
   }
@@ -177,7 +230,7 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 获取或设置行高，单位为像素，默认使用字体大小作为行高 */
+  /** 获取或设置行高，单位为像素。当设置为 0 或负数时，自动使用字体大小作为行高 */
   get lineHeight() {
     const { lineHeight, fontSize } = this.pp;
     return lineHeight > 0 ? lineHeight : fontSize;
@@ -220,12 +273,12 @@ export class Text extends LikoNode implements IRenderable {
     }
   }
 
-  /** 获取文本实际宽度（包含描边和内边距） */
+  /** 获取文本实际渲染宽度（包含描边宽度和内边距）*/
   get textWidth() {
     return this.pp.measureWidth + this.pp.textStrokeWidth + this.padding * 2;
   }
 
-  /** 获取文本实际高度（包含描边和内边距） */
+  /** 获取文本实际渲染高度（包含描边宽度和内边距）*/
   get textHeight() {
     return this.pp.measureHeight + this.pp.textStrokeWidth + this.padding * 2;
   }
@@ -257,8 +310,7 @@ export class Text extends LikoNode implements IRenderable {
   }
 
   /**
-   * 释放文本节点占用的资源
-   * @returns 当前实例，支持链式调用
+   * 释放文本节点占用的资源，包括销毁纹理和画布
    */
   override destroy(): void {
     this.pp.texture.destroy();
@@ -306,18 +358,16 @@ export class Text extends LikoNode implements IRenderable {
   }
 
   /**
-   * 自定义本地边界计算
-   * 使用文本的实际宽高（包含描边和内边距）作为边界
-   * @param bounds - 边界对象
+   * 自定义本地边界计算，使用文本的实际渲染尺寸作为边界
+   * 确保边界包含完整的文本内容、描边和内边距
    */
   protected override _customLocalBounds(bounds: Bounds) {
     bounds.addFrame(0, 0, this.textWidth, this.textHeight);
   }
 
   /**
-   * 获取文本节点的本地边界
-   * 如果文本内容已更改，会先重新绘制文本
-   * @returns 本地边界对象
+   * 获取文本节点的本地边界，会自动触发文本重绘和尺寸测量
+   * 确保返回的边界反映最新的文本内容和样式
    */
   override getLocalBounds(): Bounds {
     // 获取 bounds 之前，先绘制，会调用度量文本

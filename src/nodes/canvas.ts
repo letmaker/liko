@@ -19,7 +19,7 @@ type ImageSource = HTMLImageElement | HTMLCanvasElement | Texture;
 
 interface ICanvasPrivateProps extends INodePrivateProps {
   bounds: Bounds;
-  cmd: Array<{ type: string; params: any }>;
+  cmd: Array<{ type: string; params: unknown }>;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   texture: Texture;
@@ -29,9 +29,58 @@ interface ICanvasPrivateProps extends INodePrivateProps {
 }
 
 /**
- * Canvas 矢量图形绘制类，api 类似 canvas 2d
- * 对比 Shape 类，使用 GPU 渲染性能更好，但功能少，canvas 功能齐全，抗锯齿效果好，但频繁更新性能差。
- * 不经常变化对效果有更高要求的，建议使用 canvas 类，对性能要求比较高的或频繁变化的，建议使用 Shape 类。
+ * Canvas 矢量图形绘制类，提供类似 Canvas 2D API 的绘制功能
+ *
+ * 对比 Shape 类，Canvas 类使用 CPU 渲染，功能更齐全，抗锯齿效果更好，但频繁更新时性能较差。
+ * Shape 类使用 GPU 渲染，性能更好，但功能相对有限。
+ *
+ * **适用场景：**
+ * - 不经常变化且对视觉效果有更高要求的图形
+ * - 需要复杂路径绘制、渐变填充、图案填充的场景
+ * - 需要精确像素级控制的绘制
+ *
+ * **注意事项：**
+ * 1. 所有绘制命令都是延迟执行的，只有在需要纹理时才会实际渲染到画布
+ * 2. 连续调用 fill() 或 stroke() 时，建议手动调用 beginPath() 来避免路径自动闭合
+ * 3. 使用裁剪功能后，边界计算会被禁用，需要手动管理边界
+ *
+ * **基本使用示例：**
+ * ```typescript
+ * // 创建 Canvas 实例
+ * const canvas = new Canvas();
+ *
+ * // 绘制填充矩形
+ * canvas.rect(10, 10, 100, 50)
+ *       .fill({ color: 'red' });
+ *
+ * // 绘制描边圆形
+ * canvas.circle(60, 35, 25)
+ *       .stroke({ color: '#00FF00', width: 2 });
+ *
+ * // 绘制复杂路径
+ * canvas.beginPath()
+ *       .moveTo(10, 100)
+ *       .lineTo(50, 120)
+ *       .quadraticCurveTo(80, 100, 110, 120)
+ *       .stroke({ color: '#0000FF', width: 3 });
+ *
+ * // 绘制渐变填充
+ * const gradient = utils.createLinearGradient({ startX: 0, startY: 0, endX: 100, endY: 0 }, [
+ *   { offset: 0, color: 'red' },
+ *   { offset: 1, color: 'blue' },
+ * ]);
+ * canvas.rect(10, 150, 100, 30)
+ *       .fill({ color: gradient });
+ * ```
+ *
+ * **链式调用示例：**
+ * ```typescript
+ * canvas.beginPath()
+ *       .rect(0, 0, 100, 100)
+ *       .circle(50, 50, 30)
+ *       .fill({ color: '#FFD700' })
+ *       .stroke({ color: '#FF0000', width: 2 });
+ * ```
  */
 @RegNode('Canvas')
 export class Canvas extends LikoNode implements IRenderable {
@@ -339,20 +388,21 @@ export class Canvas extends LikoNode implements IRenderable {
     const source = image instanceof Texture ? (image.buffer as TextureBuffer).bitmap : image;
     const width = destWidth ?? image.width;
     const height = destHeight ?? image.height;
-    // biome-ignore lint/style/noArguments: <explanation>
-    const { length } = arguments;
+
+    // 根据参数判断调用方式
     const { cmd } = this.pp;
-    if (length === 3) {
-      cmd.push({ type: 'drawImage', params: [source, x, y] });
-    } else if (length === 5) {
-      cmd.push({ type: 'drawImage', params: [source, x, y, destWidth, destHeight] });
-    } else if (length === 9) {
+    if (sourceX !== undefined && sourceY !== undefined && sourceWidth !== undefined && sourceHeight !== undefined) {
+      // 9 参数版本：绘制图像的指定部分到指定位置
       cmd.push({
         type: 'drawImage',
         params: [source, sourceX, sourceY, sourceWidth, sourceHeight, x, y, destWidth, destHeight],
       });
+    } else if (destWidth !== undefined && destHeight !== undefined) {
+      // 5 参数版本：绘制缩放后的图像
+      cmd.push({ type: 'drawImage', params: [source, x, y, destWidth, destHeight] });
     } else {
-      throw new Error('arguments length error');
+      // 3 参数版本：绘制完整图像
+      cmd.push({ type: 'drawImage', params: [source, x, y] });
     }
 
     this._$addPoint(x, y);
@@ -481,12 +531,17 @@ export class Canvas extends LikoNode implements IRenderable {
 
         for (const c of cmd) {
           if (c.type === 'fill') {
-            this._$fill.apply(this, c.params);
+            this._$fill.apply(this, c.params as [ColorData]);
           } else if (c.type === 'stroke') {
-            this._$stroke.apply(this, c.params);
+            this._$stroke.apply(
+              this,
+              c.params as [ColorData, number, CanvasLineCap?, CanvasLineJoin?, number[]?, number?, number?]
+            );
           } else {
-            const fun = (CanvasRenderingContext2D.prototype as any)[c.type];
-            fun.apply(ctx, c.params);
+            const fun = (CanvasRenderingContext2D.prototype as unknown as Record<string, (...args: unknown[]) => void>)[
+              c.type
+            ];
+            fun.apply(ctx, c.params as unknown[]);
           }
         }
       }

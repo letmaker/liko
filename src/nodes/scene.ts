@@ -70,19 +70,58 @@ interface ISceneOptions extends INodeOptions {
 /**
  * 场景类，用于管理场景内的节点、动画、脚本等内容
  * 所有动画、脚本、动效均由所在的场景统一驱动
+ *
+ * 使用示例：
+ * ```typescript
+ * // 创建场景实例
+ * const scene = new Scene({
+ *   url: '/assets/scenes/level1.json',
+ *   onLoaded: () => console.log('场景加载完成'),
+ *   onPlayed: () => console.log('场景开始播放'),
+ *   onUpdate: (delta) => console.log('场景更新', delta)
+ * });
+ *
+ * // 手动加载场景
+ * await scene.load('/assets/scenes/level1.json');
+ *
+ * // 控制场景播放
+ * scene.play();        // 开始播放
+ * scene.pause();       // 暂停播放
+ * scene.resume();      // 恢复播放
+ * scene.stop();        // 停止播放
+ *
+ * // 克隆场景中的节点
+ * const clonedNode = scene.cloneNode<Sprite>({ label: 'enemy' });
+ * if (clonedNode) {
+ *   this.addChild(clonedNode);
+ * }
+ *
+ * // 设置时间缩放（2倍速播放）
+ * scene.timeScale = 2.0;
+ *
+ * // 访问摄像机
+ * scene.camera.follow(player);
+ * ```
+ *
+ * 注意事项：
+ * - 场景会在添加到舞台时自动开始播放，从舞台移除时自动停止
+ * - 场景的所有脚本更新由场景统一驱动，包括子节点的脚本
+ * - 时间缩放会影响所有动画和脚本的执行速度
+ * - 克隆节点时会生成新的唯一ID，避免ID冲突
+ * - 预加载资源时会触发进度事件，可通过onProgress回调监听
  */
 @RegNode('Scene')
 export class Scene extends LikoNode implements IScene {
   declare pp: IScenePrivateProps;
-  /** 场景数据，用于实现节点克隆 */
+  /** 场景数据，用于实现节点克隆功能，保存原始的JSON结构 */
   json?: INodeData;
-  /** 时间缩放比率，控制场景播放速度 */
+  /** 时间缩放比率，控制场景播放速度，1.0为正常速度，2.0为两倍速 */
   timeScale = 1;
 
-  /** 场景的摄像机 */
+  /** 场景的摄像机实例，用于控制视角和渲染 */
   camera: Camera = new Camera();
 
-  /** 场景更新时的回调，delta单位为秒 */
+  /** 场景更新时的回调函数，delta参数为距离上一帧的时间间隔（秒） */
   onUpdate?: (delta: number) => void;
 
   /**
@@ -92,25 +131,27 @@ export class Scene extends LikoNode implements IScene {
     return this;
   }
 
-  /** 当前动画播放到的时间点 */
+  /**  获取当前动画播放到的时间点（秒）,从开始播放到现在经过的总时间 */
   get currentTime(): number {
     return this.pp.currentTime;
   }
 
-  /** 是否正在播放 */
+  /** 获取是否正在播放状态 */
   get isPlaying(): boolean {
     return this.pp.isPlaying;
   }
 
-  /** 是否暂停 */
+  /** 获取是否处于暂停状态 */
   get paused(): boolean {
     return this.pp.paused;
   }
 
-  /** 当前场景资源路径 */
+  /** 获取当前场景资源路径 */
   get url(): string {
     return this.pp.url;
   }
+
+  /** 设置场景资源路径，会自动触发场景加载 */
   set url(value: string) {
     this.load(value);
   }
@@ -123,16 +164,18 @@ export class Scene extends LikoNode implements IScene {
     pp.isPlaying = false;
     pp.paused = false;
 
+    // 监听舞台事件，自动控制播放状态
     this.on(EventType.addToStage, this.play, this);
     this.on(EventType.removed, this.stop, this);
 
+    // 添加摄像机脚本
     this.addScript(this.camera);
-    this.setProps(options as Record<string, any>);
+    this.setProps(options as Record<string, unknown>);
   }
 
   /**
-   * 销毁场景实例
-   * @returns 当前实例，支持链式调用
+   * 销毁场景实例，清理所有资源和引用
+   * 停止播放并释放内存，销毁后不可再使用
    */
   override destroy(): void {
     if (this.destroyed) return;
@@ -143,10 +186,9 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 加载场景
-   * @param url - 场景资源路径
-   * @param preloadAssets - 是否预加载场景内的所有资源，默认为 true
-   * @returns Promise 对象，加载完成后解析
+   * 加载场景数据
+   * @param url 场景文件的URL路径
+   * @param preloadAssets 是否预加载场景内的所有资源，默认为true
    */
   async load(url: string, preloadAssets = true) {
     if (this.pp.url === url && this.json) {
@@ -171,9 +213,9 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 加载场景内的所有资源
-   * @param json - 场景数据
-   * @returns Promise 对象，所有资源加载完成后解析
+   * 预加载场景内引用的所有资源文件
+   * 遍历场景JSON数据，收集所有资源URL并预先加载
+   * @param json 场景数据对象
    */
   async preloadAssets(json: INodeData) {
     const res: string[] = [];
@@ -204,8 +246,9 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 播放场景
-   * @returns 当前实例，支持链式调用
+   * 开始播放场景
+   * 启动场景的更新循环，开始执行所有脚本和动画
+   * @returns 当前场景实例，支持链式调用
    */
   play(): this {
     const pp = this.pp;
@@ -219,8 +262,9 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 停止播放
-   * @returns 当前实例，支持链式调用
+   * 停止播放场景
+   * 停止场景的更新循环，所有脚本和动画将停止执行
+   * @returns 当前场景实例，支持链式调用
    */
   stop(): this {
     if (this.pp.isPlaying) {
@@ -232,8 +276,9 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 暂停播放
-   * @returns 当前实例，支持链式调用
+   * 暂停播放场景
+   * 暂停场景的更新循环，保持当前状态不变
+   * @returns 当前场景实例，支持链式调用
    */
   pause(): this {
     const pp = this.pp;
@@ -246,8 +291,9 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 恢复播放
-   * @returns 当前实例，支持链式调用
+   * 恢复播放场景
+   * 从暂停状态恢复播放，继续执行脚本和动画
+   * @returns 当前场景实例，支持链式调用
    */
   resume(): this {
     const pp = this.pp;
@@ -260,13 +306,13 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 更新场景及脚本
-   * @param delta - 距离上一帧的时间间隔，可选参数
-   * @returns 当前实例，支持链式调用
+   * 更新场景及其所有脚本
+   * 在每一帧被调用，负责更新所有子节点的脚本
+   * @param delta 距离上一帧的时间间隔（秒），可选参数
    */
-  update(delta?: number): this {
+  update(delta?: number): void {
     const stage = this.stage;
-    if (!this.enabled || !stage || this.pp.paused) return this;
+    if (!this.enabled || !stage || this.pp.paused) return;
 
     const scaleDelta = delta ?? stage.timer.delta * this.timeScale;
     this.pp.currentTime += scaleDelta;
@@ -274,8 +320,6 @@ export class Scene extends LikoNode implements IScene {
     this._$updateScripts(this, scaleDelta);
     this.emit(EventType.update, scaleDelta);
     this.onUpdate?.(scaleDelta);
-
-    return this;
   }
 
   private _$updateScripts(node: LikoNode, delta: number) {
@@ -296,9 +340,9 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 从数据创建场景
-   * @param json - 场景数据
-   * @returns 当前实例，支持链式调用
+   * 从JSON数据重建场景结构
+   * @param json 场景数据对象
+   * @returns 当前场景实例，支持链式调用
    */
   override fromJson(json: INodeData): this {
     this.json = json;
@@ -307,9 +351,10 @@ export class Scene extends LikoNode implements IScene {
   }
 
   /**
-   * 克隆场景中某个节点
-   * @param options - 克隆选项，可以通过 id 或 label 指定要克隆的节点
-   * @returns 克隆的节点实例，如果未找到节点则返回 undefined
+   * 克隆场景中指定的节点
+   * 根据ID或标签查找节点，深度克隆其数据并创建新的实例
+   * @param options 克隆选项，包含id或label用于定位目标节点
+   * @returns 克隆的节点实例，如果未找到则返回undefined
    */
   cloneNode<T extends LikoNode>(options: { id?: string; label?: string }): T | undefined {
     const data = this._$findNodeData(options, this.json);

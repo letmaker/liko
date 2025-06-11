@@ -151,28 +151,93 @@ interface IShapePrivateProps extends INodePrivateProps {
  * 相比 canvas 类，Shape 类使用 GPU 渲染性能更好，但功能少，canvas功能齐全，抗锯齿效果好，但频繁更新性能差。
  * 不经常变化对效果有更高要求的，建议使用 canvas 类，对性能要求比较高的或频繁变化的，建议使用 Shape 类。
  *
- * @example
+ * ## 重要注意事项：
+ * - 每种形状只能绘制一个，多次调用相同类型的绘制方法会覆盖之前的设置
+ * - 形状必须有填充色或描边色至少其中一种，否则会抛出错误
+ * - 所有尺寸参数（宽度、高度、半径等）必须为正数
+ * - 线条和多边形的点数有最小要求（线条至少2个点，多边形至少3个点）
+ * - 支持链式调用，可以在一个节点上绘制多种不同类型的形状
+ *
+ * ## 基础使用示例：
  * ```typescript
- * // 创建一个形状节点并绘制矩形
+ * // 创建一个形状节点并绘制红色填充的矩形
  * const shape = new Shape();
  * shape.drawRect({
  *   x: 10, y: 10, width: 100, height: 50,
- *   fill: 'red', stroke: 'blue', strokeWidth: 2
+ *   fill: 'red'
  * });
  *
- * // 链式调用绘制多个形状
- * shape.drawCircle({ x: 50, y: 50, radius: 20, fill: '#ff0000' })
- *      .drawLine({ points: [{x: 0, y: 0}, {x: 100, y: 100}], color: '#ffff00' });
+ * // 绘制蓝色描边的圆形
+ * shape.drawCircle({
+ *   x: 50, y: 50, radius: 20,
+ *   stroke: 'blue', strokeWidth: 2
+ * });
+ * ```
+ *
+ * ## 链式调用示例：
+ * ```typescript
+ * const shape = new Shape()
+ *   .drawRect({ x: 0, y: 0, width: 100, height: 50, fill: '#ff0000' })
+ *   .drawCircle({ x: 150, y: 25, radius: 25, fill: '#00ff00' })
+ *   .drawLine({ points: [{x: 0, y: 60}, {x: 200, y: 60}], color: '#0000ff', lineWidth: 3 });
+ * ```
+ *
+ * ## 复杂形状示例：
+ * ```typescript
+ * // 绘制带圆角的矩形
+ * shape.drawRoundedRect({
+ *   x: 10, y: 10, width: 100, height: 60,
+ *   cornerRadius: 10,
+ *   fill: '#ffcc00',
+ *   stroke: '#ff6600',
+ *   strokeWidth: 2
+ * });
+ *
+ * // 绘制多边形（三角形）
+ * shape.drawPolygon({
+ *   points: [
+ *     { x: 50, y: 0 },
+ *     { x: 0, y: 50 },
+ *     { x: 100, y: 50 }
+ *   ],
+ *   fill: '#9966cc',
+ *   stroke: '#663399',
+ *   strokeWidth: 1
+ * });
+ *
+ * // 绘制椭圆
+ * shape.drawEllipse({
+ *   x: 50, y: 50,
+ *   radiusX: 40, radiusY: 20,
+ *   fill: '#66ccff'
+ * });
+ * ```
+ *
+ * ## 构造函数选项示例：
+ * ```typescript
+ * // 在构造时就指定要绘制的形状
+ * const shape = new Shape({
+ *   x: 100, y: 100,
+ *   drawRect: { x: 0, y: 0, width: 50, height: 50, fill: 'red' },
+ *   drawCircle: { x: 60, y: 25, radius: 15, fill: 'blue' },
+ *   tintColor: '#ffffff' // 叠加颜色
+ * });
  * ```
  */
 @RegNode('Shape')
 export class Shape extends LikoNode implements IRenderable {
   declare pp: IShapePrivateProps;
 
-  /** 渲染对象，负责实际的图形渲染(只读) */
+  /**
+   * 渲染对象，负责实际的图形渲染(只读)
+   * 这是内部使用的渲染对象，不应该直接操作
+   */
   readonly renderObject: ShapeObject = new ShapeObject(this);
 
-  /** 纹理对象，形状节点固定使用白色纹理(只读) */
+  /**
+   * 纹理对象，形状节点固定使用白色纹理(只读)
+   * Shape 类使用程序化生成的几何图形，不需要外部纹理
+   */
   readonly texture: Texture = Texture.WHITE;
 
   constructor(options?: IShapeOptions) {
@@ -207,8 +272,14 @@ export class Shape extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制线条，多次调用会覆盖当前形状设置，但不会影响其他形状设置
-   * @param options 线条绘制选项
+   * 绘制线条
+   *
+   * 注意事项：
+   * - 点集合至少需要2个点，否则抛出错误
+   * - 多次调用会覆盖当前线条设置，但不影响其他形状
+   * - 线条只有颜色属性，没有填充和描边的概念
+   *
+   * @param options 线条绘制选项，包含点集合、颜色和可选的线宽
    * @returns 返回当前实例，支持链式调用
    * @throws 当点数少于2个时抛出错误
    */
@@ -222,8 +293,15 @@ export class Shape extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制矩形，多次调用会覆盖当前形状设置，但不会影响其他形状设置
-   * @param options 矩形绘制选项
+   * 绘制矩形
+   *
+   * 注意事项：
+   * - 必须指定填充色或描边色至少其中一种，否则抛出错误
+   * - 宽度和高度必须为正数，否则抛出错误
+   * - 多次调用会覆盖当前矩形设置，但不影响其他形状
+   * - 坐标(x,y)表示矩形左上角位置
+   *
+   * @param options 矩形绘制选项，包含位置、尺寸、填充色、描边色等
    * @returns 返回当前实例，支持链式调用
    * @throws 当矩形没有填充或描边时抛出错误
    * @throws 当宽度或高度不为正数时抛出错误
@@ -241,8 +319,15 @@ export class Shape extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制圆形，多次调用会覆盖当前形状设置，但不会影响其他形状设置
-   * @param options 圆形绘制选项
+   * 绘制圆形
+   *
+   * 注意事项：
+   * - 必须指定填充色或描边色至少其中一种，否则抛出错误
+   * - 半径必须为正数，否则抛出错误
+   * - 多次调用会覆盖当前圆形设置，但不影响其他形状
+   * - 坐标(x,y)表示圆心位置
+   *
+   * @param options 圆形绘制选项，包含圆心位置、半径、填充色、描边色等
    * @returns 返回当前实例，支持链式调用
    * @throws 当圆形没有填充或描边时抛出错误
    * @throws 当半径不为正数时抛出错误
@@ -260,8 +345,15 @@ export class Shape extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制椭圆，多次调用会覆盖当前形状设置，但不会影响其他形状设置
-   * @param options 椭圆绘制选项
+   * 绘制椭圆
+   *
+   * 注意事项：
+   * - 必须指定填充色或描边色至少其中一种，否则抛出错误
+   * - X轴和Y轴半径都必须为正数，否则抛出错误
+   * - 多次调用会覆盖当前椭圆设置，但不影响其他形状
+   * - 坐标(x,y)表示椭圆中心位置
+   *
+   * @param options 椭圆绘制选项，包含中心位置、X/Y轴半径、填充色、描边色等
    * @returns 返回当前实例，支持链式调用
    * @throws 当椭圆没有填充或描边时抛出错误
    * @throws 当X轴或Y轴半径不为正数时抛出错误
@@ -279,8 +371,16 @@ export class Shape extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制圆角矩形，多次调用会覆盖当前形状设置，但不会影响其他形状设置
-   * @param options 圆角矩形绘制选项
+   * 绘制圆角矩形
+   *
+   * 注意事项：
+   * - 必须指定填充色或描边色至少其中一种，否则抛出错误
+   * - 宽度和高度必须为正数，否则抛出错误
+   * - 多次调用会覆盖当前圆角矩形设置，但不影响其他形状
+   * - 坐标(x,y)表示圆角矩形左上角位置
+   * - 圆角半径会自动限制在合理范围内
+   *
+   * @param options 圆角矩形绘制选项，包含位置、尺寸、圆角半径、填充色、描边色等
    * @returns 返回当前实例，支持链式调用
    * @throws 当圆角矩形没有填充或描边时抛出错误
    * @throws 当宽度或高度不为正数时抛出错误
@@ -298,8 +398,16 @@ export class Shape extends LikoNode implements IRenderable {
   }
 
   /**
-   * 绘制多边形，多次调用会覆盖当前形状设置，但不会影响其他形状设置
-   * @param options 多边形绘制选项
+   * 绘制多边形
+   *
+   * 注意事项：
+   * - 必须指定填充色或描边色至少其中一种，否则抛出错误
+   * - 顶点至少需要3个，否则抛出错误
+   * - 多次调用会覆盖当前多边形设置，但不影响其他形状
+   * - 顶点按顺序连接，自动闭合形成多边形
+   * - 建议按逆时针方向提供顶点以获得正确的填充效果
+   *
+   * @param options 多边形绘制选项，包含顶点集合、填充色、描边色等
    * @returns 返回当前实例，支持链式调用
    * @throws 当多边形没有填充或描边时抛出错误
    * @throws 当点数少于3个时抛出错误

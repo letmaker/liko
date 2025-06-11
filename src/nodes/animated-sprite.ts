@@ -35,6 +35,49 @@ interface IAnimatedSpriteOptions extends INodeOptions {
 
 /**
  * 精灵动画类，用于播放序列帧动画
+ *
+ * 该类支持两种方式创建动画：
+ * 1. 通过 URL 加载动画资源（推荐）
+ * 2. 直接设置纹理集合
+ *
+ * 主要功能：
+ * - 自动循环播放序列帧动画
+ * - 支持自定义帧率控制
+ * - 提供播放、停止、跳转等控制方法
+ * - 支持动画事件监听（播放、停止、加载完成、播放结束）
+ *
+ * 使用示例：
+ * ```typescript
+ * // 方式一：通过 URL 加载
+ * const sprite = new AnimatedSprite({
+ *   url: 'assets/character.atlas',
+ *   frameRate: 10,
+ *   onLoaded: () => console.log('动画加载完成'),
+ *   onPlayed: () => console.log('动画开始播放'),
+ *   onEnded: () => console.log('动画播放结束一轮')
+ * });
+ *
+ * // 方式二：直接设置纹理
+ * const sprite = new AnimatedSprite({
+ *   textures: [texture1, texture2, texture3],
+ *   frameRate: 10
+ * });
+ *
+ * // 添加到舞台并播放
+ * stage.addChild(sprite);
+ * sprite.play();
+ *
+ * // 控制动画
+ * sprite.stop();                    // 停止播放
+ * sprite.gotoTime(1.5);            // 跳转到 1.5 秒位置
+ * sprite.currentFrame = 10;        // 跳转到第 10 帧
+ * ```
+ *
+ * 注意事项：
+ * - 必须先将精灵添加到舞台（stage）才能调用 play() 方法
+ * - 动画会自动循环播放，播放到最后一帧时会触发 ended 事件并重新开始
+ * - 所有控制方法都支持链式调用
+ * - 销毁时会自动停止播放并清理资源
  */
 @RegNode('AnimatedSprite')
 export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation {
@@ -43,10 +86,13 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
   /** 标识动画是否正在播放 */
   isPlaying = false;
-  /** 动画的播放帧率，默认为 30 帧/秒 */
-  frameRate = 30;
+  /** 动画的播放帧率，默认为 20 帧/秒。修改此值会影响动画播放速度 */
+  frameRate = 20;
 
-  /** 精灵动画的纹理集合 */
+  /**
+   * 精灵动画的纹理集合
+   * 设置新的纹理集合时会自动重置当前帧到第一帧并重新计算锚点
+   */
   get textures(): Texture[] {
     return this.pp.textures;
   }
@@ -61,7 +107,10 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     this.anchor = this.anchor;
   }
 
-  /** 当前显示的纹理对象 */
+  /**
+   * 当前显示的纹理对象
+   * 这是当前帧对应的纹理，通常不需要手动设置
+   */
   get texture(): Texture {
     return this.pp.texture;
   }
@@ -73,12 +122,18 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     }
   }
 
-  /** 动画的总持续时间（秒） */
+  /**
+   * 动画的总持续时间（秒）
+   * 计算公式：总帧数 / 帧率
+   */
   get duration(): number {
     return this.pp.textures.length / this.frameRate;
   }
 
-  /** 当前显示的动画帧索引 */
+  /**
+   * 当前显示的动画帧索引（从 0 开始）
+   * 设置超出范围的值会自动重置为 0，并触发循环播放
+   */
   get currentFrame() {
     return this.pp.currentFrame;
   }
@@ -104,7 +159,10 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     }
   }
 
-  /** 动画资源的 URL 地址 */
+  /**
+   * 动画资源的 URL 地址
+   * 设置新的 URL 会自动加载对应的动画资源
+   */
   get url(): string {
     return this.pp.url;
   }
@@ -127,7 +185,8 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
   /**
    * 从指定 URL 加载动画资源
-   * @param url - 动画资源的 URL 地址
+   * 加载完成后会触发 loaded 事件
+   * @param url - 动画资源的 URL 地址，通常是 JSON 格式的精灵表配置文件
    */
   async load(url: string) {
     if (this.pp.url !== url) {
@@ -158,7 +217,9 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
   /**
    * 开始播放动画
+   * 注意：必须先将精灵添加到舞台（stage）才能调用此方法
    * 如果动画已经在播放中，则不会重复开始
+   * 播放开始时会触发 played 事件
    * @returns 当前实例，支持链式调用
    */
   play() {
@@ -175,6 +236,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
   /**
    * 停止播放动画
    * 如果动画已经停止，则不会执行任何操作
+   * 停止时会触发 stopped 事件，但不会重置当前帧位置
    * @returns 当前实例，支持链式调用
    */
   stop() {
@@ -192,7 +254,8 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
   /**
    * 跳转到动画的指定时间点
-   * @param time - 目标时间点（秒）
+   * 会根据时间计算对应的帧索引并跳转到该帧
+   * @param time - 目标时间点（秒），如果超出动画总时长会按比例计算对应帧
    * @returns 当前实例，支持链式调用
    */
   gotoTime(time: number) {
@@ -202,8 +265,7 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
   /**
    * 销毁精灵动画实例
-   * 在销毁前会停止动画播放并清空纹理集合
-   * @returns 当前实例，支持链式调用
+   * 在销毁前会自动停止动画播放并清空纹理集合，释放所有相关资源
    */
   override destroy(): void {
     this.stop();
