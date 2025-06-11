@@ -10,6 +10,9 @@ export class KeyBoardManager {
   private _wheelHandler = this._onWheel.bind(this);
   private _keyMap: Record<string, boolean> = {};
 
+  /** 是否忽略大小写，默认为 true */
+  public ignoreCase = true;
+
   constructor(public stage: Stage) {
     globalThis.addEventListener('keydown', this._keydownHandler, { capture: true, passive: true });
     globalThis.addEventListener('keyup', this._keyupHandler, { capture: true, passive: true });
@@ -22,13 +25,19 @@ export class KeyBoardManager {
     this.stage.canvas.removeEventListener('wheel', this._wheelHandler, false);
   }
 
+  private _getKey(key: string): string {
+    return this.ignoreCase ? key.toLowerCase() : key;
+  }
+
   private _onKeydown(e: KeyboardEvent) {
-    this._keyMap[e.key] = true;
+    const key = this._getKey(e.key);
+    this._keyMap[key] = true;
     this.stage.emit(EventType.keydown, e);
   }
 
   private _onKeyup(e: KeyboardEvent) {
-    this._keyMap[e.key] = false;
+    const key = this._getKey(e.key);
+    this._keyMap[key] = false;
     this.stage.emit(EventType.keyup, e);
   }
 
@@ -39,9 +48,10 @@ export class KeyBoardManager {
 
   /**
    * 是否按下了某个键盘
-   * @param key 区分大小写
+   * @param key 键名，根据 ignoreCase 属性决定是否区分大小写
    */
   hasKeydown(key: string) {
-    return this._keyMap[key] === true;
+    const normalizedKey = this._getKey(key);
+    return this._keyMap[normalizedKey] === true;
   }
 }
