@@ -15,7 +15,7 @@ import type { Stage } from '../nodes/stage';
  *
  * 当 enable 状态改变时，会触发 onEnable 或 onDisable
  */
-export abstract class BaseScript {
+export abstract class BaseScript<T extends LikoNode = LikoNode> {
   /** 脚本唯一标识符，通常由编辑器指定 */
   id = '';
   /** 脚本标签，用于快速识别和查找 */
@@ -47,15 +47,15 @@ export abstract class BaseScript {
     }
   }
 
-  private _$target?: LikoNode;
+  private _$target?: T;
   /** 脚本挂载的目标节点，设置后触发 onCreate */
-  get target(): LikoNode {
+  get target(): T {
     if (!this._$target) {
       console.warn('Script target is not set');
     }
-    return this._$target as LikoNode;
+    return this._$target as T;
   }
-  set target(value: LikoNode) {
+  set target(value: T) {
     if (value !== this._$target) {
       this._$target = value;
       if (value) {

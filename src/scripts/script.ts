@@ -1,5 +1,6 @@
 import { EventType } from '../const';
 import type { LikoPointerEvent } from '../events/pointer-event';
+import type { LikoNode } from '../nodes/node';
 import type { RigidBody } from '../physics/rigidBody';
 import { BaseScript } from './base-script';
 
@@ -20,7 +21,7 @@ export interface ICollision {
  * - 场景间通信事件（signal）
  * - 全局输入事件（键盘按键）
  */
-export class Script extends BaseScript {
+export class Script<T extends LikoNode = LikoNode> extends BaseScript<T> {
   override _$awake(): void {
     if (!this.awaked) {
       this._$regEvent();

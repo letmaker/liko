@@ -821,7 +821,7 @@ export abstract class LikoNode {
    * @param options - 筛选条件，可包含 id、label 和 Class 选项
    * @returns 返回匹配的脚本实例，如果未找到则返回 undefined
    */
-  findScript<T extends BaseScript>(options: { id?: string; label?: string; Class?: typeof BaseScript }): T | undefined {
+  findScript<T extends BaseScript>(options: { id?: string; label?: string; Class?: { new (): T } }): T | undefined {
     const { id, label, Class } = options;
     const { scripts } = this.pp;
 
