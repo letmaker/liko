@@ -5,14 +5,41 @@ const RGB_PATTERN = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/i;
 /** 匹配十六进制格式的正则表达式 */
 const HEX_PATTERN = /^(#|0x)([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i;
 
+/** 常见颜色名称映射表 */
+const COLOR_NAMES: Record<string, string> = {
+  // 基础颜色
+  red: '#ff0000',
+  green: '#00ff00',
+  blue: '#0000ff',
+  yellow: '#ffff00',
+  cyan: '#00ffff',
+  magenta: '#ff00ff',
+  white: '#ffffff',
+  black: '#000000',
+
+  // 常见颜色
+  orange: '#ffa500',
+  purple: '#800080',
+  pink: '#ffc0cb',
+  brown: '#a52a2a',
+  gray: '#808080',
+  grey: '#808080',
+
+  // 透明色
+  transparent: 'rgba(0,0,0,0)',
+};
+
+/** 常见颜色名称类型 */
+export type ColorName = keyof typeof COLOR_NAMES;
+
 /** 十六进制颜色类型，支持 # 或 0x 前缀 */
 export type ColorHex = `#${string}` | `0x${string}`;
 /** RGBA 颜色类型，格式为 rgba(r,g,b,a) */
 export type ColorRGBA = `rgba(${number},${number},${number},${number})`;
 /** RGB 颜色类型，格式为 rgb(r,g,b) */
 export type ColorRGB = `rgb(${number},${number},${number})`;
-/** 颜色数据类型，支持十六进制、RGB、RGBA 或数字格式 */
-export type ColorData = ColorHex | ColorRGBA | ColorRGB | number;
+/** 颜色数据类型，支持十六进制、RGB、RGBA、颜色名称或数字格式 */
+export type ColorData = ColorHex | ColorRGBA | ColorRGB | ColorName | number;
 
 /**
  * 颜色类，用于处理和转换不同格式的颜色
@@ -22,6 +49,7 @@ export type ColorData = ColorHex | ColorRGBA | ColorRGB | number;
  * - 十六进制格式：'#rrggbb'、'0xrrggbb'
  * - RGB 格式：'rgb(0-255, 0-255, 0-255)'
  * - RGBA 格式：'rgba(0-255, 0-255, 0-255, 0-1)'
+ * - 颜色名称：'red'、'blue'、'green'、'yellow'、'white'、'black' 等
  */
 export class Color {
   /** 默认白色颜色实例，请不要修改 */
@@ -39,7 +67,7 @@ export class Color {
 
   /**
    * 设置颜色值
-   * @param value - 支持的颜色格式：0xff0000、'#rrggbb'、'0xrrggbb'、'rgb(0-255, 0-255, 0-255)'、'rgba(0-255, 0-255, 0-255, 0-1)'
+   * @param value - 支持的颜色格式：0xff0000、'#rrggbb'、'0xrrggbb'、'rgb(0-255, 0-255, 0-255)'、'rgba(0-255, 0-255, 0-255, 0-1)'、'red' 等颜色名称
    */
   set value(value: ColorData) {
     if (this._value !== value) {
@@ -68,26 +96,29 @@ export class Color {
         break;
       }
       case 'string': {
+        // 首先检查是否为颜色名称
+        const colorValue = COLOR_NAMES[value.toLowerCase()] ?? value;
+
         // 匹配 'rgba(r, g, b, a)' 格式
-        if (value.startsWith('rgba')) {
-          const rgbaMatch = value.match(RGBA_PATTERN);
+        if (colorValue.startsWith('rgba')) {
+          const rgbaMatch = colorValue.match(RGBA_PATTERN);
           if (rgbaMatch) {
             r = Number(rgbaMatch[1]);
             g = Number(rgbaMatch[2]);
             b = Number(rgbaMatch[3]);
             a = Number(rgbaMatch[4]);
           }
-        } else if (value.startsWith('rgb')) {
+        } else if (colorValue.startsWith('rgb')) {
           // 匹配 'rgb(r, g, b)' 格式
-          const rgbMatch = value.match(RGB_PATTERN);
+          const rgbMatch = colorValue.match(RGB_PATTERN);
           if (rgbMatch) {
             r = Number(rgbMatch[1]);
             g = Number(rgbMatch[2]);
             b = Number(rgbMatch[3]);
           }
-        } else if (value.startsWith('#') || value.startsWith('0x')) {
+        } else if (colorValue.startsWith('#') || colorValue.startsWith('0x')) {
           // 匹配 '#rrggbb' 或 '0xrrggbb' 格式
-          const hexMatch = value.match(HEX_PATTERN);
+          const hexMatch = colorValue.match(HEX_PATTERN);
           if (hexMatch) {
             r = Number.parseInt(hexMatch[2], 16);
             g = Number.parseInt(hexMatch[3], 16);
