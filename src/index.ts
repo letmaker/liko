@@ -29,6 +29,7 @@ export { Tween } from './scripts/effect/tween';
 export { Ease } from './scripts/effect/ease';
 export { loader } from './loader';
 export { sound, music } from './sound/sound-manager';
+export type { Camera } from './scripts/node/camera';
 
 // 物理引擎
 export { RigidBody } from './physics/rigidBody';

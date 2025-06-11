@@ -109,7 +109,9 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     return this.pp.url;
   }
   set url(value: string) {
-    this.load(value);
+    if (this.pp.url !== value) {
+      this.load(value);
+    }
   }
 
   constructor(options?: IAnimatedSpriteOptions) {
@@ -137,8 +139,8 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
 
       this.textures = textures;
       this._$renderFrame(this.pp.currentFrame);
+      this.emit(EventType.loaded);
     }
-    this.emit(EventType.loaded);
   }
 
   /**

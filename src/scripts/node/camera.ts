@@ -28,8 +28,8 @@ import { BaseScript } from '../base-script';
  * ```
  */
 export class Camera extends BaseScript {
-  private _followTarget?: LikoNode;
-
+  /** 是否启用跟随，设置为 false 会暂停跟随 */
+  followEnabled = true;
   /**
    * 缓动系数 (0-1)
    * - 0: 不跟随
@@ -37,7 +37,6 @@ export class Camera extends BaseScript {
    * - 0.1: 平滑跟随（推荐值）
    */
   smoothness = 0.1;
-
   /** 是否跟随X轴方向 */
   followX = true;
   /** 是否跟随Y轴方向 */
@@ -47,44 +46,33 @@ export class Camera extends BaseScript {
   /** Y轴偏移量（相对于目标中心） */
   offsetY = 0;
 
-  private _bounds?: Rectangle | undefined;
-  private _sceneBounds?: Rectangle;
+  /** 当前跟随的目标节点 */
+  private _targetNode?: LikoNode;
+  /** 摄像机移动的世界坐标边界约束（用户设置的原始边界） */
+  private _worldBounds?: Rectangle;
+  /** 场景坐标系下的边界约束（经过转换后的边界） */
+  private _sceneConstraints?: Rectangle;
+  /** 摄像机的目标X坐标（场景坐标系） */
+  private _targetSceneX = 0;
+  /** 摄像机的目标Y坐标（场景坐标系） */
+  private _targetSceneY = 0;
+  /** 摄像机的当前X坐标（场景坐标系） */
+  private _currentSceneX = 0;
+  /** 摄像机的当前Y坐标（场景坐标系） */
+  private _currentSceneY = 0;
 
-  /** 摄像机移动边界约束 */
-  get bounds(): Rectangle | undefined {
-    return this._bounds;
-  }
-  set bounds(value: Rectangle | undefined) {
-    this._bounds = value;
-    if (value && this.stage) {
-      // 计算摄像机左上角的可移动范围
-      const minCameraX = value.x;
-      const maxCameraX = value.x + value.width - this.stage.width;
-      const minCameraY = value.y;
-      const maxCameraY = value.y + value.height - this.stage.height;
-
-      // 转换为场景坐标约束（scene.position的范围）
-      // 摄像机向右移动时，场景向左移动（负方向）
-      const maxSceneX = -minCameraX; // 场景X的最大值
-      const minSceneX = -maxCameraX; // 场景X的最小值
-      const maxSceneY = -minCameraY; // 场景Y的最大值
-      const minSceneY = -maxCameraY; // 场景Y的最小值
-
-      // 如果bounds区域小于stage，则不允许摄像机移动
-      const sceneWidth = Math.max(0, maxSceneX - minSceneX);
-      const sceneHeight = Math.max(0, maxSceneY - minSceneY);
-
-      this._sceneBounds = new Rectangle(minSceneX, minSceneY, sceneWidth, sceneHeight);
-    } else {
-      this._sceneBounds = undefined;
-    }
+  /**
+   * 摄像机移动边界约束（世界坐标系）
+   * 设置后会自动转换为场景坐标系约束
+   */
+  get worldBounds(): Rectangle | undefined {
+    return this._worldBounds;
   }
 
-  // 内部状态变量
-  private _targetX = 0;
-  private _targetY = 0;
-  private _currentX = 0;
-  private _currentY = 0;
+  set worldBounds(worldBounds: Rectangle | undefined) {
+    this._worldBounds = worldBounds;
+    this._updateSceneConstraints();
+  }
 
   /**
    * 设置摄像机跟随目标
@@ -107,7 +95,7 @@ export class Camera extends BaseScript {
       immediate?: boolean;
     }
   ): void {
-    this._followTarget = target;
+    this._targetNode = target;
 
     // 应用配置选项
     this.followX = options?.followX ?? true;
@@ -122,173 +110,68 @@ export class Camera extends BaseScript {
   }
 
   /**
-   * 直接设置摄像机查看位置
+   * 查看位置
    *
-   * @param x X坐标（全局坐标）
-   * @param y Y坐标（全局坐标）
+   * @param x X坐标（世界坐标）
+   * @param y Y坐标（世界坐标）
    * @param immediate 是否立即移动（跳过缓动）
    */
-  setPosition(x: number, y: number, immediate = false): void {
-    this._targetX = x;
-    this._targetY = y;
+  lookAt(x: number, y: number, immediate = false): void {
+    this._calculateTargetScenePosition(x, y);
 
     if (immediate) {
-      this._currentX = this._targetX;
-      this._currentY = this._targetY;
-      this._applyCameraPosition();
+      this._currentSceneX = this._targetSceneX;
+      this._currentSceneY = this._targetSceneY;
+      this._updateScenePosition();
     }
   }
 
   /**
    * 设置摄像机移动边界
    *
-   * @param bounds 边界矩形区域
+   * @param worldBounds 边界矩形区域（世界坐标系）
    */
-  setBounds(bounds: Rectangle): void {
-    this.bounds = bounds;
+  setWorldBounds(worldBounds: Rectangle): void {
+    this.worldBounds = worldBounds;
   }
 
   /**
    * 立即移动摄像机到目标位置（无缓动）
    */
   snapToTarget(): void {
-    if (!this._followTarget) return;
+    if (!this._targetNode) return;
 
-    this._calculateTargetPosition(this._followTarget);
-
-    // 应用边界约束，确保不会越界
+    this._calculateTargetPositionFromNode(this._targetNode);
     this._applyBoundsConstraint();
 
     if (this.followX) {
-      this._currentX = this._targetX;
+      this._currentSceneX = this._targetSceneX;
     }
 
     if (this.followY) {
-      this._currentY = this._targetY;
+      this._currentSceneY = this._targetSceneY;
     }
 
-    this._applyCameraPosition();
-  }
-
-  private _calculateTargetPosition(target: LikoNode): void {
-    if (!this.scene || !this.stage) return;
-
-    // 获取节点的本地边界框，计算中心点
-    const bounds = target.getLocalBounds();
-    const centerX = bounds.width / 2;
-    const centerY = bounds.height / 2;
-    const localCenter = { x: centerX, y: centerY };
-
-    // 转换为世界坐标
-    const worldCenter = target.localToWorld(localCenter, localCenter);
-
-    // 计算为了让目标居中，场景需要移动的距离
-    if (this.followX) {
-      const offsetToCenter = this.stage.width / 2 - worldCenter.x;
-      this._targetX = this.scene.position.x + offsetToCenter + this.offsetX;
-    }
-
-    if (this.followY) {
-      const offsetToCenter = this.stage.height / 2 - worldCenter.y;
-      this._targetY = this.scene.position.y + offsetToCenter + this.offsetY;
-    }
-  }
-
-  override onCreate(): void {
-    // 初始化摄像机位置为当前场景位置
-    if (this.target?.scene) {
-      this._currentX = this.target.scene.position.x;
-      this._currentY = this.target.scene.position.y;
-    }
-  }
-
-  override onAwake(): void {
-    // 如果设置了跟随目标，立即同步到目标位置
-    if (this._followTarget) {
-      this.snapToTarget();
-    }
-  }
-
-  override onUpdate(delta: number): void {
-    if (!this._followTarget) return;
-
-    // 更新目标位置
-    this._calculateTargetPosition(this._followTarget);
-
-    // 应用边界约束
-    this._applyBoundsConstraint();
-
-    // 应用平滑缓动
-    this._applySmoothMovement(delta);
-
-    // 更新场景位置
-    this._applyCameraPosition();
-  }
-
-  private _applyBoundsConstraint(): void {
-    if (!this._sceneBounds) return;
-
-    const { left, right, top, bottom } = this._sceneBounds;
-
-    if (this.followX) {
-      this._targetX = Math.max(left, Math.min(right, this._targetX));
-    }
-
-    if (this.followY) {
-      this._targetY = Math.max(top, Math.min(bottom, this._targetY));
-    }
-  }
-
-  private _applySmoothMovement(delta: number): void {
-    if (this.smoothness <= 0) {
-      // 无缓动，直接到达目标位置
-      if (this.followX) this._currentX = this._targetX;
-      if (this.followY) this._currentY = this._targetY;
-      return;
-    }
-
-    // 计算基于帧率的缓动因子
-    // 使用16ms作为基准帧时间（60fps），确保在不同帧率下缓动效果一致
-    const frameFactor = Math.min(1, this.smoothness * (delta / 0.016));
-
-    if (this.followX) {
-      this._currentX += (this._targetX - this._currentX) * frameFactor;
-    }
-
-    if (this.followY) {
-      this._currentY += (this._targetY - this._currentY) * frameFactor;
-    }
-  }
-
-  private _applyCameraPosition(): void {
-    if (!this.scene) return;
-
-    if (this.followX) {
-      this.scene.position.x = this._currentX;
-    }
-
-    if (this.followY) {
-      this.scene.position.y = this._currentY;
-    }
+    this._updateScenePosition();
   }
 
   /**
-   * 获取当前摄像机位置
+   * 获取当前摄像机位置（场景坐标系）
    */
   getCurrentPosition(): { x: number; y: number } {
     return {
-      x: this._currentX,
-      y: this._currentY,
+      x: this._currentSceneX,
+      y: this._currentSceneY,
     };
   }
 
   /**
-   * 获取摄像机目标位置
+   * 获取摄像机目标位置（场景坐标系）
    */
   getTargetPosition(): { x: number; y: number } {
     return {
-      x: this._targetX,
-      y: this._targetY,
+      x: this._targetSceneX,
+      y: this._targetSceneY,
     };
   }
 
@@ -299,20 +182,186 @@ export class Camera extends BaseScript {
    * @returns 是否已到达目标位置
    */
   isAtTarget(threshold = 1): boolean {
-    const deltaX = Math.abs(this._currentX - this._targetX);
-    const deltaY = Math.abs(this._currentY - this._targetY);
+    const deltaX = Math.abs(this._currentSceneX - this._targetSceneX);
+    const deltaY = Math.abs(this._currentSceneY - this._targetSceneY);
     return deltaX < threshold && deltaY < threshold;
   }
 
-  /**
-   * 停止跟随并清理资源
-   */
-  stopFollowing(): void {
-    this._followTarget = undefined;
+  override onCreate(): void {
+    // 初始化摄像机位置为当前场景位置
+    if (this.target?.scene) {
+      this._currentSceneX = this.target.scene.position.x;
+      this._currentSceneY = this.target.scene.position.y;
+    }
+  }
+
+  override onAwake(): void {
+    // 如果设置了跟随目标，立即同步到目标位置
+    if (this._targetNode) {
+      this.snapToTarget();
+    }
+  }
+
+  override onUpdate(delta: number): void {
+    if (!this._targetNode) return;
+
+    // 更新目标位置
+    if (this.followEnabled) {
+      this._calculateTargetPositionFromNode(this._targetNode);
+    }
+
+    // 应用边界约束
+    this._applyBoundsConstraint();
+
+    // 应用平滑缓动
+    this._applySmoothMovement(delta);
+
+    // 更新场景位置
+    this._updateScenePosition();
   }
 
   override onDestroy(): void {
-    this.stopFollowing();
-    this.bounds = undefined;
+    this._targetNode = undefined;
+    this.worldBounds = undefined;
+  }
+
+  /**
+   * 根据世界坐标边界更新场景坐标系约束
+   *
+   * 坐标系转换说明：
+   * - 世界坐标：节点在游戏世界中的绝对位置
+   * - 场景坐标：scene.position，控制整个场景的偏移
+   * - 摄像机向右移动 = 场景向左移动（scene.position.x减小）
+   */
+  private _updateSceneConstraints(): void {
+    if (!this._worldBounds || !this.stage) {
+      this._sceneConstraints = undefined;
+      return;
+    }
+
+    const worldBounds = this._worldBounds;
+
+    // 计算摄像机左上角在世界坐标系中的可移动范围
+    const minCameraWorldX = worldBounds.x;
+    const maxCameraWorldX = worldBounds.x + worldBounds.width - this.stage.width;
+    const minCameraWorldY = worldBounds.y;
+    const maxCameraWorldY = worldBounds.y + worldBounds.height - this.stage.height;
+
+    // 转换为场景坐标约束
+    // 摄像机世界坐标 = -scene.position，所以 scene.position = -摄像机世界坐标
+    const maxSceneX = -minCameraWorldX; // 场景X的最大值
+    const minSceneX = -maxCameraWorldX; // 场景X的最小值
+    const maxSceneY = -minCameraWorldY; // 场景Y的最大值
+    const minSceneY = -maxCameraWorldY; // 场景Y的最小值
+
+    // 如果边界区域小于舞台尺寸，则限制摄像机移动
+    const constraintWidth = Math.max(0, maxSceneX - minSceneX);
+    const constraintHeight = Math.max(0, maxSceneY - minSceneY);
+
+    this._sceneConstraints = new Rectangle(minSceneX, minSceneY, constraintWidth, constraintHeight);
+  }
+
+  /**
+   * 根据目标节点计算摄像机应该移动到的位置
+   */
+  private _calculateTargetPositionFromNode(targetNode: LikoNode): void {
+    if (!this.scene || !this.stage) return;
+
+    // 获取目标节点的世界坐标中心点
+    const worldCenter = this._getNodeWorldCenter(targetNode);
+
+    // 计算为了让目标居中所需的场景位置
+    this._calculateTargetScenePosition(worldCenter.x, worldCenter.y);
+  }
+
+  /**
+   * 根据世界坐标计算场景目标位置
+   *
+   * @param worldX 世界坐标X
+   * @param worldY 世界坐标Y
+   */
+  private _calculateTargetScenePosition(worldX: number, worldY: number): void {
+    if (!this.scene || !this.stage) return;
+
+    if (this.followX) {
+      // 计算为了让目标在屏幕中心，场景需要的X偏移
+      const offsetToCenter = this.stage.width / 2 - worldX;
+      this._targetSceneX = this.scene.position.x + offsetToCenter + this.offsetX;
+    }
+
+    if (this.followY) {
+      // 计算为了让目标在屏幕中心，场景需要的Y偏移
+      const offsetToCenter = this.stage.height / 2 - worldY;
+      this._targetSceneY = this.scene.position.y + offsetToCenter + this.offsetY;
+    }
+  }
+
+  /**
+   * 获取节点在世界坐标系中的中心点
+   */
+  private _getNodeWorldCenter(node: LikoNode): { x: number; y: number } {
+    // 获取节点的本地边界框
+    const localBounds = node.getLocalBounds();
+    const centerX = localBounds.width / 2;
+    const centerY = localBounds.height / 2;
+    const localCenter = { x: centerX, y: centerY };
+
+    // 转换为世界坐标
+    return node.localToWorld(localCenter, localCenter);
+  }
+
+  /**
+   * 应用边界约束，确保摄像机不会移动到边界外
+   */
+  private _applyBoundsConstraint(): void {
+    if (!this._sceneConstraints) return;
+
+    const { left, right, top, bottom } = this._sceneConstraints;
+
+    if (this.followX) {
+      this._targetSceneX = Math.max(left, Math.min(right, this._targetSceneX));
+    }
+
+    if (this.followY) {
+      this._targetSceneY = Math.max(top, Math.min(bottom, this._targetSceneY));
+    }
+  }
+
+  /**
+   * 应用平滑移动效果
+   *
+   * @param deltaTime 帧时间间隔
+   */
+  private _applySmoothMovement(deltaTime: number): void {
+    if (this.smoothness <= 0) {
+      return;
+    }
+
+    // 计算基于帧率的缓动因子
+    // 使用固定帧时间作为基准，确保在不同帧率下缓动效果一致
+    const frameFactor = Math.min(1, this.smoothness * (deltaTime / 0.016));
+
+    if (this.followX) {
+      this._currentSceneX += (this._targetSceneX - this._currentSceneX) * frameFactor;
+    }
+
+    if (this.followY) {
+      this._currentSceneY += (this._targetSceneY - this._currentSceneY) * frameFactor;
+    }
+  }
+
+  /**
+   * 更新场景位置
+   */
+  private _updateScenePosition(): void {
+    if (!this.scene) return;
+
+    if (this.followX) {
+      this.scene.position.x = this._currentSceneX;
+    }
+
+    if (this.followY) {
+      this.scene.position.y = this._currentSceneY;
+    }
   }
 }

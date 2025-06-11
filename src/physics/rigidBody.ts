@@ -143,7 +143,7 @@ export class RigidBody extends BaseScript {
     }
     this.body = this.physics.world.createBody({ active: false, type: 'kinematic', fixedRotation: true });
     if (options) {
-      this.setProps(options as Record<string, any>);
+      this.setProps(options as unknown as Record<string, unknown>);
     }
   }
 
@@ -224,8 +224,9 @@ export class RigidBody extends BaseScript {
       target.rotation = angle % PI2;
     }
 
-    const pivotX = target.pivot.x * target.scale.x;
-    const pivotY = target.pivot.y * target.scale.y;
+    // 使用scale的绝对值计算pivot偏移，避免负缩放时的位置错误
+    const pivotX = target.pivot.x * Math.abs(target.scale.x);
+    const pivotY = target.pivot.y * Math.abs(target.scale.y);
     if (target.rotation === 0) {
       target.position.set(pos2D.x + pivotX, pos2D.y + pivotY);
       return;
