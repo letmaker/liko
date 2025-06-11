@@ -76,6 +76,7 @@ interface ISpriteOptions extends INodeOptions {
  *   height: 600,
  *   repeat: true  // 启用平铺模式
  * });
+ * ```
  *
  * ## 动态加载和切换示例：
  * ```typescript
