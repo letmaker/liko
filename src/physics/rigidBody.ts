@@ -10,7 +10,7 @@ import { addShape } from './shape';
 
 /**
  * 物理刚体组件，实现物理属性描述和碰撞区域定义。
- * 
+ *
  * 注意：RigidBody 为一个脚本，挂载到节点后，需要添加到场景中才能被激活
  *
  * @example
