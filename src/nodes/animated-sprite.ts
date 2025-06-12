@@ -100,7 +100,8 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
     if (this.pp.textures === value) return;
 
     this.pp.textures = value;
-    this._$renderFrame(0);
+    this.pp.currentFrame = -1;
+    this.currentFrame = 0;
     this.markDirty(DirtyType.child);
 
     // 重新设置一下anchor
@@ -198,7 +199,6 @@ export class AnimatedSprite extends LikoNode implements IRenderable, IAnimation 
       console.assert(textures.length > 0);
 
       this.textures = textures;
-      this._$renderFrame(this.pp.currentFrame);
       this.emit(EventType.loaded);
     }
   }
