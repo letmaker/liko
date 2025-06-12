@@ -37,18 +37,68 @@ interface TweenOption {
 /**
  * 缓动动画管理类
  *
- * 用于创建和管理对象属性的平滑过渡动画，支持链式调用和队列执行。
- * 动画完成后会自动销毁，释放资源。
+ * 提供强大的对象属性动画功能，支持链式调用、队列执行、标签管理等特性。
+ * 动画完成后会自动销毁以释放资源。
+ *
+ * @example
+ * ```typescript
+ * // 基础使用 - 移动对象
+ * Tween.to({
+ *   target: gameObject,
+ *   props: { x: 100, y: 200 },
+ *   duration: 1,
+ *   ease: Ease.OutQuad
+ * }).play();
+ *
+ * // 链式调用 - 创建动画序列
+ * new Tween()
+ *   .to({ target: sprite, props: { x: 100 }, duration: 1 })
+ *   .wait(0.5)
+ *   .to({ target: sprite, props: { alpha: 0 }, duration: 0.5 })
+ *   .call(() => sprite.visible = false)
+ *   .play();
+ *
+ * // 使用标签管理动画
+ * Tween.to({
+ *   target: player,
+ *   props: { x: 200 },
+ *   duration: 2,
+ *   label: "player-move"
+ * });
+ * // 停止指定标签的动画
+ * Tween.clear("player-move");
+ *
+ * // 复杂动画配置
+ * Tween.to({
+ *   target: enemy,
+ *   props: { x: 300, y: 150, rotation: 360 },
+ *   duration: 2,
+ *   delay: 1,
+ *   repeat: 3,
+ *   yoyo: true,
+ *   ease: Ease.InOutBounce,
+ *   onStart: () => console.log("动画开始"),
+ *   onComplete: () => console.log("动画结束")
+ * });
+ * ```
+ *
+ * @注意事项
+ * - 动画完成后会自动销毁，无需手动清理
+ * - 相同 label 的动画会被自动替换
+ * - 使用 wait() 和 call() 可以创建复杂的动画序列
+ * - 暂停状态下的动画可以通过 resume() 恢复
  */
 export class Tween {
   private static _list: Tween[] = [];
 
   /**
-   * 从目标对象当前状态缓动到指定状态
+   * 创建从当前状态到目标状态的动画
    *
-   * 创建一个新的 Tween 实例。如果设置了 label 标签，会自动清除相同 label 的动画。
-   * @param options - 动画参数配置对象
-   * @returns 新创建的 Tween 实例
+   * 这是最常用的动画方法，从对象当前属性值平滑过渡到指定的目标值。
+   * 如果指定了 label，会自动停止具有相同 label 的现有动画。
+   *
+   * @param options - 动画配置选项
+   * @returns 新创建的 Tween 实例，可用于链式调用
    */
   static to(options: TweenOption): Tween {
     // 清理相同 label 动画
@@ -62,11 +112,14 @@ export class Tween {
   }
 
   /**
-   * 从指定状态缓动到目标对象当前状态
+   * 创建从指定状态到当前状态的动画
    *
-   * 创建一个新的 Tween 实例。如果设置了 label 标签，会自动清除相同 label 的动画。
-   * @param options - 动画参数配置对象
-   * @returns 新创建的 Tween 实例
+   * 先将对象属性设置为指定值，然后动画过渡回原来的状态。
+   * 常用于对象淡入效果（从透明到可见）或位置复位动画。
+   * 如果指定了 label，会自动停止具有相同 label 的现有动画。
+   *
+   * @param options - 动画配置选项
+   * @returns 新创建的 Tween 实例，可用于链式调用
    */
   static from(options: TweenOption): Tween {
     // 清理相同 label 动画
@@ -80,8 +133,12 @@ export class Tween {
   }
 
   /**
-   * 清理指定标签的动画，查找并销毁具有指定标签的第一个动画实例。
-   * @param label - 要清理的动画标签
+   * 停止指定标签的动画
+   *
+   * 查找并销毁具有指定标签的第一个动画实例。
+   * 用于精确控制特定动画的生命周期。
+   *
+   * @param label - 要停止的动画标签
    */
   static clear(label: string) {
     for (const tween of Tween._list) {
@@ -93,7 +150,10 @@ export class Tween {
   }
 
   /**
-   * 清理所有动画实例，销毁所有存在的 Tween 实例，并清空缓动列表。
+   * 停止所有动画
+   *
+   * 销毁所有存在的 Tween 实例并清空全局动画列表。
+   * 常用于场景切换或游戏重置时的资源清理。
    */
   static clearAll() {
     // 创建副本以避免在迭代过程中修改数组
@@ -114,28 +174,49 @@ export class Tween {
   private _resolve?: (value: void | PromiseLike<void>) => void;
   private _onAllComplete?: () => void;
 
-  /** 是否已销毁 */
+  /**
+   * 动画是否已被销毁
+   *
+   * 销毁后的动画实例不能再次使用，需要创建新实例。
+   */
   get destroyed(): boolean {
     return this._destroyed;
   }
-  /** 是否正在播放中 */
+
+  /**
+   * 动画是否正在播放中
+   *
+   * 包括正在执行和暂停状态的动画。
+   */
   get isPlaying(): boolean {
     return this._isPlaying;
   }
-  /** 是否已暂停 */
+
+  /**
+   * 动画是否已暂停
+   *
+   * 暂停状态下动画不会更新，但保持播放状态。
+   */
   get paused(): boolean {
     return this._paused;
   }
 
-  /** 动画标签，用于标识和管理动画 */
+  /**
+   * 动画标签
+   *
+   * 用于标识和管理动画，相同标签的动画会被自动替换。
+   * 可以通过 Tween.clear(label) 停止指定标签的动画。
+   */
   label?: string;
 
   /**
-   * 立即设置目标对象的属性值
+   * 立即设置对象属性值
    *
-   * 直接修改目标对象的属性，不创建动画过渡效果。
+   * 直接修改目标对象的属性，不产生动画过渡效果。
+   * 常用于在动画序列中立即更改对象状态。
+   *
    * @param target - 目标对象
-   * @param props - 要设置的属性集合
+   * @param props - 要设置的属性键值对
    * @returns 当前 Tween 实例，支持链式调用
    */
   set(target: EffectTarget, props: Record<string, any>): this {
@@ -147,10 +228,12 @@ export class Tween {
   }
 
   /**
-   * 从目标对象当前状态缓动到指定状态
+   * 添加从当前状态到目标状态的动画到队列
    *
-   * 创建一个从当前值到目标值的动画效果，并添加到动画队列。
-   * @param options - 动画参数配置对象
+   * 在动画队列末尾添加一个新的 to 动画。
+   * 支持链式调用以创建复杂的动画序列。
+   *
+   * @param options - 动画配置选项
    * @returns 当前 Tween 实例，支持链式调用
    */
   to(options: TweenOption): this {
@@ -158,10 +241,12 @@ export class Tween {
   }
 
   /**
-   * 从指定状态缓动到目标对象当前状态
+   * 添加从指定状态到当前状态的动画到队列
    *
-   * 创建一个从指定值到当前值的动画效果，并添加到动画队列。
-   * @param options - 动画参数配置对象
+   * 在动画队列末尾添加一个新的 from 动画。
+   * 支持链式调用以创建复杂的动画序列。
+   *
+   * @param options - 动画配置选项
    * @returns 当前 Tween 实例，支持链式调用
    */
   from(options: TweenOption): this {
@@ -169,8 +254,12 @@ export class Tween {
   }
 
   /**
-   * 等待指定的时间，创建一个持续时间为指定秒数的动画效果，并添加到动画队列。
-   * @param seconds - 等待的时间（秒）
+   * 添加等待时间到动画队列
+   *
+   * 在动画序列中插入指定时长的等待时间。
+   * 常用于在连续动画之间创建停顿效果。
+   *
+   * @param seconds - 等待时长（秒）
    * @returns 当前 Tween 实例，支持链式调用
    */
   wait(seconds: number): this {
@@ -182,8 +271,12 @@ export class Tween {
   }
 
   /**
-   * 调用指定的回调函数，创建一个持续时间为 0 的动画效果，并添加到动画队列。
-   * @param callback - 回调函数
+   * 添加回调函数到动画队列
+   *
+   * 在动画序列中的特定时机执行回调函数。
+   * 常用于在动画过程中触发游戏逻辑或状态改变。
+   *
+   * @param callback - 要执行的回调函数
    * @returns 当前 Tween 实例，支持链式调用
    */
   call(callback: () => void): this {
@@ -250,10 +343,13 @@ export class Tween {
   }
 
   /**
-   * 开始播放缓动队列
+   * 开始播放动画队列
    *
-   * 按顺序执行队列中的所有动画效果。如果已经在播放或已销毁，则直接返回已解析的 Promise。
-   * @returns 返回一个 Promise，当所有动画完成时解析
+   * 按顺序执行队列中的所有动画效果。
+   * 如果动画已在播放或已被销毁，会直接返回已解析的 Promise。
+   * 动画完成后会自动销毁实例。
+   *
+   * @returns Promise，当所有动画完成时解析
    */
   play(): Promise<void> {
     if (this._destroyed || this._isPlaying) return Promise.resolve();
@@ -278,7 +374,12 @@ export class Tween {
   }
 
   /**
-   * 暂停缓动队列，暂停当前正在播放的动画，可通过 resume 方法恢复播放。
+   * 暂停动画播放
+   *
+   * 暂停当前正在播放的动画，保持所有状态。
+   * 可以通过 resume() 方法恢复播放。
+   * 对未播放或已销毁的动画无效果。
+   *
    * @returns 当前 Tween 实例，支持链式调用
    */
   pause(): this {
@@ -290,7 +391,11 @@ export class Tween {
   }
 
   /**
-   * 恢复已暂停的缓动队列，恢复之前暂停的动画继续播放。
+   * 恢复动画播放
+   *
+   * 恢复之前暂停的动画继续播放。
+   * 对未暂停或已销毁的动画无效果。
+   *
    * @returns 当前 Tween 实例，支持链式调用
    */
   resume(): this {
@@ -302,7 +407,12 @@ export class Tween {
   }
 
   /**
-   * 停止缓动队列，停止当前动画播放，可通过 play 方法重新开始播放。
+   * 停止动画播放
+   *
+   * 停止当前动画播放，但不销毁实例。
+   * 可以通过 play() 方法重新开始播放整个动画队列。
+   * 停止时会重置暂停状态。
+   *
    * @returns 当前 Tween 实例，支持链式调用
    */
   stop(): this {
@@ -315,7 +425,11 @@ export class Tween {
   }
 
   /**
-   * 销毁整个缓动队列，清理所有资源并从全局管理列表中移除，销毁后不可再用。
+   * 销毁动画实例
+   *
+   * 清理所有资源并从全局管理列表中移除。
+   * 销毁后的实例不能再次使用，需要创建新实例。
+   * 会自动停止正在播放的动画。
    */
   destroy(): void {
     if (this._destroyed) return;
@@ -336,8 +450,12 @@ export class Tween {
   }
 
   /**
-   * 设置整个缓动队列结束时的回调，当所有动画效果执行完毕后调用指定的回调函数。
-   * @param callback - 结束回调函数
+   * 设置所有动画完成时的回调
+   *
+   * 当动画队列中的所有动画效果都执行完毕后调用指定的回调函数。
+   * 在 play() 返回的 Promise 解析之前触发。
+   *
+   * @param callback - 完成回调函数
    * @returns 当前 Tween 实例，支持链式调用
    */
   onAllComplete(callback: () => void): this {

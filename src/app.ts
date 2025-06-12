@@ -41,19 +41,54 @@ export interface IAppOptions {
 /**
  * 引擎应用类，负责初始化和管理引擎生命周期
  *
- * 通过 init 方法启动引擎，所有操作需要在启动完成后进行
+ * 这是整个引擎的入口类，提供了渲染、事件管理、物理引擎等功能的统一接口。
+ * 通过 init 方法启动引擎，所有操作需要在启动完成后进行。
+ *
+ * @example
+ * ```typescript
+ * // 基本使用
+ * const app = new App();
+ * await app.init({
+ *   width: 800,
+ *   height: 600,
+ *   container: 'game-container'
+ * });
+ *
+ * // 添加游戏对象到舞台
+ * const sprite = new Sprite();
+ * app.stage.addChild(sprite);
+ *
+ * // 控制渲染循环
+ * app.pause();  // 暂停渲染
+ * app.resume(); // 恢复渲染
+ *
+ * // 销毁引擎
+ * app.destroy();
+ * ```
+ *
+ * @注意事项
+ * - 所有操作必须在 init 方法完成后进行
+ * - 销毁后的引擎实例不可重用，需要重新创建新实例
  */
 export class App {
-  /** 显示的设备像素比 */
+  /**
+   * 全局设备像素比，影响所有 App 实例的渲染分辨率
+   * @remarks 该值会在 init 方法中根据配置进行更新
+   */
   static pixelRatio = window.devicePixelRatio;
 
   private _frameHandle = 0;
   private _renderHandler = this.render.bind(this);
 
-  /** 渲染器实例 */
-  renderer: Renderer = new Renderer();
-  /** 舞台实例，作为渲染的根节点 */
-  stage = new Stage();
+  /**
+   * 渲染器实例，负责实际的图形渲染工作
+   */
+  readonly renderer: Renderer = new Renderer();
+
+  /**
+   * 舞台实例，作为所有显示对象的根容器
+   */
+  readonly stage = new Stage();
 
   constructor() {
     initDevice();
@@ -61,8 +96,13 @@ export class App {
 
   /**
    * 初始化并启动引擎
-   * @param options - 引擎初始化选项
+   * @param options - 引擎初始化选项，可选
    * @returns 返回创建或使用的画布元素
+   * @remarks
+   * - 该方法必须在使用引擎的其他功能前调用
+   * - 如果未提供 canvas，会自动创建一个新的画布元素
+   * - 如果未提供 container，画布会添加到 document.body 中
+   * - 启用物理引擎需要在 options.physics 中设置 enabled: true
    */
   async init(options?: IAppOptions) {
     const canvas = options?.canvas ?? createCanvas();
@@ -103,22 +143,31 @@ export class App {
   }
 
   /**
-   * 暂停引擎循环，暂停后可通过 resume 方法恢复
+   * 暂停引擎的渲染循环
+   * @remarks
+   * - 暂停后所有动画和渲染都会停止
+   * - 可以通过 resume 方法恢复渲染
+   * - 暂停期间事件处理仍然正常工作
    */
   pause() {
     cancelAnimationFrame(this._frameHandle);
   }
 
   /**
-   * 恢复引擎循环，在调用 pause 方法后使用此方法恢复渲染
+   * 恢复引擎的渲染循环
+   * @remarks
+   * - 只有在调用 pause 方法后才需要使用此方法
+   * - 恢复后引擎会继续正常的渲染循环
    */
   resume() {
     this._frameHandle = requestAnimationFrame(this._renderHandler);
   }
 
   /**
-   * 执行引擎渲染循环
+   * 引擎的核心渲染循环方法
    * @param time - 当前时间戳（毫秒）
+   * @remarks
+   * - 该方法通常由引擎内部自动调用，不建议手动调用
    */
   render(time: number) {
     // 先执行延迟调用队列
@@ -142,11 +191,16 @@ export class App {
   }
 
   /**
-   * 销毁引擎实例及其所有资源，销毁后引擎将不再可用，需要重新初始化
+   * 销毁引擎实例及其所有资源
+   * @remarks
+   * - 销毁后引擎将完全停止工作，无法恢复
+   * - 会清理所有相关资源，包括画布、事件监听器等
+   * - 销毁后的实例不可重用，如需继续使用需创建新的实例
+   * - 建议在页面卸载或不再需要引擎时调用此方法
    */
   destroy() {
     cancelAnimationFrame(this._frameHandle);
-    this._renderHandler = () => { };
+    this._renderHandler = () => {};
     this.stage.destroy();
     this.renderer.destroy();
   }

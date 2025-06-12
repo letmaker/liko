@@ -1,4 +1,7 @@
-/** 点坐标接口 */
+/**
+ * 二维坐标点接口
+ * 定义了平面坐标系中点的基本结构
+ */
 export interface IPoint {
   /** x 轴坐标值 */
   x: number;
@@ -8,9 +11,28 @@ export interface IPoint {
 
 /**
  * 二维坐标点类
+ * 提供完整的二维平面坐标点操作功能，包括位置设置、距离计算、角度计算等
+ *
+ * @example
+ * ```typescript
+ * // 创建坐标点
+ * const point = new Point(10, 20);
+ *
+ * // 计算两点距离
+ * const distance = point.distance({ x: 0, y: 0 });
+ *
+ * // 链式操作
+ * point.set(5, 5).add(10, 10).normalize();
+ *
+ * // 使用临时对象减少内存分配
+ * const temp = Point.TEMP.set(x, y);
+ * ```
  */
 export class Point {
-  /** 全局临时对象，用于复用以减少对象创建开销 */
+  /**
+   * 全局临时对象，用于复用以减少对象创建开销
+   * 注意：此对象会被全局共享，使用后应立即处理结果，不要长期持有引用
+   */
   static readonly TEMP = new Point();
 
   /** x 轴坐标值 */
@@ -20,8 +42,8 @@ export class Point {
 
   /**
    * 创建一个新的坐标点实例
-   * @param x - x 轴坐标值
-   * @param y - y 轴坐标值
+   * @param x - x 轴坐标值，默认为 0
+   * @param y - y 轴坐标值，默认为 0
    */
   constructor(x = 0, y = 0) {
     this.x = x;
@@ -30,8 +52,8 @@ export class Point {
 
   /**
    * 设置坐标点的位置
-   * @param x - x 轴坐标值
-   * @param y - y 轴坐标值，不设置则等于 x
+   * @param x - x 轴坐标值，默认为 0
+   * @param y - y 轴坐标值，默认等于 x 的值
    * @returns 当前实例，支持链式调用
    */
   set(x = 0, y: number = x): this {
@@ -50,6 +72,7 @@ export class Point {
 
   /**
    * 比较当前坐标点与给定坐标点是否相同
+   * 使用严格相等比较，不进行浮点数误差处理
    * @param point - 待比较的坐标点
    * @returns 两点是否完全重合
    */
@@ -59,17 +82,18 @@ export class Point {
 
   /**
    * 计算当前点到目标点的夹角
+   * 角度从正 x 轴开始计算，逆时针为正方向
    * @param point - 目标点坐标
-   * @returns 两点间的夹角（单位：弧度）
+   * @returns 两点间的夹角，范围为 [-π, π] 弧度
    */
   radian(point: IPoint): number {
     return Math.atan2(point.y - this.y, point.x - this.x);
   }
 
   /**
-   * 计算当前点到目标点的距离
+   * 计算当前点到目标点的欧几里得距离
    * @param point - 目标点坐标
-   * @returns 两点间的直线距离
+   * @returns 两点间的直线距离，始终为非负数
    */
   distance(point: IPoint): number {
     const dx = this.x - point.x;
@@ -91,6 +115,8 @@ export class Point {
 
   /**
    * 将当前点作为向量进行归一化处理
+   * 归一化后向量长度为 1，方向保持不变
+   * 注意：零向量 (0,0) 归一化后仍为零向量
    * @returns 当前实例，支持链式调用
    */
   normalize(): this {
@@ -103,7 +129,7 @@ export class Point {
   }
 
   /**
-   * 从指定坐标点复制坐标值
+   * 从指定坐标点复制坐标值到当前实例
    * @param point - 源坐标点
    * @returns 当前实例，支持链式调用
    */
@@ -114,7 +140,7 @@ export class Point {
 
   /**
    * 创建当前坐标点的副本
-   * @returns 新的坐标点实例
+   * @returns 新的坐标点实例，与当前实例具有相同的坐标值
    */
   clone(): Point {
     return new Point(this.x, this.y);

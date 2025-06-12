@@ -1213,12 +1213,7 @@ export abstract class LikoNode {
     this._customLocalBounds(localBounds);
 
     // 检查 localBounds 是否有问题
-    if (
-      localBounds.width <= 0 ||
-      localBounds.height <= 0 ||
-      localBounds.width === Number.POSITIVE_INFINITY ||
-      localBounds.height === Number.POSITIVE_INFINITY
-    ) {
+    if (!localBounds.isValid) {
       console.warn('localBounds width <=0', this);
       return new Bounds(0, 0, 1, 1);
     }

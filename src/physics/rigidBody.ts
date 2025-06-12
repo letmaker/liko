@@ -15,6 +15,31 @@ import { addShape } from './shape';
  * 2. maskBit & categoryBit !== 0
  *
  * 注意：RigidBody 为一个脚本，挂载到节点后，需要添加到场景中才能被激活
+ *
+ * @example
+ * ```typescript
+ * // 创建一个动态刚体
+ * const rigidBody = new RigidBody({
+ *   rigidType: 'dynamic',
+ *   shapes: [{ shapeType: 'box', width: 100, height: 50 }],
+ *   friction: 0.5,
+ *   restitution: 0.3
+ * });
+ *
+ * // 添加碰撞事件监听
+ * rigidBody.onCollisionStart = (collision) => {
+ *   console.log('碰撞开始:', collision);
+ * };
+ *
+ * // 挂载到节点
+ * myNode.addScript(rigidBody);
+ *
+ * // 施加力使物体移动
+ * rigidBody.applyForce({ x: 100, y: 0 });
+ *
+ * // 设置速度
+ * rigidBody.setLinearVelocity(50, -30);
+ * ```
  */
 @RegScript('RigidBody')
 export class RigidBody extends BaseScript {
@@ -26,28 +51,79 @@ export class RigidBody extends BaseScript {
   /** @private */
   body: Body;
 
-  /** 物理类型，static(静态)、kinematic(运动学) 或 dynamic(动态)，至少一个物体为 dynamic 才能产生碰撞 */
+  /**
+   * 物理刚体类型，决定物体的物理行为
+   * - static: 静态物体，不受力影响，位置固定
+   * - kinematic: 运动学物体，可以移动但不受力影响
+   * - dynamic: 动态物体，受力影响并参与物理模拟
+   *
+   * 注意：至少一个物体为 dynamic 才能产生碰撞反应
+   */
   rigidType: RigidType = 'static';
-  /** 物理形状列表，描述碰撞区域，为空则默认使用与节点同大小的矩形 */
+
+  /**
+   * 物理形状列表，描述碰撞区域
+   *
+   * 注意：为空则默认使用与节点同大小的矩形
+   */
   shapes: IShape[] = [];
-  /** 关节列表，描述刚体之间的连接关系 */
+
+  /**
+   * 关节列表，描述刚体之间的连接关系
+   *
+   * 注意：关节会在组件唤醒时自动创建
+   */
   joints: IJoint[] = [];
-  /** 物理分类，用于碰撞检测 */
+
+  /**
+   * 物理分类标识，用于碰撞检测和过滤
+   *
+   * 注意：配合 categoryAccepted 使用可以控制哪些物体能够碰撞
+   */
   category = '';
-  /** 是否为传感器，传感器只检测碰撞但不产生物理反馈 */
+
+  /**
+   * 是否为传感器模式
+   *
+   * 注意：传感器只检测碰撞但不产生物理反馈，常用于触发器
+   */
   isSensor = false;
-  /** 摩擦系数，范围 0-1，默认为 0.2 */
+
+  /**
+   * 摩擦系数，影响物体间的滑动阻力
+   *
+   * 取值范围：0-1，0 表示无摩擦，1 表示最大摩擦
+   */
   friction = 0.2;
-  /** 弹性系数，范围 0-1，默认为 0 */
+
+  /**
+   * 弹性系数，影响碰撞后的反弹程度
+   *
+   * 取值范围：0-1，0 表示完全非弹性碰撞，1 表示完全弹性碰撞
+   */
   restitution = 0;
 
-  /** 碰撞开始回调 */
+  /**
+   * 碰撞开始时的回调函数
+   *
+   * 注意：需要在组件唤醒前设置才能生效
+   */
   onCollisionStart?: (e: ICollision) => void;
-  /** 碰撞结束回调 */
+
+  /**
+   * 碰撞结束时的回调函数
+   *
+   * 注意：需要在组件唤醒前设置才能生效
+   */
   onCollisionEnd?: (e: ICollision) => void;
 
   private _categoryAccepted?: string[] | undefined;
-  /** 接受碰撞的分类列表，为空则与所有物体碰撞 */
+
+  /**
+   * 接受碰撞的分类列表，用于碰撞过滤
+   *
+   * 注意：为空则与所有物体碰撞，可以是字符串（逗号分隔）或字符串数组
+   */
   get categoryAccepted(): string[] | undefined {
     return this._categoryAccepted;
   }
@@ -59,7 +135,12 @@ export class RigidBody extends BaseScript {
     }
   }
 
-  /** 角速度，物体旋转速度，单位为弧度/秒 */
+  /**
+   * 角速度，物体旋转速度
+   *
+   * 单位：弧度/秒
+   * 注意：只对 dynamic 类型物体有效
+   */
   get angularVelocity(): number {
     return this.body.getAngularVelocity();
   }
@@ -67,7 +148,11 @@ export class RigidBody extends BaseScript {
     this.body.setAngularVelocity(value);
   }
 
-  /** 角阻尼系数，影响物体旋转的减速率，值越大减速越快 */
+  /**
+   * 角阻尼系数，影响物体旋转的减速率
+   *
+   * 注意：值越大减速越快，用于控制旋转的衰减
+   */
   get angularDamping(): number {
     return this.body.getAngularDamping();
   }
@@ -75,7 +160,11 @@ export class RigidBody extends BaseScript {
     this.body.setAngularDamping(value);
   }
 
-  /** 重力缩放系数，默认为 1，可设为负值使物体上浮 */
+  /**
+   * 重力缩放系数，控制物体受重力影响的程度
+   *
+   * 注意：默认为 1，可设为负值使物体上浮，设为 0 可忽略重力
+   */
   get gravityScale(): number {
     return this.body.getGravityScale();
   }
@@ -83,7 +172,11 @@ export class RigidBody extends BaseScript {
     this.body.setGravityScale(value);
   }
 
-  /** 线性速度，物体当前运动速度向量 */
+  /**
+   * 线性速度，物体当前运动速度向量
+   *
+   * 注意：只对 dynamic 和 kinematic 类型物体有效
+   */
   get linearVelocity(): IPoint {
     return this.body.getLinearVelocity();
   }
@@ -91,7 +184,11 @@ export class RigidBody extends BaseScript {
     this.body.setLinearVelocity(value);
   }
 
-  /** 线性阻尼系数，影响物体线性运动的减速率，值越大减速越快 */
+  /**
+   * 线性阻尼系数，影响物体线性运动的减速率
+   *
+   * 注意：值越大减速越快，用于控制移动的衰减
+   */
   get linearDamping(): number {
     return this.body.getLinearDamping();
   }
@@ -99,7 +196,11 @@ export class RigidBody extends BaseScript {
     this.body.setLinearDamping(value);
   }
 
-  /** 是否为子弹，高速物体设为 true 可减少穿透问题，但会增加性能开销 */
+  /**
+   * 是否为子弹模式，用于高速物体的连续碰撞检测
+   *
+   * 注意：高速物体设为 true 可减少穿透问题，但会增加性能开销
+   */
   get bullet(): boolean {
     return this.body.isBullet();
   }
@@ -107,7 +208,11 @@ export class RigidBody extends BaseScript {
     this.body.setBullet(value);
   }
 
-  /** 是否允许旋转，设为 false 则物体保持固定方向 */
+  /**
+   * 是否允许旋转
+   *
+   * 注意：设为 false 则物体保持固定方向，不会因碰撞或力矩而旋转
+   */
   get allowRotation(): boolean {
     return !this.body.isFixedRotation();
   }
@@ -115,7 +220,11 @@ export class RigidBody extends BaseScript {
     this.body.setFixedRotation(!value);
   }
 
-  /** 是否允许休眠，休眠状态下物体不参与物理计算以提高性能 */
+  /**
+   * 是否允许休眠，用于性能优化
+   *
+   * 注意：休眠状态下物体不参与物理计算以提高性能
+   */
   get allowSleeping(): boolean {
     return this.body.isSleepingAllowed();
   }
@@ -123,7 +232,11 @@ export class RigidBody extends BaseScript {
     this.body.setSleepingAllowed(value);
   }
 
-  /** 是否处于休眠状态，休眠时物体暂停物理计算 */
+  /**
+   * 是否处于休眠状态
+   *
+   * 注意：休眠时物体暂停物理计算，可手动控制唤醒或休眠
+   */
   get sleeping(): boolean {
     return !this.body.isAwake();
   }
@@ -131,11 +244,22 @@ export class RigidBody extends BaseScript {
     this.body.setAwake(!value);
   }
 
-  /** 刚体质量，由形状和密度决定（只读） */
+  /**
+   * 刚体质量，由形状和密度自动计算（只读）
+   *
+   * 注意：质量影响物体的惯性和力的响应，无法直接设置
+   */
   get mass(): number {
     return this.body.getMass();
   }
 
+  /**
+   * 构造函数，创建物理刚体组件
+   *
+   * @param options 可选的初始化参数
+   *
+   * 注意：需要先启用物理系统才能创建刚体
+   */
   constructor(options?: RigidBodyOptions) {
     super();
     if (!this.physics) {
@@ -255,9 +379,10 @@ export class RigidBody extends BaseScript {
   /**
    * 设置刚体位置
    *
-   * 注意：如果物体使用了刚体，直接修改 node.position 是无效的，需要使用此方法
-   * @param x - x 轴坐标
-   * @param y - y 轴坐标
+   * @param x x 轴坐标
+   * @param y y 轴坐标
+   *
+   * 注意：如果物体使用了刚体，直接修改 node.position 是无效的，必须使用此方法
    */
   setPosition(x: number, y: number): void {
     let worldPos = { x, y };
@@ -272,6 +397,7 @@ export class RigidBody extends BaseScript {
 
   /**
    * 获取刚体当前位置
+   *
    * @returns 刚体位置坐标
    */
   getPosition(): IPoint {
@@ -281,6 +407,7 @@ export class RigidBody extends BaseScript {
 
   /**
    * 获取刚体当前旋转角度
+   *
    * @returns 旋转角度（弧度）
    */
   getRotation(): number {
@@ -289,7 +416,10 @@ export class RigidBody extends BaseScript {
 
   /**
    * 设置刚体旋转角度
-   * @param rotation - 旋转角度（弧度）
+   *
+   * @param rotation 旋转角度（弧度）
+   *
+   * 注意：会同时更新物理刚体和游戏对象的旋转
    */
   setRotation(rotation: number): void {
     this.body.setAngle(rotation);
@@ -299,8 +429,11 @@ export class RigidBody extends BaseScript {
 
   /**
    * 设置刚体线性速度
-   * @param x - x 方向速度，为 undefined 则保持当前速度
-   * @param y - y 方向速度，为 undefined 则保持当前速度
+   *
+   * @param x x 方向速度，为 undefined 则保持当前速度
+   * @param y y 方向速度，为 undefined 则保持当前速度
+   *
+   * 注意：只对 dynamic 和 kinematic 类型物体有效
    */
   setLinearVelocity(x?: number, y?: number): void {
     this.body.setLinearVelocity({ x: x ?? this.linearVelocity.x, y: y ?? this.linearVelocity.y });
@@ -309,10 +442,10 @@ export class RigidBody extends BaseScript {
   /**
    * 施加线性冲量，立即改变物体速度
    *
-   * 仅对 dynamic 类型物体有效，效果比施加力更直接
+   * @param impulse 冲量向量
+   * @param point 作用点，默认为物体原点
    *
-   * @param impulse - 冲量向量
-   * @param point - 作用点，默认为物体原点
+   * 注意：仅对 dynamic 类型物体有效，效果比施加力更直接
    */
   applyLinearImpulse(impulse: IPoint, point: IPoint = { x: 0, y: 0 }): void {
     // TODO 换成错误 throw 出来更好？
@@ -323,10 +456,10 @@ export class RigidBody extends BaseScript {
   /**
    * 施加力，会逐渐产生速度变化
    *
-   * 仅对 dynamic 类型物体有效，力量需足够大才能克服摩擦和重力
+   * @param force 力向量，包含 x 和 y 分量
+   * @param point 作用点，默认为物体原点，相对于物体中心的偏移
    *
-   * @param force - 力向量，包含 x 和 y 分量
-   * @param point - 作用点，默认为物体原点，相对于物体中心的偏移
+   * 注意：仅对 dynamic 类型物体有效，力量需足够大才能克服摩擦和重力
    */
   applyForce(force: IPoint, point: IPoint = { x: 0, y: 0 }): void {
     console.assert(this.rigidType === 'dynamic', 'applyForce only works on dynamic bodies');
@@ -336,9 +469,9 @@ export class RigidBody extends BaseScript {
   /**
    * 在物体中心点施加力，会逐渐改变物体速度
    *
-   * 仅对 dynamic 类型物体有效，力量需足够大才能克服摩擦和重力
+   * @param force 力向量
    *
-   * @param force - 力向量
+   * 注意：仅对 dynamic 类型物体有效，力量需足够大才能克服摩擦和重力
    */
   applyForceToCenter(force: IPoint): void {
     console.assert(this.rigidType === 'dynamic', 'applyForceToCenter only works on dynamic bodies');
@@ -348,9 +481,9 @@ export class RigidBody extends BaseScript {
   /**
    * 施加扭矩，会逐渐产生角速度变化
    *
-   * 仅对 dynamic 类型且 allowRotation 为 true 的物体有效
+   * @param torque 扭矩值
    *
-   * @param torque - 扭矩值
+   * 注意：仅对 dynamic 类型且 allowRotation 为 true 的物体有效
    */
   applyTorque(torque: number): void {
     console.assert(
@@ -363,9 +496,9 @@ export class RigidBody extends BaseScript {
   /**
    * 施加角冲量，立即改变物体角速度
    *
-   * 仅对 dynamic 类型且 allowRotation 为 true 的物体有效
+   * @param impulse 角冲量值
    *
-   * @param impulse - 角冲量值
+   * 注意：仅对 dynamic 类型且 allowRotation 为 true 的物体有效
    */
   applyAngularImpulse(impulse: number): void {
     console.assert(
@@ -377,7 +510,10 @@ export class RigidBody extends BaseScript {
 
   /**
    * 销毁指定标签的关节
-   * @param label - 关节标签
+   *
+   * @param label 关节标签
+   *
+   * 注意：销毁后关节连接将断开，相关物体将不再约束
    */
   destroyJoint(label: string): void {
     const joint = this._joints.find((j) => j.getUserData() === label);

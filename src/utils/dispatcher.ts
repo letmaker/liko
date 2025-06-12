@@ -6,9 +6,9 @@ export class Handler {
 
   /**
    * 创建事件处理器
-   * @param callback - 回调函数
-   * @param caller - 回调函数执行上下文
-   * @param once - 是否只执行一次，执行后自动销毁
+   * @param callback - 回调函数，支持任意参数
+   * @param caller - 回调函数执行上下文，决定函数内this的指向
+   * @param once - 是否只执行一次，执行后自动销毁，默认为false
    */
   constructor(
     public callback?: (...args: unknown[]) => void,
@@ -18,6 +18,7 @@ export class Handler {
 
   /**
    * 销毁事件处理器，销毁后不可再用
+   * 清理所有引用，防止内存泄漏
    */
   destroy(): void {
     if (!this._destroyed) {
@@ -27,7 +28,10 @@ export class Handler {
     }
   }
 
-  /** 是否已被销毁 */
+  /**
+   * 检查处理器是否已被销毁
+   * @returns 如果已销毁返回true，否则返回false
+   */
   get destroyed(): boolean {
     return this._destroyed;
   }
@@ -47,38 +51,81 @@ export class Handler {
 
 /**
  * 事件管理器，用于管理事件的注册、触发和销毁
+ * 支持多种事件监听模式：普通监听、一次性监听、批量取消等
+ *
+ * @example
+ * ```typescript
+ * const dispatcher = new Dispatcher();
+ *
+ * // 注册事件监听
+ * dispatcher.on('test', (data) => console.log('接收到:', data), this);
+ *
+ * // 注册一次性监听
+ * dispatcher.once('init', () => console.log('初始化完成'));
+ *
+ * // 触发事件
+ * dispatcher.emit('test', 'hello world');
+ *
+ * // 检查是否有监听器
+ * if (dispatcher.hasListener('test')) {
+ *   console.log('存在test事件的监听器');
+ * }
+ *
+ * // 取消特定监听
+ * dispatcher.off('test', callback, this);
+ *
+ * // 取消所有监听
+ * dispatcher.offAll();
+ *
+ * // 销毁管理器
+ * dispatcher.destroy();
+ * ```
+ *
+ * @注意事项
+ * - 事件类型不区分大小写，'Test'和'test'被视为同一事件
+ * - 多次注册同一监听器只生效最后一次（会先取消之前的注册）
+ * - 事件派发期间新增的同类型事件监听器不会收到当前事件通知
+ * - once监听器执行后会自动从监听列表中移除
  */
 export class Dispatcher {
   private _events: Record<string, Handler[]> = {};
 
   /**
-   * 注册事件监听（多次注册，只生效最后一次）
+   * 注册事件监听器
    * @param type - 事件类型，不区分大小写
-   * @param listener - 回调函数
-   * @param caller - 回调函数执行上下文
+   * @param listener - 回调函数，接收事件参数
+   * @param caller - 回调函数执行上下文，决定函数内this的指向
+   *
+   * @注意事项
+   * - 多次注册相同的监听器只生效最后一次
+   * - 会先自动取消之前的注册，避免重复监听
    */
-  on(type: string, listener: (...args: any[]) => void, caller?: any): void {
+  on(type: string, listener: (...args: unknown[]) => void, caller?: unknown): void {
     this._addListener(type, listener, caller, false);
   }
 
   /**
-   * 注册一次性事件监听，事件被执行后自动取消监听（多次注册，只生效最后一次）
+   * 注册一次性事件监听器，事件被执行后自动取消监听
    * @param type - 事件类型，不区分大小写
-   * @param listener - 回调函数
-   * @param caller - 回调函数执行上下文
+   * @param listener - 回调函数，接收事件参数
+   * @param caller - 回调函数执行上下文，决定函数内this的指向
+   *
+   * @注意事项
+   * - 监听器只会执行一次，执行后自动销毁
+   * - 多次注册相同的监听器只生效最后一次
    */
-  once(type: string, listener: (...args: any[]) => void, caller?: any): void {
+  once(type: string, listener: (...args: unknown[]) => void, caller?: unknown): void {
     this._addListener(type, listener, caller, true);
   }
 
   /**
-   * 添加事件监听器
+   * 添加事件监听器的内部方法
    * @param type - 事件类型
    * @param listener - 回调函数
    * @param caller - 回调函数执行上下文
    * @param once - 是否只执行一次
    */
-  private _addListener(type: string, listener: (...args: any[]) => void, caller: any, once: boolean): void {
+  private _addListener(type: string, listener: (...args: unknown[]) => void, caller: unknown, once: boolean): void {
     const events = this._events;
     const lowerType = type.toLowerCase();
     // 禁止重复注册
@@ -92,10 +139,14 @@ export class Dispatcher {
   /**
    * 取消事件监听
    * @param type - 事件类型，不区分大小写
-   * @param listener - 回调函数，如果为空则删除所有该类型的事件监听
-   * @param caller - 回调函数执行上下文
+   * @param listener - 要取消的回调函数，如果为空则删除该类型的所有事件监听
+   * @param caller - 回调函数执行上下文，用于精确匹配要取消的监听器
+   *
+   * @注意事项
+   * - 如果不提供listener参数，会删除该事件类型的所有监听器
+   * - caller参数用于区分相同函数但不同上下文的监听器
    */
-  off(type: string, listener?: (...args: any[]) => void, caller?: any): void {
+  off(type: string, listener?: (...args: unknown[]) => void, caller?: unknown): void {
     const handlers = this._events[type.toLowerCase()];
     if (!handlers || handlers.length === 0) return;
     if (listener === undefined) {
@@ -115,6 +166,10 @@ export class Dispatcher {
   /**
    * 取消特定上下文的所有事件监听
    * @param caller - 函数上下文，如果为空则清空所有事件监听
+   *
+   * @注意事项
+   * - 不提供caller参数会清空所有事件监听
+   * - 提供caller参数只会清空该上下文下的所有监听器
    */
   offAll(caller?: unknown): void {
     if (!caller) {
@@ -134,11 +189,16 @@ export class Dispatcher {
   }
 
   /**
-   * 派发事件（事件派发期间，新增的同类型事件监听器不会再收到通知）
+   * 派发事件，通知所有监听该事件的处理器
    * @param type - 事件类型，不区分大小写
-   * @param args - 传递给监听器的参数
+   * @param args - 传递给监听器的参数，支持任意数量和类型的参数
+   *
+   * @注意事项
+   * - 事件派发期间新增的同类型事件监听器不会收到当前事件通知
+   * - once监听器执行后会立即从监听列表中移除
+   * - 如果没有对应类型的监听器，不会执行任何操作
    */
-  emit(type: string, ...args: any[]): void {
+  emit(type: string, ...args: unknown[]): void {
     const handlers = this._events[type.toLowerCase()];
     if (!handlers || handlers.length === 0) return;
 
@@ -154,9 +214,9 @@ export class Dispatcher {
   }
 
   /**
-   * 检查是否有特定类型的事件监听
+   * 检查是否有特定类型的事件监听器
    * @param type - 事件类型，不区分大小写
-   * @returns 是否存在该类型的事件监听
+   * @returns 如果存在该类型的事件监听器返回true，否则返回false
    */
   hasListener(type: string): boolean {
     const handlers = this._events[type.toLowerCase()];
@@ -164,7 +224,8 @@ export class Dispatcher {
   }
 
   /**
-   * 销毁事件管理器，移除所有监听
+   * 销毁事件管理器，移除所有监听器并清理资源
+   * 销毁后的管理器不应再被使用
    */
   destroy(): void {
     this.offAll();

@@ -12,69 +12,160 @@ const defaultMatrix = new Matrix();
 
 /**
  * 包围盒类，用于表示对象的边界区域
+ *
+ * 包围盒是一个轴对齐的矩形区域，通过 minX、minY、maxX、maxY 四个值定义。
+ * 主要用于碰撞检测、视口裁剪、渲染优化等场景。
+ *
+ * 特点：
+ * - 支持链式调用，大部分方法返回 this
+ * - 内置空间变换支持，可配合 Matrix 进行复杂变换
+ * - 提供多种便捷属性访问方式（x/y、width/height、left/right/top/bottom）
+ * - 支持与 Rectangle 类型互相转换
+ *
+ * 注意事项：
+ * - 初始状态下 minX/minY 为正无穷，maxX/maxY 为负无穷，表示无效状态
+ * - 空包围盒指 minX > maxX 或 minY > maxY 的情况
+ * - 变换操作会直接修改当前实例，如需保留原数据请先 clone()
+ *
+ * @example
+ * ```typescript
+ * // 创建一个空的包围盒
+ * const bounds = new Bounds();
+ *
+ * // 创建指定范围的包围盒
+ * const bounds2 = new Bounds(0, 0, 100, 50);
+ *
+ * // 添加矩形区域到包围盒
+ * bounds.addFrame(10, 10, 90, 40);
+ *
+ * // 检查点是否在包围盒内
+ * if (bounds.contains(50, 25)) {
+ *   console.log('点在包围盒内');
+ * }
+ *
+ * // 对包围盒进行变换
+ * const matrix = new Matrix().translate(100, 50).scale(2, 2);
+ * bounds.applyMatrix(matrix);
+ *
+ * // 获取包围盒信息
+ * console.log(`宽度: ${bounds.width}, 高度: ${bounds.height}`);
+ * ```
  */
 export class Bounds {
-  /** 最小的 X 坐标 */
+  /**
+   * 包围盒的最小 X 坐标
+   * @default Number.POSITIVE_INFINITY
+   */
   minX = Number.POSITIVE_INFINITY;
-  /** 最小的 Y 坐标 */
+
+  /**
+   * 包围盒的最小 Y 坐标
+   * @default Number.POSITIVE_INFINITY
+   */
   minY = Number.POSITIVE_INFINITY;
-  /** 最大的 X 坐标 */
+
+  /**
+   * 包围盒的最大 X 坐标
+   * @default Number.NEGATIVE_INFINITY
+   */
   maxX = Number.NEGATIVE_INFINITY;
-  /** 最大的 Y 坐标 */
+
+  /**
+   * 包围盒的最大 Y 坐标
+   * @default Number.NEGATIVE_INFINITY
+   */
   maxY = Number.NEGATIVE_INFINITY;
 
-  /** 包围盒的 x 坐标，等同于 minX */
+  /**
+   * 包围盒的起始 X 坐标，等同于 minX
+   * 提供更语义化的属性访问方式
+   */
   get x(): number {
     return this.minX;
   }
 
-  /** 包围盒的 y 坐标，等同于 minY */
+  /**
+   * 包围盒的起始 Y 坐标，等同于 minY
+   * 提供更语义化的属性访问方式
+   */
   get y(): number {
     return this.minY;
   }
 
-  /** 包围盒的宽度 */
+  /**
+   * 包围盒的宽度
+   * 计算公式：maxX - minX
+   * @returns 如果包围盒无效或为空，可能返回负数或 NaN
+   */
   get width(): number {
     return this.maxX - this.minX;
   }
 
-  /** 包围盒的高度 */
+  /**
+   * 包围盒的高度
+   * 计算公式：maxY - minY
+   * @returns 如果包围盒无效或为空，可能返回负数或 NaN
+   */
   get height(): number {
     return this.maxY - this.minY;
   }
 
-  /** 包围盒的左边沿，等同于 minX */
+  /**
+   * 包围盒的左边界，等同于 minX
+   * 提供更语义化的属性访问方式
+   */
   get left(): number {
     return this.minX;
   }
 
-  /** 包围盒的右边沿，等同于 maxX */
+  /**
+   * 包围盒的右边界，等同于 maxX
+   * 提供更语义化的属性访问方式
+   */
   get right(): number {
     return this.maxX;
   }
 
-  /** 包围盒的顶部，等同于 minY */
+  /**
+   * 包围盒的上边界，等同于 minY
+   * 提供更语义化的属性访问方式
+   */
   get top(): number {
     return this.minY;
   }
 
-  /** 包围盒的底部，等同于 maxY */
+  /**
+   * 包围盒的下边界，等同于 maxY
+   * 提供更语义化的属性访问方式
+   */
   get bottom(): number {
     return this.maxY;
   }
 
-  /** 是否有效，当 minX 和 minY 不为初始值时为有效 */
+  /**
+   * 检查包围盒是否有效
+   * 包围盒在初始化后，如果没有添加任何内容，则为无效状态
+   * @returns 当 minX 和 minY 不为初始的正无穷值时返回 true
+   */
   get isValid(): boolean {
     return this.minX + this.minY !== Number.POSITIVE_INFINITY;
   }
 
-  /** 是否为空，当 minX > maxX 或 minY > maxY 时为空 */
+  /**
+   * 检查包围盒是否为空
+   * 空包围盒表示没有实际的区域面积
+   * @returns 当 minX > maxX 或 minY > maxY 时返回 true
+   */
   get isEmpty(): boolean {
     return this.minX > this.maxX || this.minY > this.maxY;
   }
 
   private _rectangle?: Rectangle;
-  /** 从包围盒获得矩形区域 */
+  /**
+   * 将包围盒转换为矩形对象
+   * 返回的矩形对象会被缓存，多次调用返回同一实例
+   * @returns Rectangle 实例，如果包围盒为空则返回零尺寸矩形
+   */
   get rectangle(): Rectangle {
     this._rectangle ??= new Rectangle();
     this.isEmpty ? this._rectangle.set(0, 0, 0, 0) : this._rectangle.copyFromBounds(this);
@@ -83,10 +174,10 @@ export class Bounds {
 
   /**
    * 创建一个包围盒实例
-   * @param minX - 最小 X 坐标，默认为正无穷大
-   * @param minY - 最小 Y 坐标，默认为正无穷大
-   * @param maxX - 最大 X 坐标，默认为负无穷大
-   * @param maxY - 最大 Y 坐标，默认为负无穷大
+   * @param minX - 最小 X 坐标，默认为正无穷大（表示无效状态）
+   * @param minY - 最小 Y 坐标，默认为正无穷大（表示无效状态）
+   * @param maxX - 最大 X 坐标，默认为负无穷大（表示无效状态）
+   * @param maxY - 最大 Y 坐标，默认为负无穷大（表示无效状态）
    */
   constructor(
     minX = Number.POSITIVE_INFINITY,
@@ -98,7 +189,7 @@ export class Bounds {
   }
 
   /**
-   * 设置包围盒的边界值
+   * 直接设置包围盒的边界值
    * @param minX - 最小 X 坐标
    * @param minY - 最小 Y 坐标
    * @param maxX - 最大 X 坐标
@@ -114,7 +205,7 @@ export class Bounds {
   }
 
   /**
-   * 重置包围盒到初始状态
+   * 重置包围盒到初始的无效状态
    * @returns 当前实例，支持链式调用
    */
   reset(): this {
@@ -126,12 +217,13 @@ export class Bounds {
   }
 
   /**
-   * 添加两个顶点，左上角和右下角，扩展包围盒
+   * 通过两个对角点添加矩形区域到包围盒
+   * 此方法会考虑变换矩阵，对四个顶点进行完整的矩阵变换
    * @param x0 - 左上角 X 坐标
    * @param y0 - 左上角 Y 坐标
    * @param x1 - 右下角 X 坐标
    * @param y1 - 右下角 Y 坐标
-   * @param matrix - 可选的变换矩阵，默认使用当前矩阵
+   * @param matrix - 可选的变换矩阵，不提供则使用默认单位矩阵
    * @returns 当前实例，支持链式调用
    */
   addFrame(x0: number, y0: number, x1: number, y1: number, matrix?: Matrix): this {
@@ -179,8 +271,8 @@ export class Bounds {
   }
 
   /**
-   * 添加矩形到包围盒
-   * @param rect - 要添加的矩形
+   * 添加矩形对象到包围盒
+   * @param rect - 要添加的矩形对象
    * @param matrix - 可选的变换矩阵
    * @returns 当前实例，支持链式调用
    */
@@ -190,8 +282,8 @@ export class Bounds {
   }
 
   /**
-   * 添加指定的包围盒到当前包围盒
-   * @param bounds - 要添加的包围盒
+   * 合并另一个包围盒到当前包围盒
+   * @param bounds - 要合并的包围盒数据
    * @param matrix - 可选的变换矩阵
    * @returns 当前实例，支持链式调用
    */
@@ -201,7 +293,8 @@ export class Bounds {
   }
 
   /**
-   * 根据指定的 mask 包围盒，限制当前包围盒的范围
+   * 使用遮罩包围盒限制当前包围盒的范围，结果是当前包围盒与遮罩包围盒的交集
+   * 如果没有交集，结果将是一个空包围盒
    * @param mask - 用于限制范围的遮罩包围盒
    * @returns 当前实例，支持链式调用
    */
@@ -214,8 +307,10 @@ export class Bounds {
   }
 
   /**
-   * 对包围盒的四个顶点应用矩阵变换
-   * @param matrix - 要应用的矩阵
+   * 对包围盒应用矩阵变换
+   * 会计算四个顶点变换后的位置，然后重新计算包围盒范围
+   * 注意：旋转等变换可能会改变包围盒的大小
+   * @param matrix - 要应用的变换矩阵
    * @returns 当前实例，支持链式调用
    */
   applyMatrix(matrix: Matrix): this {
@@ -254,7 +349,7 @@ export class Bounds {
   }
 
   /**
-   * 限制包围盒在指定矩形区域内
+   * 将包围盒限制在指定矩形区域内，超出矩形范围的部分会被裁剪掉
    * @param rect - 限制的矩形区域
    * @returns 当前实例，支持链式调用
    */
@@ -268,9 +363,9 @@ export class Bounds {
   }
 
   /**
-   * 通过 paddingX 和 paddingY 扩展包围盒区域
-   * @param paddingX - x 方向扩展大小
-   * @param paddingY - y 方向扩展大小，省略时与 paddingX 相同
+   * 通过内边距扩展包围盒区域，正数值扩大包围盒，负数值缩小包围盒
+   * @param paddingX - X 方向的扩展像素数
+   * @param paddingY - Y 方向的扩展像素数，省略时与 paddingX 相同
    * @returns 当前实例，支持链式调用
    */
   pad(paddingX: number, paddingY: number = paddingX): this {
@@ -283,7 +378,9 @@ export class Bounds {
   }
 
   /**
-   * 天花板处理：左上角取下限值，右下角取上限值
+   * 对包围盒坐标进行向上取整处理
+   * 左上角坐标向下取整（确保包含原区域），右下角坐标向上取整
+   * 常用于像素对齐或确保完整覆盖某个区域
    * @returns 当前实例，支持链式调用
    */
   ceil(): this {
@@ -296,9 +393,9 @@ export class Bounds {
   }
 
   /**
-   * 缩放包围盒
-   * @param x - x 轴缩放值
-   * @param y - y 轴缩放值，省略时与 x 相同
+   * 按比例缩放包围盒，所有坐标值都会乘以对应的缩放因子
+   * @param x - X 轴缩放比例
+   * @param y - Y 轴缩放比例，省略时与 x 相同
    * @returns 当前实例，支持链式调用
    */
   scale(x: number, y: number = x): this {
@@ -311,10 +408,10 @@ export class Bounds {
   }
 
   /**
-   * 判断包围盒是否包含某坐标点
-   * @param x - 要检测的 x 坐标
-   * @param y - 要检测的 y 坐标
-   * @returns 是否包含在包围盒内部
+   * 检查指定坐标点是否在包围盒内，边界上的点被认为是包含在内的
+   * @param x - 要检测的 X 坐标
+   * @param y - 要检测的 Y 坐标
+   * @returns 点在包围盒内（包括边界）时返回 true
    */
   contains(x: number, y: number): boolean {
     if (this.minX <= x && this.minY <= y && this.maxX >= x && this.maxY >= y) {
@@ -325,7 +422,7 @@ export class Bounds {
   }
 
   /**
-   * 克隆当前包围盒
+   * 创建当前包围盒的完整副本，返回的新实例与原实例完全独立
    * @returns 新的包围盒实例
    */
   clone(): Bounds {

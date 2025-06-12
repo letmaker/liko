@@ -14,36 +14,72 @@ import { BaseScript } from '../base-script';
  *
  * @example
  * ```typescript
- * // 基本使用
+ * // 使用 scene 上面的 camera 脚本
+ * const camera = scene.camera;
+ *
+ * // 基本跟随
  * camera.followTarget(playerNode);
  *
- * // 仅跟随X轴，带偏移
+ * // 自定义跟随配置
  * camera.followTarget(playerNode, {
- *   followY: false,
- *   offsetX: 100
+ *   followY: false,        // 仅跟随X轴
+ *   offsetX: 100,          // X轴偏移100像素
+ *   immediate: true        // 立即移动到目标位置
  * });
  *
  * // 设置边界限制
- * camera.setBounds({ left: 0, right: 1000, top: 0, bottom: 600 });
+ * camera.setWorldBounds(new Rectangle(0, 0, 2000, 1200));
+ *
+ * // 调整跟随参数
+ * camera.smoothness = 0.05;  // 更平滑的跟随
+ * camera.followEnabled = false; // 暂停跟随
+ *
+ * // 手动控制摄像机
+ * camera.lookAt(500, 300);          // 平滑移动到指定位置
+ * camera.lookAt(500, 300, true);    // 立即移动到指定位置
+ *
+ * // 获取摄像机状态
+ * const currentPos = camera.getCurrentPosition();
+ * const isReady = camera.isAtTarget();
  * ```
  */
 export class Camera extends BaseScript {
-  /** 是否启用跟随，设置为 false 会暂停跟随 */
+  /**
+   * 是否启用跟随
+   * 设置为 false 会暂停跟随，但不会停止平滑移动
+   */
   followEnabled = true;
+
   /**
    * 缓动系数 (0-1)
-   * - 0: 不跟随
-   * - 1: 立即跟随
+   * - 0: 不跟随（摄像机保持静止）
+   * - 1: 立即跟随（无缓动效果）
    * - 0.1: 平滑跟随（推荐值）
+   *
+   * 注意：值越小跟随越平滑，但响应速度越慢
    */
   smoothness = 0.1;
-  /** 是否跟随X轴方向 */
+
+  /**
+   * 是否跟随X轴方向
+   * 设置为 false 时摄像机在X轴方向保持静止
+   */
   followX = true;
-  /** 是否跟随Y轴方向 */
+
+  /**
+   * 是否跟随Y轴方向
+   * 设置为 false 时摄像机在Y轴方向保持静止
+   */
   followY = true;
-  /** X轴偏移量（相对于目标中心） */
+
+  /**
+   * X轴偏移量（相对于目标中心），正值向右偏移，负值向左偏移
+   */
   offsetX = 0;
-  /** Y轴偏移量（相对于目标中心） */
+
+  /**
+   * Y轴偏移量（相对于目标中心），正值向下偏移，负值向上偏移
+   */
   offsetY = 0;
 
   /** 当前跟随的目标节点 */
@@ -64,6 +100,8 @@ export class Camera extends BaseScript {
   /**
    * 摄像机移动边界约束（世界坐标系）
    * 设置后会自动转换为场景坐标系约束
+   *
+   * 注意：边界区域必须大于等于舞台尺寸，否则摄像机将被限制移动
    */
   get worldBounds(): Rectangle | undefined {
     return this._worldBounds;
@@ -79,6 +117,13 @@ export class Camera extends BaseScript {
    *
    * @param target 要跟随的节点
    * @param options 跟随配置选项
+   * @param options.followX 是否跟随X轴，默认true
+   * @param options.followY 是否跟随Y轴，默认true
+   * @param options.offsetX X轴偏移量，默认0
+   * @param options.offsetY Y轴偏移量，默认0
+   * @param options.immediate 是否立即同步到目标位置，默认true
+   *
+   * 注意：调用此方法会覆盖之前设置的跟随配置
    */
   followTarget(
     target: LikoNode,
@@ -110,11 +155,13 @@ export class Camera extends BaseScript {
   }
 
   /**
-   * 查看位置
+   * 让摄像机查看指定位置
    *
    * @param x X坐标（世界坐标）
    * @param y Y坐标（世界坐标）
-   * @param immediate 是否立即移动（跳过缓动）
+   * @param immediate 是否立即移动，默认false（使用平滑移动）
+   *
+   * 注意：此方法不会改变跟随目标，如果有跟随目标，下一帧会继续跟随
    */
   lookAt(x: number, y: number, immediate = false): void {
     this._calculateTargetScenePosition(x, y);
@@ -130,6 +177,8 @@ export class Camera extends BaseScript {
    * 设置摄像机移动边界
    *
    * @param worldBounds 边界矩形区域（世界坐标系）
+   *
+   * 注意：边界区域应该大于等于舞台尺寸，否则摄像机移动会受到限制
    */
   setWorldBounds(worldBounds: Rectangle): void {
     this.worldBounds = worldBounds;
@@ -137,6 +186,8 @@ export class Camera extends BaseScript {
 
   /**
    * 立即移动摄像机到目标位置（无缓动）
+   *
+   * 注意：只有在设置了跟随目标的情况下才会生效
    */
   snapToTarget(): void {
     if (!this._targetNode) return;
@@ -157,6 +208,8 @@ export class Camera extends BaseScript {
 
   /**
    * 获取当前摄像机位置（场景坐标系）
+   *
+   * @returns 包含x和y坐标的对象
    */
   getCurrentPosition(): { x: number; y: number } {
     return {
@@ -167,6 +220,8 @@ export class Camera extends BaseScript {
 
   /**
    * 获取摄像机目标位置（场景坐标系）
+   *
+   * @returns 包含x和y坐标的对象
    */
   getTargetPosition(): { x: number; y: number } {
     return {
@@ -180,6 +235,8 @@ export class Camera extends BaseScript {
    *
    * @param threshold 判定阈值（像素），默认1像素
    * @returns 是否已到达目标位置
+   *
+   * 注意：当smoothness较小时，摄像机可能永远无法完全到达目标位置，建议使用合适的threshold值
    */
   isAtTarget(threshold = 1): boolean {
     const deltaX = Math.abs(this._currentSceneX - this._targetSceneX);
@@ -276,9 +333,6 @@ export class Camera extends BaseScript {
 
   /**
    * 根据世界坐标计算场景目标位置
-   *
-   * @param worldX 世界坐标X
-   * @param worldY 世界坐标Y
    */
   private _calculateTargetScenePosition(worldX: number, worldY: number): void {
     if (!this.scene || !this.stage) return;
@@ -329,8 +383,6 @@ export class Camera extends BaseScript {
 
   /**
    * 应用平滑移动效果
-   *
-   * @param deltaTime 帧时间间隔
    */
   private _applySmoothMovement(deltaTime: number): void {
     if (this.smoothness <= 0) {

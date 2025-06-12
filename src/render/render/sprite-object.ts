@@ -24,7 +24,7 @@ export class SpriteObject implements IRenderObject {
   packVertex(vertexBuffer: VertexBuffer) {
     const { node, vertexStart } = this;
     const { f32Data } = vertexBuffer;
-    const { width, height, trim } = node.texture;
+    const { width, height, trimRect } = node.texture;
     const { width: nodeWidth, height: nodeHeight } = node.getLocalBounds();
     const wt = node.pp.worldMatrix;
     const sx = nodeWidth / width;
@@ -39,10 +39,10 @@ export class SpriteObject implements IRenderObject {
     const tx = wt.tx;
     const ty = wt.ty;
 
-    const w0 = trim.width;
-    const w1 = trim.x;
-    const h0 = trim.height;
-    const h1 = trim.y;
+    const w0 = trimRect.width;
+    const w1 = trimRect.x;
+    const h0 = trimRect.height;
+    const h1 = trimRect.y;
 
     // newPos.x = a * width + c * height + tx;
     // newPos.y = b * width + d * height + ty;

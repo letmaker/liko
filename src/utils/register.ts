@@ -2,10 +2,6 @@ import type { LikoNode } from '../nodes/node';
 import type { Filter } from '../render/filter/filter';
 import type { BaseScript } from '../scripts/base-script';
 
-/**
- * 注册器相关工具函数，用于管理脚本、节点和滤镜的注册与实例化
- */
-
 /** 存储已注册的脚本类型映射 */
 const scriptMap: Record<string, typeof BaseScript> = {};
 /** 存储已注册的节点类型映射 */
@@ -14,17 +10,19 @@ const nodeMap: Record<string, typeof LikoNode> = {};
 const filterMap: Record<string, typeof Filter> = {};
 
 /**
- * 注册脚本类
- * @param name - 脚本的唯一标识名称
- * @param script - 要注册的脚本类
+ * 注册脚本类，将脚本类与唯一的字符串名称关联，用于后续通过名称创建实例。
+ *
+ * @param name - 脚本的唯一标识名称，建议使用有意义的命名（如 'player-controller', 'enemy-ai'）
+ * @param script - 要注册的脚本类，必须继承自 BaseScript
  */
 export function regScript(name: string, script: typeof BaseScript): void {
   scriptMap[name] = script;
 }
 
 /**
- * 根据名称创建脚本实例
- * @param name - 已注册的脚本名称
+ * 根据名称创建脚本实例，通过之前注册的名称创建对应的脚本实例。
+ *
+ * @param name - 已注册的脚本名称，必须是通过 regScript 注册过的名称
  * @returns 创建的脚本实例，如果未找到对应名称则返回 undefined
  */
 export function createScriptInstance(name: string): BaseScript | undefined {
@@ -37,17 +35,19 @@ export function createScriptInstance(name: string): BaseScript | undefined {
 }
 
 /**
- * 注册节点类
- * @param name - 节点的唯一标识名称
- * @param node - 要注册的节点类
+ * 注册节点类，将节点类与唯一的字符串名称关联，用于后续通过名称创建实例。
+ *
+ * @param name - 节点的唯一标识名称，建议使用有意义的命名（如 'sprite', 'camera', 'light'）
+ * @param node - 要注册的节点类，必须继承自 LikoNode
  */
 export function regNode(name: string, node: typeof LikoNode): void {
   nodeMap[name] = node;
 }
 
 /**
- * 根据名称创建节点实例
- * @param name - 已注册的节点名称
+ * 根据名称创建节点实例，通过之前注册的名称创建对应的节点实例。
+ *
+ * @param name - 已注册的节点名称，必须是通过 regNode 注册过的名称
  * @returns 创建的节点实例，如果未找到对应名称则返回 undefined
  */
 export function createNodeInstance(name: string): LikoNode | undefined {
@@ -60,17 +60,19 @@ export function createNodeInstance(name: string): LikoNode | undefined {
 }
 
 /**
- * 注册滤镜类
- * @param name - 滤镜的唯一标识名称
- * @param node - 要注册的滤镜类
+ * 注册滤镜类，将滤镜类与唯一的字符串名称关联，用于后续通过名称创建实例。
+ *
+ * @param name - 滤镜的唯一标识名称，建议使用有意义的命名（如 'blur', 'bloom', 'color-adjust'）
+ * @param node - 要注册的滤镜类，必须继承自 Filter
  */
 export function regFilter(name: string, node: typeof Filter): void {
   filterMap[name] = node;
 }
 
 /**
- * 根据名称创建滤镜实例
- * @param name - 已注册的滤镜名称
+ * 根据名称创建滤镜实例，通过之前注册的名称创建对应的滤镜实例。
+ *
+ * @param name - 已注册的滤镜名称，必须是通过 regFilter 注册过的名称
  * @returns 创建的滤镜实例，如果未找到对应名称则返回 undefined
  */
 export function createFilterInstance(name: string): Filter | undefined {
