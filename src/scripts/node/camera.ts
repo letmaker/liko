@@ -3,7 +3,7 @@ import type { LikoNode } from '../../nodes/node';
 import { BaseScript } from '../base-script';
 
 /**
- * 摄像机控制脚本
+ * 摄像机控制脚本，scene 上面默认自带 camera 脚本实例
  *
  * 提供平滑的摄像机跟随功能，支持：
  * - 目标跟随：自动跟随指定节点
@@ -14,7 +14,7 @@ import { BaseScript } from '../base-script';
  *
  * @example
  * ```typescript
- * // 使用 scene 上面的 camera 脚本
+ * // 使用 scene 上面的 camera 脚本实例
  * const camera = scene.camera;
  *
  * // 基本跟随
