@@ -18,7 +18,7 @@
     "build": "vite build",
     "test": "vitest",
     "test:browser": "vitest --workspace=vitest.workspace.ts",
-    "doc": "typedoc --out docs src/index.ts"
+    "doc": "typedoc --out docs src/docs.ts"
   },
   "dependencies": {
     "@webgpu/types": "^0.1.60",

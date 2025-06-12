@@ -12,6 +12,8 @@ LoaderManager.regLoader(new SoundLoader());
 /**
  * 资源加载管理器，负责资源的加载、缓存和事件分发
  *
+ * @see {@link LoaderManager}
+ *
  * 该类提供统一的资源加载接口，支持多种资源类型的加载器注册，
  * 内置资源缓存机制和加载进度追踪，通过事件系统通知加载状态变化。
  *
@@ -58,3 +60,9 @@ LoaderManager.regLoader(new SoundLoader());
  * ```
  */
 export const loader = new LoaderManager();
+
+/**
+ * 资源加载管理器，负责资源的加载、缓存和事件分发
+ * 请直接使用 loader 实例，不要直接使用 LoaderManager 类
+ */
+export { LoaderManager } from './loader-manager';
