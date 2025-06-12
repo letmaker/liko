@@ -10,10 +10,7 @@ import { addShape } from './shape';
 
 /**
  * 物理刚体组件，实现物理属性描述和碰撞区域定义。
- * 物理坐标系以场景根节点为基础进行计算。两个物体相撞条件：
- * 1. 任意一方为 dynamic 类型
- * 2. maskBit & categoryBit !== 0
- *
+ * 
  * 注意：RigidBody 为一个脚本，挂载到节点后，需要添加到场景中才能被激活
  *
  * @example
