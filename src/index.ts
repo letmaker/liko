@@ -31,6 +31,9 @@ export { loader } from './loader';
 export { sound, music } from './sound';
 export type { Camera } from './scripts/node/camera';
 
+// 粒子系统
+export { ParticleSystem } from './particle/particle-system';
+
 // 物理引擎
 export { RigidBody } from './physics/rigidBody';
 export type { IShape, IJoint } from './physics/rigidBody.interface';

@@ -3,11 +3,13 @@ import { JsonLoader } from './json-loader';
 import { LoaderManager } from './loader-manager';
 import { SheetLoader } from './sheet-loader';
 import { SoundLoader } from './sound-loader';
+import { TextLoader } from './text-loader';
 
 LoaderManager.regLoader(new ImageLoader());
 LoaderManager.regLoader(new JsonLoader());
 LoaderManager.regLoader(new SheetLoader());
 LoaderManager.regLoader(new SoundLoader());
+LoaderManager.regLoader(new TextLoader());
 
 /**
  * 资源加载管理器，负责资源的加载、缓存和事件分发

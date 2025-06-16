@@ -262,7 +262,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
       this.config = config;
 
       // 加载纹理（如果配置中指定了）
-      if (config.textureFileName && !this.pp.texture) {
+      if (config.textureFileName && this.pp.texture === Texture.WHITE) {
         const textureUrl = this.resolveTextureUrl(url, config.textureFileName);
         try {
           const texture = await loader.load<Texture>(textureUrl);

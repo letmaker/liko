@@ -26,8 +26,8 @@ export interface IAppOptions {
   height?: number;
   /** 背景颜色 */
   bgColor?: ColorData;
-  /** 画布容器 ID，用来添加画布到指定容器中，如果提供则必须存在于 DOM 中 */
-  container?: string;
+  /** 画布容器 ID 或者 DOM 元素，用来添加画布到指定容器中，如果提供则必须存在于 DOM 中 */
+  container?: string | HTMLElement;
   /** 自定义画布元素 */
   canvas?: HTMLCanvasElement;
   /** 设备像素比 */
@@ -115,7 +115,10 @@ export class App {
     this.stage.pointer = new PointerManager(this.stage);
 
     if (!canvas.parentNode) {
-      const container = params.container ? document.getElementById(params.container) : document.body;
+      const container =
+        typeof params.container === 'string'
+          ? document.getElementById(params.container)
+          : (params.container ?? document.body);
       if (container) container.appendChild(canvas);
       else throw new Error(`cant not find canvas's container:${params.container}`);
     }
