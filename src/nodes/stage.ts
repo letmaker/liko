@@ -116,6 +116,7 @@ export class Stage extends LikoNode {
     super();
     this.pp.stage = this;
     this.pointerEnabled = true;
+    this.pointerEnabledForChildren = true;
     this.label = 'Stage';
   }
 

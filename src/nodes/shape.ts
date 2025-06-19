@@ -424,6 +424,21 @@ export class Shape extends LikoNode implements IRenderable {
     return this;
   }
 
+  /**
+   * 清除所有绘制
+   * @returns 返回当前实例，支持链式调用
+   */
+  clear(): this {
+    this.pp.drawLine = undefined;
+    this.pp.drawRect = undefined;
+    this.pp.drawCircle = undefined;
+    this.pp.drawEllipse = undefined;
+    this.pp.drawRoundedRect = undefined;
+    this.pp.drawPolygon = undefined;
+    this._markGeometryDirty();
+    return this;
+  }
+
   private _markGeometryDirty(): void {
     this.pp.boundsDirty = true;
     this.renderObject.markGeometryDirty();

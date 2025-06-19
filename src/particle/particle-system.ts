@@ -179,6 +179,8 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
       this.on(EventType.loaded, config.onConfigLoaded);
     }
 
+    this.setProps(config as Record<string, unknown>);
+
     // 如果有配置且设置了自动播放，开始播放
     if (config.config && this.autoPlay) {
       this.play();
