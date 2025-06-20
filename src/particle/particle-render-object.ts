@@ -233,9 +233,12 @@ export class ParticleRenderObject implements IRenderObject {
         return;
       }
 
-      // 将Uint16Array转换为Uint32Array以匹配IndexBuffer
+      // 计算顶点偏移量（每个顶点占2个float）
+      const vertexOffset = this.vertexStart / 2;
+
+      // 将Uint16Array转换为Uint32Array以匹配IndexBuffer，同时加上顶点偏移量
       for (let i = 0; i < actualIndices.length; i++) {
-        indexBuffer.data[this.indexStart + i] = actualIndices[i];
+        indexBuffer.data[this.indexStart + i] = actualIndices[i] + vertexOffset;
       }
     }
   }

@@ -311,8 +311,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this.emitter.start();
 
     // 绑定onUpdate方法到正确的上下文
-    const boundOnUpdate = this.onUpdate.bind(this);
-    this.stage.timer.onFrame(boundOnUpdate, this);
+    this.stage.timer.onFrame(this.onUpdate, this);
 
     console.log('ParticleSystem: 已注册到timer, stage存在:', !!this.stage);
   }
