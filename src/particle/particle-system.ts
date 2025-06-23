@@ -5,11 +5,10 @@ import type { INodeOptions } from '../nodes/node';
 import { type INodePrivateProps, LikoNode } from '../nodes/node';
 import type { IRenderable } from '../nodes/sprite';
 import { Texture } from '../resource/texture';
-import type { ColorData } from '../utils/color';
 import { RegNode } from '../utils/decorators';
 import { ParticleRenderObject } from './particle-render-object';
 
-import type { ParticleConfig } from './particle-config';
+import type { ParticleConfig, ParticleConfigOptions } from './particle-config';
 import { DEFAULT_PARTICLE_CONFIG } from './particle-config';
 import { ParticleEmitter } from './particle-emitter';
 import { ParticleUpdater } from './particle-updater';
@@ -32,14 +31,10 @@ interface IParticleSystemOptions extends INodeOptions {
   url?: string;
   /** 粒子纹理 */
   texture?: Texture;
-  /** 粒子配置对象 */
-  config?: ParticleConfig;
   /** 是否自动播放 */
   autoPlay?: boolean;
-  /** 粒子颜色叠加 */
-  tintColor?: ColorData;
-  /** 配置加载完成回调 */
-  onConfigLoaded?: () => void;
+  /** 粒子配置 */
+  config?: ParticleConfigOptions;
 }
 
 /**
@@ -127,8 +122,8 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   declare pp: IParticleSystemPrivateProps;
   readonly renderObject: ParticleRenderObject = new ParticleRenderObject(this);
 
-  private emitter: ParticleEmitter;
-  private updater: ParticleUpdater;
+  private _emitter: ParticleEmitter;
+  private _updater: ParticleUpdater;
 
   /**
    * 粒子系统是否正在播放
@@ -144,7 +139,6 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
   /**
    * 是否在添加到舞台时自动播放
-   * 可以在构造函数中设置或直接修改此属性
    */
   autoPlay = false;
 
@@ -152,55 +146,22 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    * 创建粒子系统实例
    * @param options 粒子系统配置选项或直接的粒子配置对象
    */
-  constructor(options?: IParticleSystemOptions | ParticleConfig) {
+  constructor(options?: IParticleSystemOptions) {
     super();
 
-    const config: IParticleSystemOptions = {
-      ...DEFAULT_PARTICLE_CONFIG,
-      ...options,
-    };
+    const config: ParticleConfig = { ...DEFAULT_PARTICLE_CONFIG };
 
     // 初始化私有属性
-    this.pp.url = config.url || '';
-    this.pp.texture = config.texture;
-    this.pp.config = config.config || { ...DEFAULT_PARTICLE_CONFIG };
-
-    this.autoPlay = config.autoPlay ?? false;
+    this.pp.texture = Texture.WHITE;
+    this.pp.config = config;
 
     // 初始化组件
-    this.emitter = new ParticleEmitter(this.pp.config);
-    this.updater = new ParticleUpdater(this.pp.config);
+    this._emitter = new ParticleEmitter(config);
+    this._updater = new ParticleUpdater(config);
 
-    // 设置颜色
-    if (config.tintColor) {
-      this.tintColor = config.tintColor;
-    }
+    this.setProps(options as Record<string, unknown>);
 
-    // 如果没有提供纹理，使用默认白色纹理用于纯色渲染
-    if (!this.pp.texture) {
-      this.pp.texture = Texture.WHITE;
-    }
-
-    // 无论是否有纹理，都需要更新渲染对象
-    this.renderObject.updateTexture(this.pp.texture);
-
-    // 标记为需要渲染更新
-    this.markDirty(DirtyType.child | DirtyType.texture);
-
-    // 加载配置
-    if (config.url) {
-      this.load(config.url).catch(console.error);
-    }
-
-    // 设置回调
-    if (config.onConfigLoaded) {
-      this.on(EventType.loaded, config.onConfigLoaded);
-    }
-
-    this.setProps(config as Record<string, unknown>);
-
-    // 如果有配置且设置了自动播放，开始播放
-    if (config.config && this.autoPlay) {
+    if (options?.autoPlay) {
       if (this.stage) {
         this.play();
       } else {
@@ -217,10 +178,28 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   get config(): ParticleConfig {
     return this.pp.config;
   }
-  set config(value: ParticleConfig) {
-    this.pp.config = value;
-    this.emitter.updateConfig(value);
-    this.updater.updateConfig(value);
+  set config(value: ParticleConfigOptions) {
+    const config: ParticleConfig = {
+      ...DEFAULT_PARTICLE_CONFIG,
+      ...value,
+    };
+
+    if (value.startColor) {
+      config.startColorRed = value.startColor.r;
+      config.startColorGreen = value.startColor.g;
+      config.startColorBlue = value.startColor.b;
+      config.startColorAlpha = value.startColor.a;
+    }
+    if (value.finishColor) {
+      config.finishColorRed = value.finishColor.r;
+      config.finishColorGreen = value.finishColor.g;
+      config.finishColorBlue = value.finishColor.b;
+      config.finishColorAlpha = value.finishColor.a;
+    }
+
+    this.pp.config = config;
+    this._emitter.updateConfig(config);
+    this._updater.updateConfig(config);
     this.markDirty(DirtyType.child);
   }
 
@@ -233,7 +212,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   set url(value: string) {
     if (this.pp.url !== value) {
       this.pp.url = value;
-      this.load(value).catch(console.error);
+      this.load(value);
     }
   }
 
@@ -241,7 +220,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    * 获取粒子使用的纹理，如果未设置会返回默认的白色纹理
    */
   get texture(): Texture {
-    return this.pp.texture || Texture.WHITE;
+    return this.pp.texture ?? Texture.WHITE;
   }
   set texture(value: Texture | undefined) {
     if (this.pp.texture !== value) {
@@ -255,7 +234,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    * 获取当前活跃粒子的数量，实时反映系统中正在运行的粒子数量
    */
   get particleCount(): number {
-    return this.emitter.getActiveParticleCount();
+    return this._emitter.getActiveParticleCount();
   }
 
   /**
@@ -298,7 +277,6 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
       }
     } catch (error) {
       console.error('Failed to load particle config:', error);
-      throw error;
     }
   }
 
@@ -326,7 +304,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
     this.isPlaying = true;
     this.isPaused = false;
-    this.emitter.start();
+    this._emitter.start();
 
     // 绑定onUpdate方法到正确的上下文
     this.stage.timer.onFrame(this.onUpdate, this);
@@ -338,7 +316,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    */
   stop(): void {
     this.isPlaying = false;
-    this.emitter.stop();
+    this._emitter.stop();
   }
 
   /**
@@ -362,7 +340,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    * 清除所有现有粒子，停止播放和发射
    */
   reset(): void {
-    this.emitter.reset();
+    this._emitter.reset();
     this.isPlaying = false;
     this.isPaused = false;
   }
@@ -374,7 +352,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    */
   setEmissionRate(rate: number): void {
     this.pp.config.emissionRate = rate;
-    this.emitter.updateConfig(this.pp.config);
+    this._emitter.updateConfig(this.pp.config);
   }
 
   /**
@@ -386,7 +364,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   setParticleLifespan(lifespan: number, variance = 0): void {
     this.pp.config.particleLifespan = lifespan;
     this.pp.config.particleLifespanVariance = variance;
-    this.emitter.updateConfig(this.pp.config);
+    this._emitter.updateConfig(this.pp.config);
   }
 
   /**
@@ -399,7 +377,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this.pp.config.startColorGreen = color.g;
     this.pp.config.startColorBlue = color.b;
     this.pp.config.startColorAlpha = color.a;
-    this.emitter.updateConfig(this.pp.config);
+    this._emitter.updateConfig(this.pp.config);
   }
 
   /**
@@ -412,7 +390,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this.pp.config.finishColorGreen = color.g;
     this.pp.config.finishColorBlue = color.b;
     this.pp.config.finishColorAlpha = color.a;
-    this.emitter.updateConfig(this.pp.config);
+    this._emitter.updateConfig(this.pp.config);
   }
 
   /**
@@ -424,7 +402,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   setParticleSize(startSize: number, endSize: number = startSize): void {
     this.pp.config.startParticleSize = startSize;
     this.pp.config.finishParticleSize = endSize;
-    this.emitter.updateConfig(this.pp.config);
+    this._emitter.updateConfig(this.pp.config);
   }
 
   /**
@@ -436,8 +414,8 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   setGravity(x: number, y: number): void {
     this.pp.config.gravityX = x;
     this.pp.config.gravityY = y;
-    this.emitter.updateConfig(this.pp.config);
-    this.updater.updateConfig(this.pp.config);
+    this._emitter.updateConfig(this.pp.config);
+    this._updater.updateConfig(this.pp.config);
   }
 
   /**
@@ -449,7 +427,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   setAngle(angle: number, variance = 0): void {
     this.pp.config.angle = angle;
     this.pp.config.angleVariance = variance;
-    this.emitter.updateConfig(this.pp.config);
+    this._emitter.updateConfig(this.pp.config);
   }
 
   /**
@@ -459,17 +437,17 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   protected onUpdate(): void {
     if (this.isPaused) return;
 
-    const deltaTime = this.stage?.timer.delta!;
+    const deltaTime = this.stage?.timer.delta ?? 0.016;
 
     // 更新发射器位置
-    this.emitter.setPosition(this.worldMatrix.tx, this.worldMatrix.ty);
+    this._emitter.setPosition(this.worldMatrix.tx, this.worldMatrix.ty);
 
     // 发射新粒子
-    this.emitter.update(deltaTime);
+    this._emitter.update(deltaTime);
 
     // 更新所有粒子
-    const activeParticles = this.emitter.getActiveParticles();
-    const aliveCount = this.updater.updateParticles(activeParticles, deltaTime, {
+    const activeParticles = this._emitter.getActiveParticles();
+    const aliveCount = this._updater.updateParticles(activeParticles, deltaTime, {
       x: this.worldMatrix.tx,
       y: this.worldMatrix.ty,
     });

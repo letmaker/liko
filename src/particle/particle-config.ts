@@ -221,6 +221,14 @@ export interface ParticleConfig {
   blendFuncDestination: BlendFuncDestination;
 }
 
+export interface ParticleConfigOptions extends Partial<ParticleConfig> {
+  /** 初始颜色 */
+  startColor?: { r: number; g: number; b: number; a: number };
+
+  /** 结束颜色 */
+  finishColor?: { r: number; g: number; b: number; a: number };
+}
+
 /** 默认粒子系统配置 */
 export const DEFAULT_PARTICLE_CONFIG: ParticleConfig = {
   emitterMode: EmitterMode.GRAVITY,
