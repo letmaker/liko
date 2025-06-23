@@ -103,7 +103,7 @@
     <key>tangentialAcceleration</key>
     <real>0</real>
     <key>textureFileName</key>
-    <string>fire.png</string>
+    <string>smoke.png</string>
     <key>textureImageData</key>
     <string></string>
 </dict>

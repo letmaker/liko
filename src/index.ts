@@ -33,7 +33,7 @@ export type { Camera } from './scripts/node/camera';
 
 // 粒子系统
 export { ParticleSystem } from './particle/particle-system';
-export type { ParticleConfigOptions } from './particle/particle-config';
+export * from './particle/particle-config';
 
 // 物理引擎
 export { RigidBody } from './physics/rigidBody';
