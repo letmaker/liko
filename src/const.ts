@@ -1,10 +1,10 @@
-/** Math.PI * 2 的常量值 */
+/** 2π 的常量值，一个完整圆的弧度 */
 export const PI2 = Math.PI * 2;
-/** Math.PI / 2 的常量值 */
+/** π/2 的常量值，直角的弧度 */
 export const PI_2 = Math.PI / 2;
-/** 180 / Math.PI 弧度转角度的转换系数 */
+/** 弧度转角度的转换系数 (180/π) */
 export const RAD_TO_DEG = 180 / Math.PI;
-/** Math.PI / 180 角度转弧度的转换系数 */
+/** 角度转弧度的转换系数 (π/180) */
 export const DEG_TO_RAD = Math.PI / 180;
 
 /** 节点脏标记类型，用于标识节点需要更新的属性 */
@@ -31,8 +31,8 @@ export enum DirtyType {
 export enum EventType {
   /** 节点被添加到节点树后，由 node 派发 */
   added = 'added',
-  /** 节点被添加到舞台时，这时可以获取 stage，由 node 派发  */
-  addToStage = 'addToStage',
+  /** 节点被添加到舞台时，这时可以获取 stage，由 node 派发 */
+  addedToStage = 'addedToStage',
   /** 节点从节点树移除后，由 node 派发 */
   removed = 'removed',
   /** 节点被销毁时，由 node 派发 */

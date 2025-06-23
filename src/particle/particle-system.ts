@@ -183,7 +183,13 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
     // 如果有配置且设置了自动播放，开始播放
     if (config.config && this.autoPlay) {
-      this.play();
+      if (this.stage) {
+        this.play();
+      } else {
+        this.once(EventType.addedToStage, () => {
+          this.play();
+        });
+      }
     }
   }
 

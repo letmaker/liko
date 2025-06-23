@@ -816,7 +816,7 @@ export abstract class LikoNode {
 
   private _$addToStage(child: LikoNode, stage: Stage) {
     child.pp.stage = stage;
-    child.emit(EventType.addToStage, stage);
+    child.emit(EventType.addedToStage, stage);
     for (const node of child.children) {
       this._$addToStage(node, stage);
     }

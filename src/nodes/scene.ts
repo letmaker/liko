@@ -165,7 +165,7 @@ export class Scene extends LikoNode implements IScene {
     pp.paused = false;
 
     // 监听舞台事件，自动控制播放状态
-    this.on(EventType.addToStage, this.play, this);
+    this.on(EventType.addedToStage, this.play, this);
     this.on(EventType.removed, this.stop, this);
 
     // 添加摄像机脚本
