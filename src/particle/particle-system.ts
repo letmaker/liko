@@ -116,6 +116,11 @@ interface IParticleSystemOptions extends INodeOptions {
  *   console.log('粒子播放结束');
  * });
  * ```
+ *
+ * ## 注意事项：
+ * - 必须先将粒子系统添加到舞台（stage）后才能调用 play() 方法
+ * - 通过 url 加载配置时，会自动尝试加载配置中指定的纹理文件
+ * - 如果不指定纹理，系统会使用默认的白色纹理用于纯色渲染
  */
 @RegNode('ParticleSystem')
 export class ParticleSystem extends LikoNode implements IParticleRenderable {
@@ -125,15 +130,28 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   private emitter: ParticleEmitter;
   private updater: ParticleUpdater;
 
-  /** 是否正在播放 */
+  /**
+   * 粒子系统是否正在播放
+   * @readonly 通过 play() 和 stop() 方法控制此状态
+   */
   isPlaying = false;
 
-  /** 是否已暂停 */
+  /**
+   * 粒子系统是否已暂停
+   * @readonly 通过 pause() 和 resume() 方法控制此状态
+   */
   isPaused = false;
 
-  /** 是否自动播放 */
+  /**
+   * 是否在添加到舞台时自动播放
+   * 可以在构造函数中设置或直接修改此属性
+   */
   autoPlay = false;
 
+  /**
+   * 创建粒子系统实例
+   * @param options 粒子系统配置选项或直接的粒子配置对象
+   */
   constructor(options?: IParticleSystemOptions | ParticleConfig) {
     super();
 
@@ -194,15 +212,11 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 获取粒子配置
+   * 当前粒子配置对象，包含所有粒子行为的配置参数
    */
   get config(): ParticleConfig {
     return this.pp.config;
   }
-
-  /**
-   * 设置粒子配置
-   */
   set config(value: ParticleConfig) {
     this.pp.config = value;
     this.emitter.updateConfig(value);
@@ -211,15 +225,11 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 获取配置文件URL
+   * 获取当前配置文件的URL，仅在通过URL加载配置时有值
    */
   get url(): string {
     return this.pp.url;
   }
-
-  /**
-   * 设置配置文件URL
-   */
   set url(value: string) {
     if (this.pp.url !== value) {
       this.pp.url = value;
@@ -228,15 +238,11 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 获取粒子纹理
+   * 获取粒子使用的纹理，如果未设置会返回默认的白色纹理
    */
   get texture(): Texture {
     return this.pp.texture || Texture.WHITE;
   }
-
-  /**
-   * 设置粒子纹理
-   */
   set texture(value: Texture | undefined) {
     if (this.pp.texture !== value) {
       this.pp.texture = value;
@@ -246,14 +252,17 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 获取当前活跃粒子数量
+   * 获取当前活跃粒子的数量，实时反映系统中正在运行的粒子数量
    */
   get particleCount(): number {
     return this.emitter.getActiveParticleCount();
   }
 
   /**
-   * 加载粒子配置文件
+   * 异步加载plist格式的粒子配置文件
+   * 会解析配置并尝试加载配置中指定的纹理文件
+   * @param url 配置文件的URL路径
+   * @throws 加载失败时抛出错误
    */
   async load(url: string): Promise<void> {
     try {
@@ -271,7 +280,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
       // 加载纹理（如果配置中指定了）
       if (config.textureFileName && this.pp.texture === Texture.WHITE) {
-        const textureUrl = this.resolveTextureUrl(url, config.textureFileName);
+        const textureUrl = this._resolveTextureUrl(url, config.textureFileName);
         try {
           const texture = await loader.load<Texture>(textureUrl);
           this.texture = texture;
@@ -295,18 +304,21 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
   /**
    * 解析纹理文件URL
+   * 根据plist文件路径和纹理文件名生成完整的纹理URL
+   * @param plistUrl plist配置文件的URL
+   * @param textureFileName 纹理文件名
+   * @returns 完整的纹理文件URL
    */
-  private resolveTextureUrl(plistUrl: string, textureFileName: string): string {
+  private _resolveTextureUrl(plistUrl: string, textureFileName: string): string {
     const plistDir = plistUrl.substring(0, plistUrl.lastIndexOf('/') + 1);
     return plistDir + textureFileName;
   }
 
   /**
-   * 开始播放粒子
+   * 开始播放粒子系统
+   * 注意：必须先将粒子系统添加到舞台后才能调用此方法
    */
   play(): void {
-    console.assert(this.stage !== undefined, 'please add to stage first before play');
-
     if (!this.stage) {
       console.error('ParticleSystem: stage is undefined, cannot play');
       return;
@@ -318,12 +330,11 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
     // 绑定onUpdate方法到正确的上下文
     this.stage.timer.onFrame(this.onUpdate, this);
-
-    console.log('ParticleSystem: 已注册到timer, stage存在:', !!this.stage);
   }
 
   /**
-   * 停止发射粒子（现有粒子继续运行直到死亡）
+   * 停止发射新粒子
+   * 现有的粒子会继续运行直到生命周期结束
    */
   stop(): void {
     this.isPlaying = false;
@@ -331,21 +342,24 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 暂停粒子系统
+   * 暂停整个粒子系统
+   * 暂停时粒子不会更新位置和状态，但仍会渲染
    */
   pause(): void {
     this.isPaused = true;
   }
 
   /**
-   * 恢复粒子系统
+   * 恢复暂停的粒子系统
+   * 继续更新所有粒子的状态和位置
    */
   resume(): void {
     this.isPaused = false;
   }
 
   /**
-   * 重置粒子系统
+   * 重置粒子系统到初始状态
+   * 清除所有现有粒子，停止播放和发射
    */
   reset(): void {
     this.emitter.reset();
@@ -354,7 +368,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 设置发射速率
+   * 设置粒子发射速率
+   * 立即生效，影响后续的粒子发射频率
+   * @param rate 每秒发射的粒子数量
    */
   setEmissionRate(rate: number): void {
     this.pp.config.emissionRate = rate;
@@ -363,6 +379,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
   /**
    * 设置粒子生命周期
+   * 控制每个粒子存活的时间长度
+   * @param lifespan 基础生命周期时长（秒）
+   * @param variance 生命周期的随机变化范围（秒），默认为0
    */
   setParticleLifespan(lifespan: number, variance = 0): void {
     this.pp.config.particleLifespan = lifespan;
@@ -371,7 +390,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 设置粒子起始颜色
+   * 设置粒子的起始颜色
+   * 影响新发射粒子的初始颜色
+   * @param color 颜色对象，包含 r、g、b、a 分量，值域为 0-1
    */
   setStartColor(color: { r: number; g: number; b: number; a: number }): void {
     this.pp.config.startColorRed = color.r;
@@ -382,7 +403,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 设置粒子结束颜色
+   * 设置粒子的结束颜色
+   * 粒子会在生命周期内从起始颜色渐变到结束颜色
+   * @param color 颜色对象，包含 r、g、b、a 分量，值域为 0-1
    */
   setEndColor(color: { r: number; g: number; b: number; a: number }): void {
     this.pp.config.finishColorRed = color.r;
@@ -394,6 +417,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
   /**
    * 设置粒子大小
+   * 粒子会在生命周期内从起始大小缩放到结束大小
+   * @param startSize 粒子的起始大小（像素）
+   * @param endSize 粒子的结束大小（像素），默认与起始大小相同
    */
   setParticleSize(startSize: number, endSize: number = startSize): void {
     this.pp.config.startParticleSize = startSize;
@@ -402,7 +428,10 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 设置重力（仅重力模式有效）
+   * 设置重力方向和强度
+   * 仅在重力模式下生效，影响粒子的运动轨迹
+   * @param x 水平方向的重力加速度
+   * @param y 垂直方向的重力加速度
    */
   setGravity(x: number, y: number): void {
     this.pp.config.gravityX = x;
@@ -412,7 +441,10 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 设置发射角度（仅重力模式有效）
+   * 设置粒子发射角度
+   * 仅在重力模式下生效，控制粒子的初始发射方向
+   * @param angle 发射角度（弧度）
+   * @param variance 角度的随机变化范围（弧度），默认为0
    */
   setAngle(angle: number, variance = 0): void {
     this.pp.config.angle = angle;
@@ -421,7 +453,8 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 每帧更新
+   * 每帧更新逻辑
+   * 处理粒子发射、位置更新、生命周期管理和渲染数据更新
    */
   protected onUpdate(): void {
     if (this.isPaused) return;
@@ -454,7 +487,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 自定义边界计算
+   * 计算粒子系统的本地边界
+   * 基于配置参数估算粒子可能的活动范围
+   * @param bounds 边界对象，用于设置计算结果
    */
   protected override _customLocalBounds(bounds: Bounds): void {
     // 基于配置估算粒子系统的边界
@@ -474,14 +509,8 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 导出当前配置为plist格式
-   */
-  exportConfig(): string {
-    return PlistParser.exportParticleConfig(this.pp.config);
-  }
-
-  /**
-   * 销毁时清理资源
+   * 销毁粒子系统并清理所有资源
+   * 会停止播放、重置状态并释放相关资源
    */
   override destroy(): void {
     this.stop();
