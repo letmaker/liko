@@ -25,7 +25,7 @@ interface IParticleSystemPrivateProps extends INodePrivateProps {
   config: ParticleConfig;
 }
 
-interface IParticleSystemOptions extends INodeOptions {
+export interface IParticleSystemOptions extends INodeOptions {
   /** 粒子配置文件URL（plist格式） */
   url?: string;
   /** 粒子纹理 */

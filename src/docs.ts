@@ -33,7 +33,8 @@ export { sound, music } from './sound';
 export { Camera } from './scripts/node/camera';
 
 // 粒子系统
-export { ParticleSystem } from './particle/particle-system';
+export { ParticleSystem, type IParticleSystemOptions } from './particle/particle-system';
+export type { ParticleConfigOptions } from './particle/particle-config';
 
 // 物理引擎
 export { RigidBody } from './physics/rigidBody';
