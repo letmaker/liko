@@ -17,7 +17,6 @@ import { PlistParser } from './plist-parser';
 /** 粒子系统渲染接口 */
 export interface IParticleRenderable extends IRenderable {
   config: ParticleConfig;
-  particleCount: number;
 }
 
 interface IParticleSystemPrivateProps extends INodePrivateProps {
@@ -55,16 +54,17 @@ interface IParticleSystemOptions extends INodeOptions {
  * // 2. 通过配置对象创建粒子系统
  * const customParticle = new ParticleSystem({
  *   config: {
- *     ...DEFAULT_PARTICLE_CONFIG,
  *     emitterMode: EmitterMode.GRAVITY,
  *     maxParticles: 100,
  *     emissionRate: 50,
  *     particleLifespan: 2.0
- *   }
+ *   },
+ *   position: { x: 500, y: 500 },
  * });
  *
  * // 添加到场景
- * stage.addChild(fireParticle);
+ * stage.addChild(customParticle);
+ * customParticle.play();
  * ```
  *
  * ## 控制粒子播放：

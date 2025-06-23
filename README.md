@@ -20,11 +20,12 @@ Liko can be used for game development, H5 applications, and interactive scenario
 - Canvas rendering
 - Built-in physics engine
 - Built-in audio system
-- Built-in particle system (under construction)
+- Built-in particle system
 - Built-in script system
 - Built-in animation system
 - Built-in easing system
 - Built-in event system
+- Built-in filter system (under construction)
 - Built-in resource management
 - Built-in scene management
 - Built-in timing management
