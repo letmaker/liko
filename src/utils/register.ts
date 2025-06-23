@@ -1,9 +1,9 @@
 import type { LikoNode } from '../nodes/node';
 import type { Filter } from '../render/filter/filter';
-import type { BaseScript } from '../scripts/base-script';
+import type { Script } from '../scripts/script';
 
 /** 存储已注册的脚本类型映射 */
-const scriptMap: Record<string, typeof BaseScript> = {};
+const scriptMap: Record<string, typeof Script> = {};
 /** 存储已注册的节点类型映射 */
 const nodeMap: Record<string, typeof LikoNode> = {};
 /** 存储已注册的滤镜类型映射 */
@@ -13,10 +13,10 @@ const filterMap: Record<string, typeof Filter> = {};
  * 注册脚本类，将脚本类与唯一的字符串名称关联，用于后续通过名称创建实例。
  *
  * @param name - 脚本的唯一标识名称，建议使用有意义的命名（如 'player-controller', 'enemy-ai'）
- * @param script - 要注册的脚本类，必须继承自 BaseScript
+ * @param script - 要注册的脚本类，必须继承自 Script
  */
-export function regScript(name: string, script: typeof BaseScript): void {
-  scriptMap[name] = script;
+export function regScript(name: string, script: typeof Script | (new () => Script)): void {
+  scriptMap[name] = script as typeof Script;
 }
 
 /**
@@ -25,13 +25,13 @@ export function regScript(name: string, script: typeof BaseScript): void {
  * @param name - 已注册的脚本名称，必须是通过 regScript 注册过的名称
  * @returns 创建的脚本实例，如果未找到对应名称则返回 undefined
  */
-export function createScriptInstance(name: string): BaseScript | undefined {
+export function createScriptInstance(name: string): Script | undefined {
   const Class: any = scriptMap[name];
   if (Class === undefined) {
     console.error(`can not create script: ${name}`);
     return undefined;
   }
-  return new Class() as BaseScript;
+  return new Class() as Script;
 }
 
 /**
