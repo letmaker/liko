@@ -1,4 +1,4 @@
-# liko [中文文档](README-CN.md)
+# liko
 Liko is a lightweight, high-performance H5 rendering framework developed using TypeScript.
 
 Liko is a high-performance rendering engine based on WebGPU, specially designed for AI.

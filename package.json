@@ -18,7 +18,9 @@
     "build": "vite build",
     "test": "vitest",
     "test:browser": "vitest --workspace=vitest.workspace.ts",
-    "doc": "typedoc --out docs --readme overview.md src/docs.ts"
+    "doc": "typedoc --out docs src/docs.ts",
+    "markdown": "typedoc --options typedoc.json",
+    "md": "npm run markdown && node scripts/merge-docs.js"
   },
   "dependencies": {
     "@webgpu/types": "^0.1.60",
@@ -29,6 +31,7 @@
     "@vitest/browser": "^3.1.2",
     "playwright": "^1.52.0",
     "typedoc": "^0.28.3",
+    "typedoc-plugin-markdown": "^4.7.0",
     "typescript": "~5.8.3",
     "vite": "^6.3.4",
     "vite-plugin-dts": "^4.5.3",
