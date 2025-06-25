@@ -450,7 +450,6 @@ export class RigidBody extends BaseScript {
     if (this.physics.debugState) {
       this._showDebugBounds();
     }
-    console.log('onAwake', this.target.label);
   }
 
   private _showDebugBounds() {
@@ -535,7 +534,6 @@ export class RigidBody extends BaseScript {
    */
   override onUpdate(): void {
     if (this.rigidType === 'static') return;
-    console.log('onUpdate', this.target.label);
 
     const target = this.target;
     const position = this.body.getPosition();
