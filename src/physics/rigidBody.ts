@@ -1,6 +1,7 @@
 import type { Body, Joint } from 'planck';
 import { EventType, PI2 } from '../const';
 import { type IPoint, Point } from '../math/point';
+import { Shape } from '../nodes/shape';
 import { BaseScript } from '../scripts/base-script';
 import type { ICollision } from '../scripts/script';
 import { RegScript } from '../utils/decorators';
@@ -36,6 +37,9 @@ import { addShape } from './shape';
  *
  * // 设置速度
  * rigidBody.setLinearVelocity(50, -30);
+ *
+ * // 禁用刚体脚本
+ * rigidBody.enabled = false;
  * ```
  */
 @RegScript('RigidBody')
@@ -280,12 +284,11 @@ export class RigidBody extends BaseScript {
     if (this.rigidType === 'dynamic') body.setDynamic();
     else if (this.rigidType === 'static') body.setStatic();
 
-    if (this.shapes.length) {
-      for (const shape of this.shapes) {
-        addShape(this, shape);
-      }
-    } else {
-      addShape(this, { shapeType: 'box' });
+    if (!this.shapes.length) {
+      this.shapes.push({ shapeType: 'box' });
+    }
+    for (const shape of this.shapes) {
+      addShape(this, shape);
     }
 
     const tempPoint = Point.TEMP.set(0, 0);
@@ -304,6 +307,72 @@ export class RigidBody extends BaseScript {
         const j = addJoint(this, joint);
         j?.setUserData(joint.label);
         if (j) this._joints.push(j);
+      }
+    }
+
+    if (this.physics.debugState) {
+      this._showDebugBounds();
+    }
+  }
+
+  private _showDebugBounds() {
+    const lineWidth = 2;
+    for (const shape of this.shapes) {
+      const offset = shape.offset ?? { x: 0, y: 0 };
+      switch (shape.shapeType) {
+        case 'box': {
+          new Shape({
+            drawRect: {
+              x: offset.x,
+              y: offset.y,
+              width: shape.width ?? this.target.width,
+              height: shape.height ?? this.target.height,
+              stroke: 'red',
+              strokeWidth: lineWidth,
+            },
+            alpha: 0.5,
+            parent: this.target,
+          });
+          break;
+        }
+        case 'circle': {
+          const radius = shape.radius ?? this.target.width / 2;
+          new Shape({
+            drawCircle: {
+              x: offset.x + radius,
+              y: offset.y + radius,
+              radius,
+              stroke: 'red',
+              strokeWidth: lineWidth,
+            },
+            alpha: 0.5,
+            parent: this.target,
+          });
+          break;
+        }
+        case 'polygon': {
+          new Shape({
+            drawPolygon: {
+              points: shape.vertices.map((v) => ({ x: v.x + offset.x, y: v.y + offset.y })),
+              stroke: 'red',
+              strokeWidth: lineWidth,
+            },
+            alpha: 0.5,
+            parent: this.target,
+          });
+          break;
+        }
+        case 'chain': {
+          new Shape({
+            drawLine: {
+              points: shape.vertices.map((v) => ({ x: v.x + offset.x, y: v.y + offset.y })),
+              color: 'red',
+              lineWidth: lineWidth,
+            },
+            alpha: 0.5,
+            parent: this.target,
+          });
+        }
       }
     }
   }

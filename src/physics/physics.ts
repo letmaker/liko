@@ -37,6 +37,8 @@ export class Physics {
   private _timer = Timer.system;
   private _pixelRatio = 50;
 
+  debugState = false;
+
   /** Planck 物理引擎实例 */
   pl = planck;
   /** 物理世界实例 */
@@ -306,20 +308,21 @@ export class Physics {
    * @returns 当前物理引擎实例，支持链式调用
    */
   debug() {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/planck/dist/planck-with-testbed.min.js';
-    script.onload = () => {
-      const Testbed = (window as any).planck.Testbed;
-      const testbed = Testbed.mount();
-      testbed.start(this.world);
+    this.debugState = true;
+    // const script = document.createElement('script');
+    // script.src = 'https://cdn.jsdelivr.net/npm/planck/dist/planck-with-testbed.min.js';
+    // script.onload = () => {
+    //   const Testbed = (window as any).planck.Testbed;
+    //   const testbed = Testbed.mount();
+    //   testbed.start(this.world);
 
-      const canvas = testbed.canvas;
-      canvas.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-      canvas.style.transform = 'scaleY(-1)';
-      canvas.style.pointerEvents = 'none';
-    };
-    document.body.appendChild(script);
-    return this;
+    //   const canvas = testbed.canvas;
+    //   canvas.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    //   canvas.style.transform = 'scaleY(-1)';
+    //   canvas.style.pointerEvents = 'none';
+    // };
+    // document.body.appendChild(script);
+    // return this;
   }
 }
 

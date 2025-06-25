@@ -56,6 +56,7 @@ interface TweenOption {
  *   .wait(0.5)
  *   .to({ target: sprite, props: { alpha: 0 }, duration: 0.5 })
  *   .call(() => sprite.visible = false)
+ *   .onAllComplete(() => console.log('动画结束'))
  *   .play();
  *
  * // 使用标签管理动画
@@ -69,7 +70,7 @@ interface TweenOption {
  * Tween.clear("player-move");
  *
  * // 复杂动画配置
- * Tween.to({
+ * const tween = Tween.to({
  *   target: enemy,
  *   props: { x: 300, y: 150, rotation: 360 },
  *   duration: 2,
@@ -80,6 +81,7 @@ interface TweenOption {
  *   onStart: () => console.log("动画开始"),
  *   onComplete: () => console.log("动画结束")
  * });
+ * tween.play();
  * ```
  *
  * @注意事项
