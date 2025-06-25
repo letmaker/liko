@@ -1,6 +1,6 @@
 {
   "name": "liko",
-  "version": "1.1.12",
+  "version": "1.1.16",
   "author": "handler",
   "description": "liko is a 2D physics engine written in TypeScript",
   "keywords": ["2d", "physics", "engine", "webgpu"],
@@ -18,8 +18,8 @@
     "build": "vite build",
     "test": "vitest",
     "test:browser": "vitest --workspace=vitest.workspace.ts",
-    "doc": "typedoc --out docs src/docs.ts",
-    "markdown": "typedoc --options typedoc.json",
+    "doc": "typedoc --options typedoc-html.json",
+    "markdown": "typedoc --options typedoc-md.json",
     "md": "npm run markdown && node scripts/merge-docs.js"
   },
   "dependencies": {

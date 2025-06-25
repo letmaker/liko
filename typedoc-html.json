@@ -1,0 +1,8 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/docs.ts"],
+  "out": "docs",
+  "readme": "README.md",
+  "theme": "default",
+  "disableSources": true
+}

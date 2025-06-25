@@ -1,13 +1,14 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "plugin": ["typedoc-plugin-markdown"],
-  "entryPoints": ["src/docs.ts"],
+  "entryPoints": ["src/index.ts"],
   "out": "markdown",
-  "readme": "overview.md",
+  "readme": "OVERVIEW.md",
   "outputFileStrategy": "modules",
   "mergeReadme": true,
   "flattenOutputFiles": true,
   "hidePageHeader": true,
   "hideBreadcrumbs": true,
-  "useCodeBlocks": true
+  "useCodeBlocks": true,
+  "disableSources": true
 }

@@ -126,6 +126,8 @@ export class Dispatcher {
    * @param once - 是否只执行一次
    */
   private _addListener(type: string, listener: (...args: unknown[]) => void, caller: unknown, once: boolean): void {
+    if (!type || !listener) console.error('event type and listener are required');
+
     const events = this._events;
     const lowerType = type.toLowerCase();
     // 禁止重复注册

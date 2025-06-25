@@ -26,13 +26,29 @@ interface IParticleSystemPrivateProps extends INodePrivateProps {
 }
 
 export interface IParticleSystemOptions extends INodeOptions {
-  /** 粒子配置文件URL（plist格式） */
+  /**
+   * 粒子配置文件URL（plist格式）
+   * 支持cocos-engine导出的plist格式配置文件
+   * 示例：'assets/effects/fire.plist'
+   */
   url?: string;
-  /** 粒子纹理 */
+  /**
+   * 粒子纹理，如果不指定，系统会使用默认白色纹理
+   * 可以通过 loader.load<Texture>() 预加载纹理
+   */
   texture?: Texture;
-  /** 是否自动播放 */
+  /**
+   * 是否自动播放
+   * true: 添加到舞台后自动开始播放
+   * false: 需要手动调用 play() 方法
+   * 注意：只有在已添加到舞台时才会自动播放
+   */
   autoPlay?: boolean;
-  /** 粒子配置 */
+  /**
+   * 粒子配置
+   * 可以直接通过代码配置粒子参数，会与默认配置合并
+   * 优先级：传入的config > url加载的配置 > 默认配置
+   */
   config?: ParticleConfigOptions;
 }
 
@@ -41,28 +57,42 @@ export interface IParticleSystemOptions extends INodeOptions {
  *
  * 完整的2D粒子系统实现，兼容cocos-engine的plist格式配置文件。
  * 支持重力模式和径向模式两种发射器类型，提供丰富的粒子效果。
+ * 1. 重力模式 (EmitterMode.GRAVITY) - 适用于火焰、烟雾、爆炸等效果
+ * 2. 径向模式 (EmitterMode.RADIUS) - 适用于旋转、环绕等效果
  *
- * ## 基础使用示例：
+ * ## 快速开始：
  * ```typescript
- * // 1. 通过plist配置文件创建粒子系统
+ * import { ParticleSystem } from 'liko';
+ *
+ * // 1. 通过plist配置文件创建粒子系统（推荐方式）
  * const fireParticle = new ParticleSystem({
  *   url: 'assets/effects/fire.plist',
  *   position: { x: 400, y: 300 },
+ *   parent:scene, // 必须添加到舞台才能播放
  *   autoPlay: true
  * });
+ * ```
  *
+ * ## 基础使用示例：
+ * ```typescript
  * // 2. 通过配置对象创建粒子系统
  * const customParticle = new ParticleSystem({
  *   config: {
  *     emitterMode: EmitterMode.GRAVITY,
  *     maxParticles: 100,
  *     emissionRate: 50,
- *     particleLifespan: 2.0
+ *     particleLifespan: 2.0,
+ *     startParticleSize: 32,
+ *     finishParticleSize: 0,
+ *     startColorRed: 1.0,
+ *     startColorGreen: 0.5,
+ *     startColorBlue: 0.0,
+ *     startColorAlpha: 1.0
  *   },
- *   position: { x: 500, y: 500 },
+ *   position: { x: 500, y: 500 }
  * });
  *
- * // 添加到场景
+ * // 添加到场景并播放
  * stage.addChild(customParticle);
  * customParticle.play();
  * ```
@@ -70,11 +100,11 @@ export interface IParticleSystemOptions extends INodeOptions {
  * ## 控制粒子播放：
  * ```typescript
  * // 播放控制
- * particle.play();         // 开始播放
+ * particle.play();         // 开始播放（必须先添加到舞台）
  * particle.stop();         // 停止发射（现有粒子继续运行）
  * particle.pause();        // 暂停整个系统
  * particle.resume();       // 恢复播放
- * particle.reset();        // 重置系统
+ * particle.reset();        // 重置系统（清除所有粒子）
  *
  * // 状态查询
  * console.log(particle.isPlaying);      // 是否正在播放
@@ -87,15 +117,21 @@ export interface IParticleSystemOptions extends INodeOptions {
  * // 修改发射速率
  * particle.setEmissionRate(100);
  *
- * // 修改粒子颜色
+ * // 修改粒子颜色（支持渐变）
  * particle.setStartColor({ r: 1, g: 0, b: 0, a: 1 }); // 红色
  * particle.setEndColor({ r: 1, g: 1, b: 0, a: 0 });   // 透明黄色
  *
- * // 修改粒子大小
- * particle.setParticleSize(32, 64); // 起始32，结束64
+ * // 修改粒子大小（支持缩放动画）
+ * particle.setParticleSize(32, 0); // 从32像素缩放到0（消失效果）
  *
- * // 修改重力
+ * // 修改重力（仅重力模式有效）
  * particle.setGravity(0, 98); // 向下重力
+ *
+ * // 修改发射角度
+ * particle.setAngle(Math.PI / 4, Math.PI / 8); // 45度角，±22.5度变化
+ *
+ * // 修改粒子生命周期
+ * particle.setParticleLifespan(3.0, 0.5); // 3秒±0.5秒
  * ```
  *
  * ## 事件监听：
@@ -107,15 +143,40 @@ export interface IParticleSystemOptions extends INodeOptions {
  * });
  *
  * // 监听播放结束（仅限有限时长的粒子）
- * particle.on('complete', () => {
+ * particle.on(EventType.complete, () => {
  *   console.log('粒子播放结束');
+ *   // 可以选择移除或重新播放
+ *   particle.reset();
+ *   particle.play();
  * });
  * ```
  *
- * ## 注意事项：
- * - 必须先将粒子系统添加到舞台（stage）后才能调用 play() 方法
- * - 通过 url 加载配置时，会自动尝试加载配置中指定的纹理文件
- * - 如果不指定纹理，系统会使用默认的白色纹理用于纯色渲染
+ * ## 性能优化建议：
+ * ```typescript
+ * // 1. 合理设置最大粒子数
+ * particle.config = {
+ *   maxParticles: 50 // 根据设备性能调整，移动端建议≤100
+ * };
+ *
+ * // 2. 及时清理不需要的粒子系统
+ * particle.destroy(); // 销毁并释放资源
+ *
+ * // 3. 使用对象池（引擎自动管理）
+ * const particles = [];
+ * for (let i = 0; i < 10; i++) {
+ *   const p = new ParticleSystem({ url: 'effect.plist' });
+ *   particles.push(p);
+ * }
+ * ```
+ *
+ * ## ⚠️ 重要注意事项：
+ * 1. **必须先添加到舞台**：调用 play() 之前必须先 stage.addChild(particle)
+ * 2. **异步加载**：使用 url 时配置加载是异步的，监听 'loaded' 事件确认加载完成
+ * 3. **纹理路径**：plist文件中的纹理路径是相对于plist文件的相对路径
+ * 4. **内存管理**：及时调用 destroy() 释放不再使用的粒子系统
+ * 5. **性能考虑**：maxParticles 过大可能影响性能，建议移动端≤100个
+ * 6. **坐标系统**：粒子位置基于父容器的坐标系统
+ * 7. **模式限制**：某些配置参数只在特定模式下生效（重力模式 vs 径向模式）
  */
 @RegNode('ParticleSystem')
 export class ParticleSystem extends LikoNode implements IParticleRenderable {
@@ -128,23 +189,36 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   /**
    * 粒子系统是否正在播放
    * @readonly 通过 play() 和 stop() 方法控制此状态
+   * true: 正在发射新粒子并更新现有粒子
+   * false: 已停止发射，但现有粒子可能仍在运行
    */
   isPlaying = false;
 
   /**
    * 粒子系统是否已暂停
    * @readonly 通过 pause() 和 resume() 方法控制此状态
+   * true: 暂停更新粒子，但仍会渲染当前状态的粒子
+   * false: 正常更新粒子状态
    */
   isPaused = false;
 
   /**
    * 是否在添加到舞台时自动播放
+   * 只有在已添加到舞台（this.stage存在）时才会自动播放
+   * 如果添加时尚未加载完成，会在加载完成后自动播放
    */
   autoPlay = false;
 
   /**
    * 创建粒子系统实例
-   * @param options 粒子系统配置选项或直接的粒子配置对象
+   *
+   * @param options 粒子系统配置选项
+   *
+   * ## 使用说明：
+   * - 如果指定了 url，会异步加载plist配置文件
+   * - 如果指定了 config，会与默认配置合并
+   * - 如果同时指定 url 和 config，config 中的参数会覆盖 url 加载的配置
+   * - autoPlay 为 true 时，添加到舞台后会自动开始播放
    */
   constructor(options?: IParticleSystemOptions) {
     super();
@@ -173,11 +247,18 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 当前粒子配置对象，包含所有粒子行为的配置参数
+   * 获取当前粒子配置对象，包含所有粒子行为的配置参数
    */
   get config(): ParticleConfig {
     return this.pp.config;
   }
+
+  /**
+   * 设置粒子配置
+   *
+   * 动态更新粒子系统的配置参数，支持部分更新和运行时修改。
+   * 新配置会与默认配置合并，并立即生效于后续发射的粒子。
+   */
   set config(value: ParticleConfigOptions) {
     const config: ParticleConfig = {
       ...DEFAULT_PARTICLE_CONFIG,
@@ -239,9 +320,11 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
   /**
    * 异步加载plist格式的粒子配置文件
-   * 会解析配置并尝试加载配置中指定的纹理文件
-   * @param url 配置文件的URL路径
-   * @throws 加载失败时抛出错误
+   *
+   * 自动解析cocos-engine导出的plist配置文件，并尝试加载配置中指定的纹理。
+   * 加载完成后会触发 'loaded' 事件，如果设置了 autoPlay 会自动开始播放。
+   *
+   * @throws 当文件不存在、格式错误或网络失败时抛出错误
    */
   async load(url: string): Promise<void> {
     try {
@@ -293,8 +376,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 开始播放粒子系统
-   * 注意：必须先将粒子系统添加到舞台后才能调用此方法
+   * 开始播放粒子系统，启动粒子发射器并开始更新粒子状态。
    */
   play(): void {
     if (!this.stage) {
@@ -306,7 +388,6 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this.isPaused = false;
     this._emitter.start();
 
-    // 绑定onUpdate方法到正确的上下文
     this.stage.timer.onFrame(this.onUpdate, this);
   }
 
@@ -431,7 +512,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   }
 
   /**
-   * 每帧更新逻辑
+   * 每帧更新逻辑（内部方法）
    * 处理粒子发射、位置更新、生命周期管理和渲染数据更新
    */
   protected onUpdate(): void {
@@ -488,7 +569,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
   /**
    * 销毁粒子系统并清理所有资源
-   * 会停止播放、重置状态并释放相关资源
+   *
+   * 彻底清理粒子系统，包括停止播放、重置状态、释放内存等。
+   * 这是一个不可逆操作，销毁后的粒子系统无法再次使用。
    */
   override destroy(): void {
     this.stop();
