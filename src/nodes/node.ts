@@ -1471,7 +1471,7 @@ export abstract class LikoNode {
    */
   on(type: string, listener: (...args: any[]) => void, caller?: any): this {
     if (this.pp.event === defaultEvent) this.pp.event = new Dispatcher();
-    if (pointerMap[type] && (!this.pointerEnabled || !this.pointerEnabledForChildren)) {
+    if (pointerMap[type]) {
       this.pointerEnabled = true;
       this.pointerEnabledForChildren = true;
       this._$pointerEnableParent();
