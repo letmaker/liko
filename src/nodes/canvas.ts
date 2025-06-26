@@ -95,7 +95,7 @@ export class Canvas extends LikoNode implements IRenderable {
     pp.cmd = [];
     pp.canvas = createCanvas(1, 1);
     pp.ctx = pp.canvas.getContext('2d') as CanvasRenderingContext2D;
-    pp.texture = new Texture();
+    pp.texture = Texture.createFromCanvas(pp.canvas);
     pp.changed = false;
     pp.maxLineWidth = 0;
     pp.clipped = false;

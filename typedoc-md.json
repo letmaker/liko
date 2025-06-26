@@ -3,7 +3,7 @@
   "plugin": ["typedoc-plugin-markdown"],
   "entryPoints": ["src/index.ts"],
   "out": "markdown",
-  "readme": "OVERVIEW.md",
+  "readme": "README-AI.md",
   "outputFileStrategy": "modules",
   "mergeReadme": true,
   "flattenOutputFiles": true,

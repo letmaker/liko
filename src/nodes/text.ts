@@ -287,7 +287,7 @@ export class Text extends LikoNode implements IRenderable {
     super();
 
     const pp = this.pp;
-    pp.canvas = createCanvas(100, 20);
+    pp.canvas = createCanvas(50, 15);
     pp.ctx = pp.canvas.getContext('2d') as CanvasRenderingContext2D;
     pp.text = '';
     pp.lines = [];
@@ -303,7 +303,7 @@ export class Text extends LikoNode implements IRenderable {
     pp.measureWidth = 0;
     pp.measureHeight = 0;
     pp.changed = false;
-    pp.texture = new Texture();
+    pp.texture = Texture.createFromCanvas(pp.canvas);
 
     this.setProps(options as Record<string, unknown>);
     // document.body.appendChild(pp.canvas);
