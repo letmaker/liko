@@ -1,6 +1,10 @@
 import { Handler } from './dispatcher';
 
+let timerId = 0;
+
 class TimerHandler extends Handler {
+  id = 0;
+
   nextTime = 0;
 
   constructor(
@@ -12,11 +16,13 @@ class TimerHandler extends Handler {
     public useFrame = false
   ) {
     super(callback, caller, once);
+    this.id = ++timerId;
   }
 
   runTime(time: number): void {
     super.run(this.args);
     if (!this.once) {
+      // 计算下次执行时间，补偿时间偏移以保持精确的间隔
       this.nextTime = time + this.delay - ((time - this.nextTime) % this.delay);
     }
   }
@@ -87,6 +93,7 @@ export class Timer {
    * 在渲染之前延迟执行，用于减少重复计算
    *
    * 每帧多次调用相同的callback和caller只会执行一次，适用于需要去重的延迟执行场景
+   * 常用于避免同一帧内多次触发相同的更新操作
    *
    * @param callback 回调函数
    * @param caller 调用者，用于标识回调的归属和去重
@@ -108,12 +115,15 @@ export class Timer {
    * 执行所有延迟回调
    *
    * 通常在每帧渲染前调用，执行所有通过callLater注册的回调
+   * 执行完成后会清空整个callLater列表
    */
   static runAllCallLater(): void {
     if (Timer._callLaterList.length > 0) {
+      // 执行所有延迟回调
       for (let i = 0; i < Timer._callLaterList.length; i++) {
         Timer._callLaterList[i].run();
       }
+      // 清空列表，准备下一帧
       Timer._callLaterList.length = 0;
     }
   }
@@ -125,6 +135,7 @@ export class Timer {
    * 每帧时间间隔，单位为秒
    *
    * 在update方法中自动计算，表示当前帧与上一帧的时间差
+   * 受scale时间缩放系数影响
    */
   delta = 0;
 
@@ -204,14 +215,17 @@ export class Timer {
    * @param callback 回调函数
    * @param caller 调用者，用于标识回调归属和清理，重复注册会先清理之前的注册
    * @param args 回调参数
+   * @returns 计时器ID，可用于clearTimer清理
+   *
+   * @注意 相同callback+caller的重复注册会自动清理旧的
    */
   setTimeout<T extends (...args: any[]) => void>(
     delay: number,
     callback: T,
     caller?: unknown,
     ...args: Parameters<T>
-  ): void {
-    this._add(delay, callback, caller, args, false, true);
+  ): number {
+    return this._add(delay, callback, caller, args, false, true);
   }
 
   /**
@@ -221,14 +235,15 @@ export class Timer {
    * @param callback 回调函数
    * @param caller 调用者，用于标识回调归属和清理，重复注册会先清理之前的注册
    * @param args 回调参数
+   * @returns 计时器ID，可用于clearTimer清理
    */
   setInterval<T extends (...args: any[]) => void>(
     interval: number,
     callback: T,
     caller?: unknown,
     ...args: Parameters<T>
-  ): void {
-    this._add(interval, callback, caller, args, false, false);
+  ): number {
+    return this._add(interval, callback, caller, args, false, false);
   }
 
   /**
@@ -237,19 +252,22 @@ export class Timer {
    * @param callback 回调函数
    * @param caller 调用者，用于标识回调归属和清理，重复注册会先清理之前的注册
    * @param args 回调参数
+   * @returns 计时器ID，可用于clearTimer清理
    */
-  onFrame<T extends (...args: any[]) => void>(callback: T, caller?: unknown, ...args: Parameters<T>): void {
-    this._add(1, callback, caller, args, true, false);
+  onFrame<T extends (...args: any[]) => void>(callback: T, caller?: unknown, ...args: Parameters<T>): number {
+    return this._add(1, callback, caller, args, true, false);
   }
 
   /**
-   * 添加计时器处理器
+   * 添加计时器处理器（内部方法）
+   *
    * @param delay 延迟时间/帧数
    * @param callback 回调函数
    * @param caller 调用者
    * @param args 回调参数
    * @param useFrame 是否使用帧模式
    * @param once 是否只执行一次
+   * @returns 计时器ID
    */
   private _add<T extends (...args: unknown[]) => void>(
     delay: number,
@@ -258,31 +276,45 @@ export class Timer {
     args?: unknown[],
     useFrame?: boolean,
     once?: boolean
-  ) {
-    if (this._destroyed) return;
+  ): number {
+    // 已销毁的计时器不能添加新的处理器
+    if (this._destroyed) return 0;
     let delayNum = delay;
     if (!once) {
-      // 循环间隔不能太小
+      // 循环间隔不能太小，防止性能问题
       if (useFrame && delay < 1) delayNum = 1;
       if (!useFrame && delay < 0.001) delayNum = 0.001;
     }
 
-    // 禁止重复注册
+    // 禁止重复注册，先清理相同的callback+caller组合
     this.clearTimer(callback, caller);
     const timer = new TimerHandler(callback, caller, once, args, delayNum, useFrame);
+    // 设置首次执行时间
     timer.nextTime = (useFrame ? this.currentFrame : this.currentTime) + delayNum;
     this._timers.push(timer);
+    return timer.id;
   }
 
   /**
    * 清理指定计时回调
    *
-   * @param callback 回调函数
+   * @param callback 回调函数或计时器ID
    * @param caller 调用者，如果不指定则清理所有匹配callback的回调
+   *
+   * @注意
+   * - 可以通过ID或callback+caller组合来清理
+   * - 只会清理第一个匹配的计时器
    */
-  clearTimer(callback: (...args: any[]) => void, caller?: unknown): void {
+  clearTimer(callback: number | ((...args: any[]) => void), caller?: unknown): void {
     for (const timer of this._timers) {
-      if (timer.callback === callback && (!caller || timer.caller === caller)) {
+      if (typeof callback === 'number') {
+        // 通过ID清理
+        if (timer.id === callback) {
+          timer.destroy();
+          return;
+        }
+      } else if (timer.callback === callback && (!caller || timer.caller === caller)) {
+        // 通过callback+caller清理
         timer.destroy();
         return;
       }
@@ -293,6 +325,10 @@ export class Timer {
    * 清理计时回调
    *
    * @param caller 指定函数域，如果不指定，则清除本计时器所有回调
+   *
+   * @注意
+   * - 不指定caller时会清理所有计时器
+   * - 适合在对象销毁时清理相关的所有计时器
    */
   clearAll(caller?: any): void {
     const timers = this._timers;
@@ -330,18 +366,22 @@ export class Timer {
    * @param currTime 当前时间，单位为秒，默认使用系统计时器的当前时间
    */
   update(currTime: number = Timer.system.currentTime): void {
+    // 暂停或已销毁时不更新
     if (this._paused || this._destroyed) {
       this.delta = 0;
       return;
     }
 
     if (currTime > this._lastTime) {
+      // 计算时间差
       const delta = currTime - this._lastTime;
       this._lastTime = currTime;
+      // 应用时间缩放
       this.delta = delta * this.scale;
       this.currentTime += this.delta;
       this.currentFrame++;
 
+      // 检查并执行到时的计时器
       const timers = this._timers;
       for (const timer of timers) {
         const timeOrFrame = timer.useFrame ? this.currentFrame : this.currentTime;
@@ -350,17 +390,18 @@ export class Timer {
         }
       }
 
-      // 定期清理已销毁的 timer
+      // 定期清理已销毁的 timer，避免内存累积
       if (this.currentFrame % 2000 === 0) {
         this._clean();
       }
     } else {
+      // 时间倒流或停止时，delta为0
       this.delta = 0;
     }
   }
 
   /**
-   * 清理已销毁的计时器处理器
+   * 清理已销毁的计时器处理器（内部方法）
    */
   private _clean(): void {
     if (this._timers.length > 0) {
