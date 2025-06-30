@@ -52,6 +52,8 @@ const defaultMatrix = new Matrix();
  * ```
  */
 export class Bounds {
+  static EMPTY = new Bounds(0, 0, 1, 1);
+
   /**
    * 包围盒的最小 X 坐标
    * @default Number.POSITIVE_INFINITY

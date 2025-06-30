@@ -1215,7 +1215,7 @@ export abstract class LikoNode {
     // 检查 localBounds 是否有问题
     if (!localBounds.isValid) {
       console.warn('localBounds width <=0', this);
-      return new Bounds(0, 0, 1, 1);
+      return Bounds.EMPTY;
     }
     this.pp.boundsDirty = false;
     return localBounds;
