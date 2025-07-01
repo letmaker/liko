@@ -142,7 +142,7 @@ export abstract class BaseScript<T extends LikoNode = LikoNode> {
    * - 脚本必须已经激活（awaked = true）
    * - 如果是首次执行，会先触发 onAwake
    *
-   * @param delta - 距离上一帧的时间间隔（毫秒）
+   * @param delta - 距离上一帧的时间间隔（秒）
    */
   update(delta: number): void {
     // TODO 这里可以做性能优化，比如有 update 的时候才执行
@@ -207,7 +207,7 @@ export abstract class BaseScript<T extends LikoNode = LikoNode> {
    * - 输入处理
    * - 物理计算等
    *
-   * @param delta - 距离上一帧的时间间隔（毫秒）
+   * @param delta - 距离上一帧的时间间隔（秒）
    */
   // @ts-expect-error
   // biome-ignore lint/correctness/noUnusedVariables: <explanation>

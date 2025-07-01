@@ -593,7 +593,7 @@ export class RigidBody extends BaseScript {
    * 重要注意事项：
    * 1. 如果物体使用了刚体，直接修改 node.position 是无效的，必须使用此方法
    * 2. 坐标系为游戏世界坐标，会自动转换为物理世界坐标
-   * 3. 会自动处理父节点的坐标变换
+   * 3. 会自动处理父节点的坐标变换和锚点偏移
    * 4. 对于非静态刚体，会自动唤醒物体以使改变生效
    * 5. 频繁调用此方法可能影响性能，建议优先使用力和冲量控制运动
    *
@@ -607,10 +607,28 @@ export class RigidBody extends BaseScript {
    * ```
    */
   setPosition(x: number, y: number): void {
+    const target = this.target;
     let worldPos = { x, y };
+
     // 如果父节点不是场景，需要转换到场景坐标
-    if (this.target.parent !== this.scene) {
-      worldPos = this.target.parent!.localToWorld(worldPos, worldPos, this.scene);
+    if (target.parent !== this.scene) {
+      worldPos = target.parent!.localToWorld(worldPos, worldPos, this.scene);
+    }
+
+    // 减去 pivot 偏移，因为 onUpdate 时会重新加上 pivot 偏移
+    // 这样可以确保传入的显示位置能正确对应最终的显示效果
+    const pivotX = target.pivot.x * Math.abs(target.scale.x);
+    const pivotY = target.pivot.y * Math.abs(target.scale.y);
+
+    if (target.rotation === 0) {
+      worldPos.x -= pivotX;
+      worldPos.y -= pivotY;
+    } else {
+      // 考虑旋转角度对 pivot 偏移的影响
+      const cos = Math.cos(target.rotation);
+      const sin = Math.sin(target.rotation);
+      worldPos.x -= pivotX * cos - pivotY * sin;
+      worldPos.y -= pivotX * sin + pivotY * cos;
     }
 
     this.body.setPosition(this.physics.toPhPos(worldPos));
