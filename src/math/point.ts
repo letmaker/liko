@@ -103,13 +103,34 @@ export class Point {
 
   /**
    * 将坐标点按指定增量进行偏移
-   * @param dx - x 轴偏移量
-   * @param dy - y 轴偏移量
+   * @param point - 偏移量
    * @returns 当前实例，支持链式调用
    */
-  add(dx: number, dy: number): this {
-    this.x += dx;
-    this.y += dy;
+  add(point: IPoint): this {
+    this.x += point.x;
+    this.y += point.y;
+    return this;
+  }
+
+  /**
+   * 从当前点减去另一个点
+   * @param point - 被减去的点
+   * @returns 当前实例，支持链式调用
+   */
+  sub(point: IPoint): this {
+    this.x -= point.x;
+    this.y -= point.y;
+    return this;
+  }
+
+  /**
+   * 将当前点乘以一个标量
+   * @param scalar - 乘数
+   * @returns 当前实例，支持链式调用
+   */
+  multiply(scalar: number): this {
+    this.x *= scalar;
+    this.y *= scalar;
     return this;
   }
 

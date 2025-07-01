@@ -93,18 +93,37 @@ export class ObservablePoint {
   }
 
   /**
-   * 将坐标点按指定增量进行相对偏移
-   *
-   * @param dx - x 轴偏移量（正值向右，负值向左）
-   * @param dy - y 轴偏移量（正值向下，负值向上）
+   * 将当前点与另一个点相加
+   * @param point - 相加的点
    * @returns 当前实例，支持链式调用
-   *
-   * @remarks
-   * 此方法会直接修改坐标值并始终触发 markDirty 回调，即使偏移量为 0。
    */
-  add(dx: number, dy: number): this {
-    this._x += dx;
-    this._y += dy;
+  add(point: IPoint): this {
+    this._x += point.x;
+    this._y += point.y;
+    this._observer.markDirty(DirtyType.transform);
+    return this;
+  }
+
+  /**
+   * 从当前点减去另一个点
+   * @param point - 被减去的点
+   * @returns 当前实例，支持链式调用
+   */
+  sub(point: IPoint): this {
+    this._x -= point.x;
+    this._y -= point.y;
+    this._observer.markDirty(DirtyType.transform);
+    return this;
+  }
+
+  /**
+   * 将当前点乘以一个标量
+   * @param scalar - 乘数
+   * @returns 当前实例，支持链式调用
+   */
+  multiply(scalar: number): this {
+    this._x *= scalar;
+    this._y *= scalar;
     this._observer.markDirty(DirtyType.transform);
     return this;
   }
