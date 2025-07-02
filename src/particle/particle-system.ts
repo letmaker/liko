@@ -566,20 +566,19 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     // 更新所有粒子，使用复用的位置对象
     const aliveCount = this._updater.updateParticles(particlePool, deltaTime, this._emitterPosition);
 
-    // 缓存状态变量减少重复计算
-    const hasActiveParticles = aliveCount > 0;
-    const hadActiveParticles = this._hasActiveParticles;
-    const lastAliveCount = this._lastAliveCount;
-
-    // 只在粒子数量或状态变化时更新渲染对象和标记dirty
-    if (hasActiveParticles !== hadActiveParticles || lastAliveCount !== aliveCount) {
+    // 修复：每帧都更新渲染对象，因为粒子的位置、颜色、大小等属性每帧都在变化
+    if (aliveCount > 0) {
       this.renderObject.updateParticles(particlePool);
       this.markDirty(DirtyType.child);
-      this._lastAliveCount = aliveCount;
-      this._hasActiveParticles = hasActiveParticles;
     }
 
-    // 只在状态改变时检查播放完成（避免重复的属性访问）
+    // 缓存状态变量用于事件触发
+    const hasActiveParticles = aliveCount > 0;
+    const lastAliveCount = this._lastAliveCount;
+    this._lastAliveCount = aliveCount;
+    this._hasActiveParticles = hasActiveParticles;
+
+    // 只在状态改变时检查播放完成
     if (!this.isPlaying && aliveCount === 0 && lastAliveCount > 0) {
       this.emit('complete');
     }

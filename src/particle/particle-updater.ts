@@ -84,7 +84,9 @@ export class ParticleUpdater {
 
       // 检查粒子是否死亡
       if (particle.timeToLive <= 0) {
-        continue;
+        // 确保粒子被标记为死亡，这样 isAlive getter 会返回 false
+        particle.timeToLive = 0;
+        continue; // 跳过死亡粒子的后续更新，但不计入 aliveCount
       }
 
       // 更新颜色（内联避免函数调用）
