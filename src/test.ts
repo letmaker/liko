@@ -45,6 +45,38 @@ async function test() {
         speed: 100, // 初始速度100像素/秒
       },
     });
+
+    new ParticleSystem({
+      url: 'assets/particle/fire.plist', // 火焰效果的预设配置
+      parent: app.stage, // 添加到舞台根节点
+      position: { x: Math.random() * 800, y: Math.random() * 800 }, // 屏幕左侧位置
+      autoPlay: true, // 创建后自动播放
+    });
+
+    new ParticleSystem({
+      url: 'assets/particle/smoke.plist', // 烟雾效果的预设配置
+      parent: app.stage,
+      position: { x: Math.random() * 800, y: Math.random() * 800 }, // 放在火焰下方，模拟真实的火焰+烟雾效果
+      autoPlay: true,
+    });
+
+    new ParticleSystem({
+      parent: app.stage,
+      position: { x: Math.random() * 800, y: Math.random() * 800 }, // 屏幕右侧
+      autoPlay: true,
+      config: {
+        // 爆炸效果的典型颜色：从亮橙红色到透明黄色
+        startColor: { r: 1.0, g: 0.3, b: 0.1, a: 1.0 }, // 明亮的橙红色
+        finishColor: { r: 1.0, g: 0.8, b: 0.0, a: 0.0 }, // 透明的黄色
+
+        // 粒子大小：从大到小，模拟爆炸碎片
+        startParticleSize: 15, // 开始时较大
+        finishParticleSize: 5, // 结束时变小
+
+        // 高发射率产生密集的粒子群
+        emissionRate: 300, // 每秒300个粒子，产生密集效果
+      },
+    });
   });
 }
 
