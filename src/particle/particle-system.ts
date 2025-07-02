@@ -213,7 +213,6 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   private _lastEmitterX = 0;
   private _lastEmitterY = 0;
   private _lastAliveCount = 0;
-  private _hasActiveParticles = false;
 
   // 性能优化：复用位置对象，避免每帧创建新对象
   private _emitterPosition = { x: 0, y: 0 };
@@ -438,7 +437,6 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this._lastEmitterX = 0;
     this._lastEmitterY = 0;
     this._lastAliveCount = 0;
-    this._hasActiveParticles = false;
     this._emitterPosition.x = 0;
     this._emitterPosition.y = 0;
   }
@@ -573,10 +571,8 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     }
 
     // 缓存状态变量用于事件触发
-    const hasActiveParticles = aliveCount > 0;
     const lastAliveCount = this._lastAliveCount;
     this._lastAliveCount = aliveCount;
-    this._hasActiveParticles = hasActiveParticles;
 
     // 只在状态改变时检查播放完成
     if (!this.isPlaying && aliveCount === 0 && lastAliveCount > 0) {
