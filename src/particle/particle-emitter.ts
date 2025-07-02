@@ -300,11 +300,12 @@ export class ParticleEmitter {
 
   /**
    * 获取活跃粒子数量
+   * 性能优化：使用for循环而不是for-of，避免迭代器开销
    */
   getActiveParticleCount(): number {
     let count = 0;
-    for (const particle of this.particlePool) {
-      if (particle.isAlive) {
+    for (let i = 0; i < this.particlePool.length; i++) {
+      if (this.particlePool[i].isAlive) {
         count++;
       }
     }
@@ -313,8 +314,9 @@ export class ParticleEmitter {
 
   /**
    * 获取所有活跃粒子
+   * 性能优化：返回整个数组让调用者自行过滤，避免filter()创建新数组
    */
-  getActiveParticles(): ParticleData[] {
-    return this.particlePool.filter((p) => p.isAlive);
+  getParticles(): ParticleData[] {
+    return this.particlePool;
   }
 }

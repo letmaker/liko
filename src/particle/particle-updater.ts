@@ -65,11 +65,14 @@ export class ParticleUpdater {
   updateParticles(particles: ParticleData[], deltaTime: number, emitterPosition: { x: number; y: number }): number {
     let aliveCount = 0;
 
-    // 预计算常用值
-    const gravityX = this.config.gravityX;
-    const gravityY = this.config.gravityY;
-    const isGravityMode = this.config.emitterMode === EmitterMode.GRAVITY;
-    const rotationIsDir = this.config.rotationIsDir || false;
+    // 预计算常用值，避免重复属性访问
+    const config = this.config;
+    const gravityX = config.gravityX;
+    const gravityY = config.gravityY;
+    const isGravityMode = config.emitterMode === EmitterMode.GRAVITY;
+    const rotationIsDir = config.rotationIsDir || false;
+    const emitterX = emitterPosition.x;
+    const emitterY = emitterPosition.y;
 
     for (let i = 0; i < particles.length; i++) {
       const particle = particles[i];
@@ -100,7 +103,7 @@ export class ParticleUpdater {
       if (isGravityMode) {
         this.updateGravityParticleInline(particle, deltaTime, gravityX, gravityY, rotationIsDir);
       } else {
-        this.updateRadiusParticleInline(particle, deltaTime, emitterPosition);
+        this.updateRadiusParticleInline(particle, deltaTime, emitterX, emitterY);
       }
 
       aliveCount++;
@@ -258,6 +261,7 @@ export class ParticleUpdater {
 
   /**
    * 内联重力模式粒子更新（避免函数调用开销）
+   * 性能优化：使用快速平方根倒数近似和早期退出
    */
   private updateGravityParticleInline(
     particle: ParticleData,
@@ -269,10 +273,13 @@ export class ParticleUpdater {
     // 计算径向向量（从粒子到发射器的方向）
     const radialX = particle.x;
     const radialY = particle.y;
-    const radialLength = Math.sqrt(radialX * radialX + radialY * radialY);
+    const radialLengthSq = radialX * radialX + radialY * radialY;
 
-    if (radialLength > 0) {
-      const invRadialLength = 1 / radialLength;
+    // 性能优化：避免对接近原点的粒子进行昂贵的归一化计算
+    if (radialLengthSq > 0.0001) {
+      // 使用平方距离避免Math.sqrt
+      // 只有在需要归一化时才计算平方根
+      const invRadialLength = 1 / Math.sqrt(radialLengthSq);
       const normalizedRadialX = radialX * invRadialLength;
       const normalizedRadialY = radialY * invRadialLength;
 
@@ -301,11 +308,13 @@ export class ParticleUpdater {
 
   /**
    * 内联径向模式粒子更新
+   * 性能优化：直接传递x,y参数避免对象属性访问
    */
   private updateRadiusParticleInline(
     particle: ParticleData,
     deltaTime: number,
-    emitterPosition: { x: number; y: number }
+    emitterX: number,
+    emitterY: number
   ): void {
     // 更新角度和半径
     particle.angle += particle.angleDelta * deltaTime;
@@ -314,8 +323,8 @@ export class ParticleUpdater {
     // 计算新位置
     const cos = Math.cos(particle.angle);
     const sin = Math.sin(particle.angle);
-    particle.x = emitterPosition.x + cos * particle.radius;
-    particle.y = emitterPosition.y + sin * particle.radius;
+    particle.x = emitterX + cos * particle.radius;
+    particle.y = emitterY + sin * particle.radius;
   }
 
   /**

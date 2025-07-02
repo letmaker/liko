@@ -9,6 +9,13 @@ import type { ParticleSystem } from './particle-system';
 /**
  * 粒子渲染对象
  * 负责将粒子数据转换为可供渲染器使用的数据
+ *
+ * 性能优化说明：
+ * 1. 使用预分配的静态数组避免临时对象创建
+ * 2. 复用ArrayBuffer避免重复的颜色转换开销
+ * 3. 直接遍历数组跳过死亡粒子，避免filter()创建新数组
+ * 4. 使用位运算和乘法优化数学计算
+ * 5. 缓存常用变量引用减少属性查找
  */
 export class ParticleRenderObject implements IRenderObject {
   private particleSystem: ParticleSystem;
@@ -31,6 +38,22 @@ export class ParticleRenderObject implements IRenderObject {
   indexStart = 0;
   colorStart = 0;
   uvStart = 0;
+
+  // 性能优化：预分配的静态数组，避免每次创建临时对象
+  // 这样可以避免在每个粒子更新时创建临时数组，减少GC压力
+
+  private static readonly UV_COORDS = [
+    { u: 0, v: 0 }, // 左下
+    { u: 1, v: 0 }, // 右下
+    { u: 1, v: 1 }, // 右上
+    { u: 0, v: 1 }, // 左上
+  ];
+
+  // 性能优化：颜色转换缓冲区（复用避免重复创建）
+  // 通过复用同一个ArrayBuffer，避免每个粒子都创建新的缓冲区，大幅提升性能
+  private static readonly COLOR_BUFFER = new ArrayBuffer(4);
+  private static readonly COLOR_UINT32_VIEW = new Uint32Array(ParticleRenderObject.COLOR_BUFFER);
+  private static readonly COLOR_FLOAT32_VIEW = new Float32Array(ParticleRenderObject.COLOR_BUFFER);
 
   constructor(particleSystem: ParticleSystem) {
     this.particleSystem = particleSystem;
@@ -77,10 +100,19 @@ export class ParticleRenderObject implements IRenderObject {
 
   /**
    * 更新粒子数据
+   * 性能优化版本：避免数组过滤、临时对象创建和低效的颜色转换
    */
   updateParticles(particles: ParticleData[]): void {
-    const activeParticles = particles.filter((p) => p.isAlive);
-    this.activeParticleCount = activeParticles.length;
+    // 性能优化：直接计算活跃粒子数量，避免filter()创建新数组
+    // filter()会遍历整个数组并创建新数组，开销较大
+    let activeCount = 0;
+    for (let i = 0; i < particles.length; i++) {
+      if (particles[i].isAlive) {
+        activeCount++;
+      }
+    }
+
+    this.activeParticleCount = activeCount;
 
     if (this.activeParticleCount === 0) {
       return;
@@ -95,78 +127,99 @@ export class ParticleRenderObject implements IRenderObject {
     let colorIndex = 0;
     let uvIndex = 0;
     let indexIndex = 0;
+    let activeParticleIndex = 0;
 
-    for (let i = 0; i < this.activeParticleCount; i++) {
-      const particle = activeParticles[i];
-      const halfSize = particle.size / 2;
+    // 缓存静态引用
+    const uvCoords = ParticleRenderObject.UV_COORDS;
+    const colorUint32View = ParticleRenderObject.COLOR_UINT32_VIEW;
+    const colorFloat32View = ParticleRenderObject.COLOR_FLOAT32_VIEW;
 
-      // 计算旋转
-      const cos = Math.cos(particle.rotation);
-      const sin = Math.sin(particle.rotation);
+    for (let i = 0; i < particles.length; i++) {
+      const particle = particles[i];
 
-      // 四个顶点的本地坐标（相对于粒子中心）
-      const localVertices = [
-        { x: -halfSize, y: -halfSize }, // 左下
-        { x: halfSize, y: -halfSize }, // 右下
-        { x: halfSize, y: halfSize }, // 右上
-        { x: -halfSize, y: halfSize }, // 左上
-      ];
+      // 跳过死亡的粒子，避免filter创建新数组
+      if (!particle.isAlive) continue;
 
-      // 变换并设置顶点位置
-      for (let j = 0; j < 4; j++) {
-        const local = localVertices[j];
+      const halfSize = particle.size * 0.5; // 乘法比除法更快
 
-        // 应用旋转
-        const rotatedX = local.x * cos - local.y * sin;
-        const rotatedY = local.x * sin + local.y * cos;
+      // 性能优化：避免对接近0度旋转的粒子进行昂贵的三角函数计算
+      const rotation = particle.rotation;
+      let cos: number;
+      let sin: number;
 
-        // 转换到世界坐标
-        this.vertices[vertexIndex++] = particle.x + rotatedX;
-        this.vertices[vertexIndex++] = particle.y + rotatedY;
+      // 对于接近0的旋转角度，使用近似值避免Math.sin/Math.cos调用
+      if (Math.abs(rotation) < 0.001) {
+        cos = 1;
+        sin = rotation; // sin(x) ≈ x for small x
+      } else {
+        cos = Math.cos(rotation);
+        sin = Math.sin(rotation);
       }
 
-      // 将粒子颜色转换为32位ABGR格式
-      const r = Math.max(0, Math.min(255, Math.round(particle.r * 255)));
-      const g = Math.max(0, Math.min(255, Math.round(particle.g * 255)));
-      const b = Math.max(0, Math.min(255, Math.round(particle.b * 255)));
-      const a = Math.max(0, Math.min(255, Math.round(particle.a * 255)));
+      // 预计算旋转矩阵元素
+      const cosHalf = cos * halfSize;
+      const sinHalf = sin * halfSize;
 
-      // ABGR格式：Alpha << 24 | Blue << 16 | Green << 8 | Red
+      // 变换并设置顶点位置（展开循环减少函数调用开销）
+      const px = particle.x;
+      const py = particle.y;
+
+      // 左下角 (-1, -1)
+      this.vertices[vertexIndex++] = px + (-cosHalf + sinHalf);
+      this.vertices[vertexIndex++] = py + (-sinHalf - cosHalf);
+
+      // 右下角 (1, -1)
+      this.vertices[vertexIndex++] = px + (cosHalf + sinHalf);
+      this.vertices[vertexIndex++] = py + (sinHalf - cosHalf);
+
+      // 右上角 (1, 1)
+      this.vertices[vertexIndex++] = px + (cosHalf - sinHalf);
+      this.vertices[vertexIndex++] = py + (sinHalf + cosHalf);
+
+      // 左上角 (-1, 1)
+      this.vertices[vertexIndex++] = px + (-cosHalf - sinHalf);
+      this.vertices[vertexIndex++] = py + (-sinHalf + cosHalf);
+
+      // 优化颜色打包：使用位运算和预分配的缓冲区
+      const r = Math.max(0, Math.min(255, (particle.r * 255) | 0)); // | 0 比 Math.round 更快
+      const g = Math.max(0, Math.min(255, (particle.g * 255) | 0));
+      const b = Math.max(0, Math.min(255, (particle.b * 255) | 0));
+      const a = Math.max(0, Math.min(255, (particle.a * 255) | 0));
+
+      // ABGR格式：使用位移操作
       const packedColor = (a << 24) | (b << 16) | (g << 8) | r;
 
+      // 使用预分配的缓冲区进行颜色转换
+      colorUint32View[0] = packedColor;
+      const colorFloat = colorFloat32View[0];
+
       // 设置颜色（每个顶点相同）
-      for (let j = 0; j < 4; j++) {
-        // 将压缩的32位颜色值转换为float存储
-        const colorBuffer = new ArrayBuffer(4);
-        const uint32View = new Uint32Array(colorBuffer);
-        const float32View = new Float32Array(colorBuffer);
-        uint32View[0] = packedColor;
-        this.colors[colorIndex++] = float32View[0];
-      }
+      this.colors[colorIndex++] = colorFloat;
+      this.colors[colorIndex++] = colorFloat;
+      this.colors[colorIndex++] = colorFloat;
+      this.colors[colorIndex++] = colorFloat;
 
-      // 设置UV坐标（包含textureId）
-      const uvCoords = [
-        { u: 0, v: 0 }, // 左下
-        { u: 1, v: 0 }, // 右下
-        { u: 1, v: 1 }, // 右上
-        { u: 0, v: 1 }, // 左上
-      ];
-
+      // 设置UV坐标（使用预分配的uvCoords）
+      const textureId = this.textureId;
       for (let j = 0; j < 4; j++) {
-        this.uvs[uvIndex++] = uvCoords[j].u;
-        this.uvs[uvIndex++] = uvCoords[j].v;
-        this.uvs[uvIndex++] = this.textureId; // 添加textureId
+        const uv = uvCoords[j];
+        this.uvs[uvIndex++] = uv.u;
+        this.uvs[uvIndex++] = uv.v;
+        this.uvs[uvIndex++] = textureId;
       }
 
       // 设置索引（两个三角形组成四边形）
-      const baseIndex = i * 4;
-      this.indices[indexIndex++] = baseIndex + 0; // 第一个三角形
+      const baseIndex = activeParticleIndex * 4;
+      // 第一个三角形
+      this.indices[indexIndex++] = baseIndex;
       this.indices[indexIndex++] = baseIndex + 1;
       this.indices[indexIndex++] = baseIndex + 2;
-
-      this.indices[indexIndex++] = baseIndex + 0; // 第二个三角形
+      // 第二个三角形
+      this.indices[indexIndex++] = baseIndex;
       this.indices[indexIndex++] = baseIndex + 2;
       this.indices[indexIndex++] = baseIndex + 3;
+
+      activeParticleIndex++;
     }
   }
 

@@ -209,6 +209,15 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    */
   autoPlay = false;
 
+  // 性能优化：缓存变量，减少不必要的更新
+  private _lastEmitterX = 0;
+  private _lastEmitterY = 0;
+  private _lastAliveCount = 0;
+  private _hasActiveParticles = false;
+
+  // 性能优化：复用位置对象，避免每帧创建新对象
+  private _emitterPosition = { x: 0, y: 0 };
+
   /**
    * 创建粒子系统实例
    *
@@ -424,6 +433,14 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this._emitter.reset();
     this.isPlaying = false;
     this.isPaused = false;
+
+    // 重置性能优化缓存变量
+    this._lastEmitterX = 0;
+    this._lastEmitterY = 0;
+    this._lastAliveCount = 0;
+    this._hasActiveParticles = false;
+    this._emitterPosition.x = 0;
+    this._emitterPosition.y = 0;
   }
 
   /**
@@ -514,33 +531,56 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
   /**
    * 每帧更新逻辑（内部方法）
    * 处理粒子发射、位置更新、生命周期管理和渲染数据更新
+   *
+   * 性能优化：
+   * - 缓存发射器位置，只在变化时更新
+   * - 缓存粒子状态，避免不必要的渲染更新
+   * - 智能事件发射，只在状态改变时触发
+   * - 复用对象避免内存分配
    */
   protected onUpdate(): void {
     if (this.isPaused) return;
 
     const deltaTime = this.stage?.timer.delta ?? 0.016;
 
-    // 更新发射器位置
-    this._emitter.setPosition(this.worldMatrix.tx, this.worldMatrix.ty);
+    // 缓存当前发射器位置
+    const { tx: currentX, ty: currentY } = this.worldMatrix;
+
+    // 只在位置变化时更新发射器位置
+    if (this._lastEmitterX !== currentX || this._lastEmitterY !== currentY) {
+      this._emitter.setPosition(currentX, currentY);
+      this._lastEmitterX = currentX;
+      this._lastEmitterY = currentY;
+    }
 
     // 发射新粒子
     this._emitter.update(deltaTime);
 
-    // 更新所有粒子
-    const activeParticles = this._emitter.getActiveParticles();
-    const aliveCount = this._updater.updateParticles(activeParticles, deltaTime, {
-      x: this.worldMatrix.tx,
-      y: this.worldMatrix.ty,
-    });
+    // 获取粒子数组（现在返回完整数组，让updater内部过滤）
+    const particlePool = this._emitter.getParticles();
 
-    // 更新渲染对象
-    this.renderObject.updateParticles(activeParticles);
+    // 性能优化：复用位置对象避免重复创建
+    this._emitterPosition.x = currentX;
+    this._emitterPosition.y = currentY;
 
-    // 标记节点为dirty，确保渲染系统重新收集数据
-    this.markDirty(DirtyType.child);
+    // 更新所有粒子，使用复用的位置对象
+    const aliveCount = this._updater.updateParticles(particlePool, deltaTime, this._emitterPosition);
 
-    // 检查是否播放完成
-    if (!this.isPlaying && aliveCount === 0) {
+    // 缓存状态变量减少重复计算
+    const hasActiveParticles = aliveCount > 0;
+    const hadActiveParticles = this._hasActiveParticles;
+    const lastAliveCount = this._lastAliveCount;
+
+    // 只在粒子数量或状态变化时更新渲染对象和标记dirty
+    if (hasActiveParticles !== hadActiveParticles || lastAliveCount !== aliveCount) {
+      this.renderObject.updateParticles(particlePool);
+      this.markDirty(DirtyType.child);
+      this._lastAliveCount = aliveCount;
+      this._hasActiveParticles = hasActiveParticles;
+    }
+
+    // 只在状态改变时检查播放完成（避免重复的属性访问）
+    if (!this.isPlaying && aliveCount === 0 && lastAliveCount > 0) {
       this.emit('complete');
     }
   }

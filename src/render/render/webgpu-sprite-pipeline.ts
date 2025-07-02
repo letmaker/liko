@@ -99,6 +99,11 @@ export class WebGPUSpritePipeline implements IRenderPipe {
   }
 
   render(batch: Batch, renderPass: GPURenderPassEncoder): void {
+    // 避免绘制空批次（索引数量为0的情况）
+    if (batch.size <= 0) {
+      return;
+    }
+
     const { posBuffer, colorBuffer, uvBuffer, indexBuffer, camera } = batch.batchGroup;
     renderPass.setPipeline(this.pipeline);
     renderPass.setVertexBuffer(0, posBuffer.buffer);
