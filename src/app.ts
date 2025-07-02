@@ -5,6 +5,7 @@ import { type PhysicsOptions, createPhysics } from './physics';
 import { initDevice } from './render/device/device';
 import { Renderer } from './render/renderer';
 import type { ColorData } from './utils/color';
+import { debugManager } from './utils/debug-manager';
 import { Timer } from './utils/timer';
 import { createCanvas } from './utils/utils';
 
@@ -139,6 +140,9 @@ export class App {
       physics.init({ timer: this.stage.timer, ...params.physics });
     }
 
+    // 初始化 debug 系统（仅在 debug 模式下有效）
+    debugManager.init(this.stage);
+
     // 开始渲染循环
     this._frameHandle = requestAnimationFrame(this._renderHandler);
 
@@ -198,13 +202,12 @@ export class App {
    * @remarks
    * - 销毁后引擎将完全停止工作，无法恢复
    * - 会清理所有相关资源，包括画布、事件监听器等
-   * - 销毁后的实例不可重用，如需继续使用需创建新的实例
-   * - 建议在页面卸载或不再需要引擎时调用此方法
+   * - 销毁后的实例不应再被使用
    */
   destroy() {
-    cancelAnimationFrame(this._frameHandle);
-    this._renderHandler = () => {};
+    this.pause();
     this.stage.destroy();
     this.renderer.destroy();
+    debugManager.destroy();
   }
 }
