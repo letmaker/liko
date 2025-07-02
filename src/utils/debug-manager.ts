@@ -243,13 +243,16 @@ export class DebugManager {
     if (!this._nodeCountElement || !this._rigidBodyCountElement || !this._fpsElement || !this._rigidBodyDiv) return;
 
     // 优化：只更新文本内容，避免innerHTML操作
-    this._nodeCountElement.textContent = stats.nodeCount.toString();
+    const nodeCount = stats.nodeCount.toString();
+    if (this._nodeCountElement.textContent !== nodeCount) {
+      this._nodeCountElement.textContent = nodeCount;
+    }
 
-    if (stats.rigidBodyCount > 0) {
-      this._rigidBodyCountElement.textContent = stats.rigidBodyCount.toString();
-      this._rigidBodyDiv.style.display = '';
-    } else {
-      this._rigidBodyDiv.style.display = 'none';
+    // 优化：只更新文本内容，避免innerHTML操作
+    const rigidBodyCount = stats.rigidBodyCount.toString();
+    if (this._rigidBodyCountElement.textContent !== rigidBodyCount) {
+      this._rigidBodyCountElement.textContent = rigidBodyCount;
+      this._rigidBodyDiv.style.display = stats.rigidBodyCount > 0 ? '' : 'none';
     }
 
     // 优化：只在FPS值改变时更新颜色和文本
