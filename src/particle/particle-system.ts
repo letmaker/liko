@@ -323,7 +323,7 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    * 获取当前活跃粒子的数量，实时反映系统中正在运行的粒子数量
    */
   get particleCount(): number {
-    return this._emitter.getActiveParticleCount();
+    return this._lastAliveCount;
   }
 
   /**
@@ -392,6 +392,11 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
       return;
     }
 
+    // 防止重复注册定时器回调
+    if (this.isPlaying) {
+      return;
+    }
+
     this.isPlaying = true;
     this.isPaused = false;
     this._emitter.start();
@@ -401,11 +406,41 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
 
   /**
    * 停止发射新粒子
-   * 现有的粒子会继续运行直到生命周期结束
+   * @param clearAll 是否立即清除所有现有粒子，默认为false
+   * - false: 现有的粒子会继续运行直到生命周期结束
+   * - true: 立即清除所有粒子并停止更新
    */
-  stop(): void {
+  stop(clearAll = false): void {
     this.isPlaying = false;
     this._emitter.stop();
+
+    if (clearAll) {
+      this.killAllParticles();
+    }
+  }
+
+  /**
+   * 立即杀死所有活跃粒子
+   * 强制清除所有粒子，无论其生命周期状态如何
+   */
+  killAllParticles(): void {
+    const particles = this._emitter.getParticles();
+
+    // 强制设置所有粒子的生命周期为0，确保它们立即死亡
+    for (let i = 0; i < particles.length; i++) {
+      const particle = particles[i];
+      if (particle.timeToLive > 0) {
+        particle.timeToLive = 0;
+      }
+    }
+
+    // 强制更新渲染对象以反映粒子清除（这会调用clearRenderData）
+    this.renderObject.updateParticles(particles);
+
+    // 如果所有粒子都已死亡，立即停止更新定时器
+    if (this.particleCount === 0 && this.stage) {
+      this.stage.timer.clearTimer(this.onUpdate, this);
+    }
   }
 
   /**
@@ -432,6 +467,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this._emitter.reset();
     this.isPlaying = false;
     this.isPaused = false;
+
+    // 取消定时器注册
+    this.stage?.timer.clearTimer(this.onUpdate, this);
 
     // 重置性能优化缓存变量
     this._lastEmitterX = 0;
@@ -561,14 +599,13 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     this._emitterPosition.x = currentX;
     this._emitterPosition.y = currentY;
 
-    // 更新所有粒子，使用复用的位置对象
-    const aliveCount = this._updater.updateParticles(particlePool, deltaTime, this._emitterPosition);
+    // 更新所有粒子，使用智能优化的更新方法
+    const aliveCount = this._updater.updateParticlesSmart(particlePool, deltaTime, this._emitterPosition);
 
-    // 修复：每帧都更新渲染对象，因为粒子的位置、颜色、大小等属性每帧都在变化
-    if (aliveCount > 0) {
-      this.renderObject.updateParticles(particlePool);
-      this.markDirty(DirtyType.child);
-    }
+    // 每帧都更新渲染对象，因为粒子的位置、颜色、大小等属性每帧都在变化
+    // 当 aliveCount 为 0 时，updateParticles 会调用 clearRenderData 清空渲染数据
+    this.renderObject.updateParticles(particlePool);
+    this.markDirty(DirtyType.child);
 
     // 缓存状态变量用于事件触发
     const lastAliveCount = this._lastAliveCount;
@@ -577,6 +614,11 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
     // 只在状态改变时检查播放完成
     if (!this.isPlaying && aliveCount === 0 && lastAliveCount > 0) {
       this.emit('complete');
+    }
+
+    // 性能优化：如果不在播放状态且没有活跃粒子，则停止更新并清理定时器
+    if ((!this.isPlaying && aliveCount === 0) || !this.parent) {
+      this.stage?.timer.clearTimer(this.onUpdate, this);
     }
   }
 
@@ -609,6 +651,9 @@ export class ParticleSystem extends LikoNode implements IParticleRenderable {
    * 这是一个不可逆操作，销毁后的粒子系统无法再次使用。
    */
   override destroy(): void {
+    // 清理定时器注册
+    this.stage?.timer.clearTimer(this.onUpdate, this);
+
     this.stop();
     this.reset();
     super.destroy();

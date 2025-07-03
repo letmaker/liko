@@ -1,3 +1,4 @@
+import { ParticleSystem } from '../docs';
 import type { LikoNode } from '../nodes/node';
 import type { Stage } from '../nodes/stage';
 
@@ -16,6 +17,8 @@ interface DebugStats {
   nodeCount: number;
   /** 物理刚体数量 */
   rigidBodyCount: number;
+  /** 粒子数量 */
+  particleCount: number;
   /** FPS */
   fps: number;
 }
@@ -46,8 +49,8 @@ export class DebugManager {
   // 性能优化：DOM元素缓存
   private _nodeCountElement: HTMLElement | null = null;
   private _rigidBodyCountElement: HTMLElement | null = null;
+  private _particleCountElement: HTMLElement | null = null;
   private _fpsElement: HTMLElement | null = null;
-  private _rigidBodyDiv: HTMLElement | null = null;
 
   private constructor() {
     this._checkDebugMode();
@@ -121,12 +124,17 @@ export class DebugManager {
     this._nodeCountElement.style.color = '#00ffff';
     nodeCountDiv.appendChild(this._nodeCountElement);
 
-    this._rigidBodyDiv = document.createElement('div');
-    this._rigidBodyDiv.innerHTML = '刚体数量: ';
+    const rigidBodyDiv = document.createElement('div');
+    rigidBodyDiv.innerHTML = '刚体数量: ';
     this._rigidBodyCountElement = document.createElement('span');
     this._rigidBodyCountElement.style.color = '#ff9900';
-    this._rigidBodyDiv.appendChild(this._rigidBodyCountElement);
-    this._rigidBodyDiv.style.display = 'none'; // 默认隐藏
+    rigidBodyDiv.appendChild(this._rigidBodyCountElement);
+
+    const particleDiv = document.createElement('div');
+    particleDiv.innerHTML = '粒子数量: ';
+    this._particleCountElement = document.createElement('span');
+    this._particleCountElement.style.color = '#ff6699';
+    particleDiv.appendChild(this._particleCountElement);
 
     const fpsDiv = document.createElement('div');
     fpsDiv.innerHTML = 'FPS: ';
@@ -134,7 +142,8 @@ export class DebugManager {
     fpsDiv.appendChild(this._fpsElement);
 
     this._debugPanel.appendChild(nodeCountDiv);
-    this._debugPanel.appendChild(this._rigidBodyDiv);
+    this._debugPanel.appendChild(rigidBodyDiv);
+    this._debugPanel.appendChild(particleDiv);
     this._debugPanel.appendChild(fpsDiv);
 
     document.body.appendChild(this._debugPanel);
@@ -172,27 +181,34 @@ export class DebugManager {
    * 收集统计信息
    */
   private _collectStats(): DebugStats {
-    const nodeCount = this._countNodes(this._stage!);
+    const { nodeCount, particleCount } = this._countNodes(this._stage!);
     const rigidBodyCount = this._getRigidBodyCount();
 
     return {
       nodeCount,
       rigidBodyCount,
+      particleCount,
       fps: this._currentFps,
     };
   }
 
   /**
-   * 优化的节点统计方法（使用迭代代替递归）
+   * 优化的节点统计方法（使用迭代代替递归，同时统计节点和粒子数量）
    */
-  private _countNodes(rootNode: LikoNode): number {
-    let count = 0;
+  private _countNodes(rootNode: LikoNode): { nodeCount: number; particleCount: number } {
+    let nodeCount = 0;
+    let particleCount = 0;
     const stack: LikoNode[] = [rootNode];
 
-    // 优化：使用迭代避免递归调用栈过深
+    // 优化：使用迭代避免递归调用栈过深，一次遍历同时统计多个指标
     while (stack.length > 0) {
       const node = stack.pop()!;
-      count++;
+      nodeCount++;
+
+      // 检查当前节点是否是ParticleSystem类型，同时累计粒子数量
+      if (node instanceof ParticleSystem) {
+        particleCount += node.particleCount;
+      }
 
       // 将子节点按逆序添加到栈中，保持遍历顺序一致
       for (let i = node.children.length - 1; i >= 0; i--) {
@@ -200,7 +216,7 @@ export class DebugManager {
       }
     }
 
-    return count;
+    return { nodeCount, particleCount };
   }
 
   /**
@@ -240,7 +256,9 @@ export class DebugManager {
    * 优化的 debug 面板更新方法（最小化DOM操作）
    */
   private _updateDebugPanel(stats: DebugStats): void {
-    if (!this._nodeCountElement || !this._rigidBodyCountElement || !this._fpsElement || !this._rigidBodyDiv) return;
+    if (!this._nodeCountElement || !this._rigidBodyCountElement || !this._particleCountElement || !this._fpsElement) {
+      return;
+    }
 
     // 优化：只更新文本内容，避免innerHTML操作
     const nodeCount = stats.nodeCount.toString();
@@ -252,7 +270,12 @@ export class DebugManager {
     const rigidBodyCount = stats.rigidBodyCount.toString();
     if (this._rigidBodyCountElement.textContent !== rigidBodyCount) {
       this._rigidBodyCountElement.textContent = rigidBodyCount;
-      this._rigidBodyDiv.style.display = stats.rigidBodyCount > 0 ? '' : 'none';
+    }
+
+    // 优化：只更新文本内容，避免innerHTML操作
+    const particleCount = stats.particleCount.toString();
+    if (this._particleCountElement.textContent !== particleCount) {
+      this._particleCountElement.textContent = particleCount;
     }
 
     // 优化：只在FPS值改变时更新颜色和文本
@@ -289,8 +312,8 @@ export class DebugManager {
     // 清理DOM元素引用
     this._nodeCountElement = null;
     this._rigidBodyCountElement = null;
+    this._particleCountElement = null;
     this._fpsElement = null;
-    this._rigidBodyDiv = null;
 
     this._stage = null;
   }

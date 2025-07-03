@@ -902,7 +902,8 @@ export abstract class LikoNode {
       const index = this.pp.children.indexOf(child);
       if (index !== -1) {
         child.pp.parent = undefined;
-        child.pp.stage = undefined;
+        // 保留 stage 引用，方便清理定时器
+        // child.pp.stage = undefined;
         this.pp.children.splice(index, 1);
         child.emit(EventType.removed, this);
         this.markDirty(DirtyType.child);

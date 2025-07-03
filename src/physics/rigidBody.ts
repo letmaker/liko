@@ -224,14 +224,14 @@ export class RigidBody extends BaseScript {
    *
    * 注意：需要在组件唤醒前设置才能生效
    */
-  onCollisionStart?: (e: ICollision) => void;
+  onCollisionStart?: (e: ICollision) => void = undefined;
 
   /**
    * 碰撞结束时的回调函数
    *
    * 注意：需要在组件唤醒前设置才能生效
    */
-  onCollisionEnd?: (e: ICollision) => void;
+  onCollisionEnd?: (e: ICollision) => void = undefined;
 
   private _categoryAccepted?: string[] | undefined;
 
