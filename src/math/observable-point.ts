@@ -56,6 +56,14 @@ export class ObservablePoint {
   }
 
   /**
+   * 获取当前坐标点的长度
+   * @returns 当前坐标点的长度
+   */
+  get length(): number {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  /**
    * 创建一个新的可观察坐标点实例
    *
    * @param observer - 观察者对象，必须实现 markDirty 方法用于接收坐标变化的通知

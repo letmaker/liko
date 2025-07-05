@@ -41,6 +41,14 @@ export class Point {
   y = 0;
 
   /**
+   * 获取当前坐标点的长度
+   * @returns 当前坐标点的长度
+   */
+  get length(): number {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  /**
    * 创建一个新的坐标点实例
    * @param x - x 轴坐标值，默认为 0
    * @param y - y 轴坐标值，默认为 0

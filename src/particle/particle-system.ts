@@ -97,6 +97,23 @@ export interface IParticleSystemOptions extends INodeOptions {
  * customParticle.play();
  * ```
  *
+ * ## 纹理使用示例：
+ * ```typescript
+ * // 1. 预加载纹理并创建粒子系统
+ * const texture = await loader.load<Texture>('assets/textures/star.png');
+ * const starParticle = new ParticleSystem({
+ *   texture,
+ *   config: {
+ *     maxParticles: 100,
+ *     emissionRate: 50,
+ *     particleLifespan: 3.0,
+ *     startParticleSize: 16,
+ *     finishParticleSize: 8
+ *   },
+ *   position: { x: 300, y: 200 }
+ * });
+ * ```
+ *
  * ## 控制粒子播放：
  * ```typescript
  * // 播放控制
